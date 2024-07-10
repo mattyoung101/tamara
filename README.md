@@ -65,16 +65,24 @@ plugin -i libtamara.so
 
 This will then make available the `tmr` and `tmr` commands.
 
-Install TaMaRa:
+For a quick build and run cycle, you can compile and load TaMaRa at the same time:
 
-TODO
+```bash
+ninja && yosys -m libtamara.so
+```
+
+If you have Yosys installed on your system, you can run `ninja install` to install TaMaRa as a global plugin.
+(TODO this is not yet true)
 
 ## Usage in Yosys
-As mentioned above, you first need to use `plugin -i libtamara` to load the TaMaRa plugin.
+As mentioned above, you first need to use `plugin -i libtamara.so` to load the TaMaRa plugin.
 
 You can use `help tmr` and `help tmr_finalise` to see more about what the commands do (and check that they
 have been installed correctly).
 
+TODO
+
+## Testing and verification
 TODO
 
 ## Compiling the thesis
