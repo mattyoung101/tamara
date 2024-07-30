@@ -52,15 +52,17 @@
 // )
 //#pagebreak()
 
-= Introduction and background
-For safety-critical sectors such as aerospace and defence, silicon ICs and FPGA gateware must be designed to
-be fault tolerant. In the context of digital electronics, _fault tolerant_ means that the design is able to
-gracefully recover and continue operating in the event of a fault, or upset. A Single Event Upset (SEU) occurs
-when ionising radiation strikes a transistor on a digital circuit, causing it to transition from a 1 to a 0,
-or vice versa. This type of upset is most common in space, where the Earth's atmosphere is not present to
-dissipate the ionising particles. On an unprotected system, an unlucky SEU may corrupt the system's state to
-such a severe degree that it may cause destruction or loss of life - particularly important given the
-safety-critical nature of most space-fairing systems (satellites, crew capsules, missiles, etc).
+= Introduction
+For safety-critical sectors such as aerospace and defence, both ASICs and FPGA gateware must be designed to
+be fault tolerant to prevent catastrophic malfunctions. In the context of digital electronics, _fault
+tolerant_ means that the design is able to gracefully recover and continue operating in the event of a fault,
+or upset. A Single Event Upset (SEU) occurs when ionising radiation strikes a transistor on a digital circuit,
+causing it to transition from a 1 to a 0, or vice versa. This type of upset is most common in space, where the
+Earth's atmosphere is not present to dissipate the ionising particles @OBryan2021. On an unprotected system,
+an unlucky SEU may corrupt the system's state to such a severe degree that it may cause destruction or loss of
+life - particularly important given the safety-critical nature of most space-fairing systems (satellites, crew
+capsules, missiles, etc). Thus, fault tolerant computing is widely studied and applied for space-based
+computing systems.
 
 One common fault-tolerant design technique is Triple Modular Redundancy (TMR), which mitigates SEUs by
 triplicating key parts of the design and using voter circuits to select a non-corrupted result if an SEU
@@ -213,6 +215,18 @@ keywords are to be interpreted according to RFC 2119 @Bradner1997.
 )
 
 = Literature review
+Although the concept of $N$-modular redundancy dates back to antiquity, the application of triple modular
+redundancy to computer systems was first introduced in academia by @Lyons1962. Like much of computer science,
+however, the authors trace the original concept back to John von Neumann. In addition to introducing the
+application of TMR to computer systems, the authors also provide a rigorous Monte-Carlo mathematical analysis
+of the reliability of TMR. One important takeaway from this is that the only way to make a system reliably
+redundant is to split it into multiple components, each of which is more reliable than the system as a whole.
+In the modern FPGA concept, this implies applying TMR at an RTL module level, although as we will soon see,
+more optimal and finer grained TMR can be applied. Although their Monte Carlo analysis shows that TMR
+dramatically improves reliability, they importantly show that as the number of modules $M$ in the computer
+system increases, the computer will eventually become less reliable. This is due to the fact that the voter
+circuits may not themselves be perfectly reliable, and is important to note for FPGA and ASIC designs which
+may instantiate hundreds or potentially thousands of modules.
 
 = Milestones
 
