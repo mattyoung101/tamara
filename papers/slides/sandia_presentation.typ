@@ -11,7 +11,7 @@
 // Global information configuration
 #let s = (s.methods.info)(
   self: s,
-  title: [TaMaRa: \ An automated triple modular redundancy EDA flow for Yosys],
+  title: [*TaMaRa: \ An automated triple modular redundancy EDA flow for Yosys*],
   author: [Matt Young],
   date: datetime.today().display("[day] [month repr:long] [year]"),
   institution: [University of Queensland],
@@ -21,7 +21,7 @@
 #let (init, slides, touying-outline, alert, speaker-note) = utils.methods(s)
 #show: init
 
-#show strong: alert
+// #show strong: alert
 
 // Extract slide functions
 #let (slide, empty-slide) = utils.slides(s)
@@ -31,7 +31,7 @@
 == About me
 TODO photo
 
-Matt Young (he/him), 21 years old from Brisbane, Australia.
+Matt Young, 21 years old from Brisbane, Australia.
 
 Graduated Bachelor of Computer Science earlier in 2024 from the University of Queensland.
 
@@ -121,8 +121,67 @@ TODO algorithm
 
 TODO
 
+== Verification
+Designing an EDA pass means verification needs to be taken very seriously.
+
+#pause
+
+I plan to have a comprehensive verification procedure using formal methods, simulation and fuzzing.
+
+All driven by SymbiYosys tools _eqy_ and _mcy_ (in turn driven by theorem provers/SAT solvers)
+
+== Formal verification
+Equivalence checking: Formally verify that the circuit is functionally equivalent before and after the TaMaRa
+pass.
+#pause
+- Ensures TaMaRa does not change the underlying behaviour of the circuit.
+
+#pause
+
+Mutation: Formally verify that TaMaRa-processed circuits correct SEUs (single bit only)
+#pause
+- Ensures TaMaRa does its job!
+
+== Fuzzing
+TaMaRa must work for _all_ input circuits, so we need to test at scale.
+
+#pause
+
+Idea:
+
+1. Use Verismith @Herklotz2020 to generate random Verilog RTL.
+2. Run TaMaRa synthesis end-to-end.
+3. Use formal equivalence checking to verify the random circuits behave the same before/after TMR.
+
+#pause
+
+Problem: Mutation
+
+#pause
+
+- We need valid testbenches for these random circuits, how would we generate that?
+- Under active research in academia (may not be possible at the moment)
+
+== Simulation
+We want to simulate an SEU environment.
+- UQ doesn't have the capability to expose FPGAs to real radiation
+- Physical verification challenging
+
+#pause
+
+Use one of Verilator, Icarus Verilog or Yosys' own cxxrtl to simulate a full design.
+- Each simulator has different trade-offs
+- Currently considering picorv32 as the DUT
+//- Most likely will use Verilator or possibly cxxrtl
+
+#pause
+
+Concept:
+- Iterate over the netlist, randomly consider flipping a bit every cycle.
+- Write a self-checking testbench and ensure that the DUT responds correctly
+
 == Technical implementation
-Currently implemented in C++20, using CMake and Ninja build tools.
+Currently implemented in C++20, using CMake.
 
 #pause
 
@@ -165,4 +224,5 @@ TODO
 == Bibliography
 #bibliography("slides.bib", style: "institute-of-electrical-and-electronics-engineers", title: none)
 
+== Thank you!
 *Any questions?*

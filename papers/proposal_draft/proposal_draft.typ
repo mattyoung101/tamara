@@ -216,17 +216,17 @@ keywords are to be interpreted according to RFC 2119 @Bradner1997.
 
 = Literature review
 Although the concept of $N$-modular redundancy dates back to antiquity, the application of triple modular
-redundancy to computer systems was first introduced in academia by @Lyons1962. Like much of computer science,
-however, the authors trace the original concept back to John von Neumann. In addition to introducing the
-application of TMR to computer systems, the authors also provide a rigorous Monte-Carlo mathematical analysis
-of the reliability of TMR. One important takeaway from this is that the only way to make a system reliably
-redundant is to split it into multiple components, each of which is more reliable than the system as a whole.
-In the modern FPGA concept, this implies applying TMR at an RTL module level, although as we will soon see,
-more optimal and finer grained TMR can be applied. Although their Monte Carlo analysis shows that TMR
-dramatically improves reliability, they importantly show that as the number of modules $M$ in the computer
-system increases, the computer will eventually become less reliable. This is due to the fact that the voter
-circuits may not themselves be perfectly reliable, and is important to note for FPGA and ASIC designs which
-may instantiate hundreds or potentially thousands of modules.
+redundancy to computer systems was first introduced in academia by #cite(<Lyons1962>, form: "prose"). Like
+much of computer science, however, the authors trace the original concept back to John von Neumann. In
+addition to introducing the application of TMR to computer systems, the authors also provide a rigorous
+Monte-Carlo mathematical analysis of the reliability of TMR. One important takeaway from this is that the only
+way to make a system reliably redundant is to split it into multiple components, each of which is more
+reliable than the system as a whole. In the modern FPGA concept, this implies applying TMR at an RTL module
+level, although as we will soon see, more optimal and finer grained TMR can be applied. Although their Monte
+Carlo analysis shows that TMR dramatically improves reliability, they importantly show that as the number of
+modules $M$ in the computer system increases, the computer will eventually become less reliable. This is due
+to the fact that the voter circuits may not themselves be perfectly reliable, and is important to note for
+FPGA and ASIC designs which may instantiate hundreds or potentially thousands of modules.
 
 = Milestones
 
