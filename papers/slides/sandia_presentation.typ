@@ -165,7 +165,7 @@ Problem: Mutation
 == Simulation
 We want to simulate an SEU environment.
 - UQ doesn't have the capability to expose FPGAs to real radiation
-- Physical verification challenging
+- Physical verification is challenging (how do you measure it?)
 
 #pause
 

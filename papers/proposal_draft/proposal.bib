@@ -27,7 +27,6 @@
   author       = {N. Engelhardt},
   howpublished = {Personal communication},
   month        = may,
-  title        = {Jitsi meeting with author},
   year         = {2024},
 }
 
@@ -60,6 +59,53 @@
   timestamp = {2024-07-29},
   url       = {https://radhome.gsfc.nasa.gov/radhome/see.htm},
   urldate   = {2024-07-29}
+}
+
+@InProceedings{Wolf2013,
+  author    = {Wolf, Clifford and Glaser, Johann},
+  booktitle = {Proceedings of Austrochip 2013},
+  title     = {Yosys - A Free Verilog Synthesis Suite},
+  year      = {2013},
+  number    = {in-},
+  abstract  = {Most of todays digital design work is done using hardware description languages such as Verilog HDL or VHDL. HDL synthesis is used to translate that HDL code to digital circuits. Yosys is the first free and open source software for Verilog HDL synthesis which supports the vast majority of synthesizable Verilog features. Yosys is built as an extensible framework so it can be used easily as basis for custom synthesis flows and as environment for the implementation and research on new synthesis algorithms. Yosys has special emphasis on support for coarsegrain logic, making it ideal for algorithms such as logic mapping to DSP cells in FPGAs or synthesis for custom coarse-grain reconfigurable hardware. Yosys has mature support for Verilog HDL and is able to synthesize complex real-world Verilog designs. Example design flows for fine-grain and coarse-grain architectures are presented and discussed. The availability of Yosys under a liberal open source license can greatly improve reproducibility of scientific publications, when Yosys is used as basis for reference implementations of new algorithms instead of closed-source alternatives.},
+  file      = {:/home/matt/Dropbox/Digital Library/Papers/Computer Engineering/EDA/yosys-austrochip2013.pdf:PDF},
+  type      = {techreport},
+}
+
+@InProceedings{Johnson2010,
+  author     = {Johnson, Jonathan M. and Wirthlin, Michael J.},
+  booktitle  = {Proceedings of the 18th annual ACM/SIGDA international symposium on Field programmable gate arrays},
+  title      = {Voter insertion algorithms for FPGA designs using triple modular redundancy},
+  year       = {2010},
+  month      = feb,
+  publisher  = {ACM},
+  series     = {FPGA ’10},
+  abstract   = {Triple Modular Redundancy (TMR) is a common reliability technique for mitigating single event upsets (SEUs) in FPGA designs operating in radiation environments. For FPGA systems that employ configuration scrubbing, majority voters are needed in all feedback paths to ensure proper synchronization between the TMR replicates. Synchronization voters, however, consume additional resources and impact system timing. This paper will introduce and contrast four algorithms for inserting synchronization voters while automatically performing TMR. The area cost and timing impact of each algorithm on a number of circuit benchmarks will be reported. This paper will demonstrate that one of the algorithms provides the best overall timing performance results with an average 9.8% increase in critical path length over a triplicated design without voters. Another algorithm provides far better area results at a slightly higher timing cost (an average 2.1% area increase over a triplicated design without voters).},
+  collection = {FPGA ’10},
+  doi        = {10.1145/1723112.1723154},
+  file       = {:/home/matt/Dropbox/Digital Library/Papers/Computer Engineering/Fault-Tolerance/TMR/Voter Insertion Algorithms for FPGA Designs Using TMR.pdf:PDF},
+  keywords   = {B.8.1 [Performance and Reliability]: Reliability, Testing, and Fault-Tolerance Reliability, Design, Algorithms},
+}
+
+@MastersThesis{Johnson2010a,
+  author = {Johnson, Jonathan and Mark, Jonathan and Wirthlin, Michael and Hutchings, Brad and Nelson, Brent},
+  school = {Brigham Young University - Provo},
+  title  = {Synchronization Voter Insertion Algorithms for FPGA Designs Using Triple Modular Redundancy},
+  year   = {2010},
+  month  = {4},
+  type   = {mathesis},
+  date   = {2010-04},
+  file   = {:/home/matt/Dropbox/Digital Library/Papers/Computer Engineering/Fault-Tolerance/TMR/Synchronization Voter Insertion Algorithms for FPGA Designs Using.pdf:PDF},
+}
+
+@InProceedings{Skouson2020,
+  author    = {{D}allin {S}kouson and {A}ndrew {K}eller and {M}ichael {W}irthlin},
+  booktitle = {{P}roceedings of the 19th {P}ython in {S}cience {C}onference},
+  title     = {{N}etlist {A}nalysis and {T}ransformations {U}sing {S}py{D}r{N}et},
+  year      = {2020},
+  editor    = {{M}eghann {A}garwal and {C}hris {C}alloway and {D}illon {N}iederhut and {D}avid {S}hupe},
+  pages     = {40 - 47},
+  doi       = {10.25080/Majora-342d178e-006},
 }
 
 @Comment{jabref-meta: databaseType:bibtex;}

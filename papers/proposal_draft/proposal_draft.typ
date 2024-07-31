@@ -71,10 +71,10 @@ manually instantiating three copies of the target module, designing a voter circ
 together. However, this approach is an additional time-consuming and potentially error-prone step in the
 already complex design pipeline.
 
-// TODO: diagram of TMR
+TODO: diagram of TMR
 
 To address these issues, I propose TaMaRa: a novel fully automated TMR flow for the open source Yosys EDA tool
-@Shah2019.
+@Wolf2013.
 
 Modern digital ICs and FPGAs are described using Hardware Description Languages (HDLs), such as SystemVerilog
 or VHDL. The process of transforming this high level description into a photolithography mask (for ICs) or
@@ -83,9 +83,13 @@ comprises of the following stages:
 
 - *Synthesis*: The transformation of a high-level textual HDL description into a lower level synthesisable
     netlist.
-    - Elaboration
-    - Optimisation
-    - Technology mapping
+    - *Elaboration:* Includes the instantiation of HDL modules, resolution of generic parameters and
+        constants. Like compilers, synthesis tools are typically split into frontend/backend, and elaboration
+        could be considered a frontend/language parsing task.
+    - *Optimisation:* This includes a multitude of tasks, anywhere from small peephole optimisations, to
+        completely re-coding FSMs. In commercial tools, this is typically timing driven.
+    - *Technology mapping:* This involves mapping the technology-independent netlist to the target platform,
+        whether that be FPGA LUTs, or ASIC standard cells.
 - *Placement*: The process of optimally placing the netlist onto the target device. For FPGAs, this involves
     choosing which logic elements to use. For digital ICs, this is much more complex and manual - usually done
     by dedicated layout engineers who design a _floorplan_.
@@ -98,15 +102,13 @@ almost all researchers, and even if they could be licenced, would not be possibl
 custom synthesis passes. The major FPGA vendors, AMD and Intel, also develop their own EDA tools for each of
 their own devices, which are often cheaper or free. However, these tools are still proprietary software and
 cannot be modified by researchers. Until recently, there was no freely available, research-grade, open-source
-EDA tool available for study and improvement. That changed with the introduction of Yosys and Nextpnr
-@Shah2019. Yosys is a capable synthesis tool that can emit optimised netlists for various FPGA families as
-well as a few silicon process nodes (e.g. Skywater 130nm). Nextpnr is a place and route tool that targets
-various FPGA families. Together, they provide a fully open-source, end-to-end EDA toolchain. Importantly, for
-this thesis, Yosys can be modified either by changing the source code or by developing modular plugins that
-can be dynamically loaded at runtime. Due to specific advice from the Yosys development team @Engelhardt2024,
-TaMaRa will be developed as a loadable C++ plugin.
+EDA tool available for study and improvement. That changed with the introduction of Yosys @Wolf2013. Yosys is
+a capable synthesis tool that can emit optimised netlists for various FPGA families as well as a few silicon
+process nodes (e.g. Skywater 130nm). Importantly, for this thesis, Yosys can be modified either by changing
+the source code or by developing modular plugins that can be dynamically loaded at runtime. Due to specific
+advice from the Yosys development team @Engelhardt2024, TaMaRa will be developed as a loadable C++ plugin.
 
-// TODO diagram of the synthesis flow
+TODO diagram of the synthesis flow
 
 = Aims
 This thesis is governed by two overarching aims:
@@ -125,7 +127,7 @@ produce a pass worth using.
 
 These two major aims can be broken down into smaller aims. Under the design pipeline:
 
-- Research the applications of graph theory to
+- Research the applications of graph theory to TODO
 
 == Engineering requirements
 Due to the large and complex nature of the TaMaRa development process, I decided it beneficial to apply the
@@ -151,7 +153,11 @@ keywords are to be interpreted according to RFC 2119 @Bradner1997.
     [ Tamara MAY operate at any desired level of granularity - anywhere from RTL code level, to elaboration,
     to techmapping - but it SHALL operate on at least one level of granularity ],
     [ As long as the TMR is implemented correctly, it doesn't matter what level of granularity the algorithm
-    uses. Each level of granularity has different tradeoffs which still require research at this stage. ],
+    uses. Each level of granularity has different trade-offs which still require research at this stage. ],
+
+    [ Tamara SHOULD compare coarse and fine grained TMR ],
+    [ It would be interesting to see the area and reliability effects of applying TMR in at least two
+    different ways. This is left as a SHOULD in case of serious time constraints. ],
 
     [ Tamara SHOULD be capable of handling large designs, up to and including picorv32, in reasonable amounts
     of time and memory ],
@@ -170,7 +176,12 @@ keywords are to be interpreted according to RFC 2119 @Bradner1997.
     Yosys currently is not. ],
 
     [ Tamara SHOULD have a clean codebase through the use of tools like clang-tidy ],
-    [ Easy to implement and highly desirable but not strictly necessary for correct functioning. ]
+    [ Easy to implement and highly desirable but not strictly necessary for correct functioning. ],
+
+    [ Tamara SHALL NOT consider multi-bit upsets ],
+    [ Although multi-bit upsets may occur in practice, this work focuses on SEUs in particular. MBUs are much
+    less likely (TODO citation?) and require significant area increases due to extra voters (TODO citation?)
+    ],
 )
 
 *Verification requirements*
@@ -228,6 +239,35 @@ modules $M$ in the computer system increases, the computer will eventually becom
 to the fact that the voter circuits may not themselves be perfectly reliable, and is important to note for
 FPGA and ASIC designs which may instantiate hundreds or potentially thousands of modules.
 
-= Milestones
+TODO more literature
+
+Recognising that prior literature focused mostly around manual or theoretical TMR, and the limitations of a
+manual approach, #cite(<Johnson2010>, form: "prose") introduced four algorithms for the automatic insertion of
+TMR voters in a circuit, with a particular focus on timing and area trade-offs. Together with the thesis this
+paper was based on @Johnson2010a, these two publications form the seminal works on automated TMR.
+
+Whilst they provide an excellent design of TMR insertion algorithms, and a very thorough analysis of their
+area and timing trade-offs, #cite(<Johnson2010>, form: "prose") do not have a rigorous analysis of the
+correctness of these algorithms. They produce experimental results demonstrating the timing and area
+trade-offs of the TMR algorithms on a real Xilinx Virtix 1000 FPGA, up to the point of P&R, but do not run it
+on a real device. More importantly, they also do not have any formal verification or simulated SEU scenarios
+to prove that the algorithms both work as intended, and keep the underlying behaviour of the circuit the same.
+Finally, in their thesis @Johnson2010a, the authors state that the benchmark designs were synthesised using a
+combination of the commercial Synopsys Synplify tool, and the _BYU-LANL Triple Modular Redundancy (BL-TMR)
+Tool_. This Java-based set of tools ingest EDIF-format netlists, perform TMR on them, and write the
+processed result to a new EDIF netlist, which can be re-ingested by the synthesis program for place and route.
+This is quite a complex process, and was also designed before Yosys was introduced in 2013. It would be very
+beneficial if the TMR pass was instead integrated directly into the synthesis tool - which is only possible
+for Yosys, as Synplify is commercial proprietary software. This is especially important for industry users who
+often have long and complicated synthesis flows.
+
+It's also worth noting that #cite(<Skouson2020>, form: "prose") introduced SpyDrNet, a Python-based netlist
+transformation tool that also implements TMR using the same algorithm as above. SpyDrNet is a great general
+purpose transformation tool for research purposes, but again is a separate tool that is not integrated
+_directly_ into the synthesis process. We instead aim to make a _production_ ready tool, with a focus on
+ease-of-use, correctness and performance.
+
+= Timeline
+TODO
 
 #bibliography("proposal.bib", title: "References", style: "institute-of-electrical-and-electronics-engineers")
