@@ -14,7 +14,7 @@
   title: [*TaMaRa: \ An automated triple modular redundancy EDA flow for Yosys*],
   author: [Matt Young],
   date: datetime.today().display("[day] [month repr:long] [year]"),
-  institution: [University of Queensland],
+  institution: [University of Queensland \ Prepared for YosysHQ and Sandia National Laboratories],
 )
 
 // Extract methods

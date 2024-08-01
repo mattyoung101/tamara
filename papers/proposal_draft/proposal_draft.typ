@@ -52,17 +52,21 @@
 // )
 //#pagebreak()
 
+#let TODO(msg) = {
+  [#text(fill: red, weight: "bold", size: 12pt)[TODO #msg]]
+}
+
 = Introduction
-For safety-critical sectors such as aerospace and defence, both ASICs and FPGA gateware must be designed to
-be fault tolerant to prevent catastrophic malfunctions. In the context of digital electronics, _fault
-tolerant_ means that the design is able to gracefully recover and continue operating in the event of a fault,
-or upset. A Single Event Upset (SEU) occurs when ionising radiation strikes a transistor on a digital circuit,
-causing it to transition from a 1 to a 0, or vice versa. This type of upset is most common in space, where the
-Earth's atmosphere is not present to dissipate the ionising particles @OBryan2021. On an unprotected system,
-an unlucky SEU may corrupt the system's state to such a severe degree that it may cause destruction or loss of
-life - particularly important given the safety-critical nature of most space-fairing systems (satellites, crew
-capsules, missiles, etc). Thus, fault tolerant computing is widely studied and applied for space-based
-computing systems.
+For safety-critical sectors such as aerospace and defence, both Application Specific Integrated Circuits
+(ASICs) and Field Programmable Gate Array (FPGA) gateware must be designed to be fault tolerant to prevent
+catastrophic malfunctions. In the context of digital electronics, _fault tolerant_ means that the design is
+able to gracefully recover and continue operating in the event of a fault, or upset. A Single Event Upset
+(SEU) occurs when ionising radiation strikes a transistor on a digital circuit, causing it to transition from
+a 1 to a 0, or vice versa. This type of upset is most common in space, where the Earth's atmosphere is not
+present to dissipate the ionising particles @OBryan2021. On an unprotected system, an unlucky SEU may corrupt
+the system's state to such a severe degree that it may cause destruction or loss of life - particularly
+important given the safety-critical nature of most space-fairing systems (satellites, crew capsules, missiles,
+etc). Thus, fault tolerant computing is widely studied and applied for space-based computing systems.
 
 One common fault-tolerant design technique is Triple Modular Redundancy (TMR), which mitigates SEUs by
 triplicating key parts of the design and using voter circuits to select a non-corrupted result if an SEU
@@ -71,10 +75,10 @@ manually instantiating three copies of the target module, designing a voter circ
 together. However, this approach is an additional time-consuming and potentially error-prone step in the
 already complex design pipeline.
 
-TODO: diagram of TMR
+#TODO("diagram of TMR")
 
-To address these issues, I propose TaMaRa: a novel fully automated TMR flow for the open source Yosys EDA tool
-@Wolf2013.
+To address these issues, I propose TaMaRa: a novel fully automated TMR flow for the open source Yosys
+Electronic Design Automation (EDA) tool @Wolf2013.
 
 Modern digital ICs and FPGAs are described using Hardware Description Languages (HDLs), such as SystemVerilog
 or VHDL. The process of transforming this high level description into a photolithography mask (for ICs) or
@@ -108,7 +112,7 @@ process nodes (e.g. Skywater 130nm). Importantly, for this thesis, Yosys can be 
 the source code or by developing modular plugins that can be dynamically loaded at runtime. Due to specific
 advice from the Yosys development team @Engelhardt2024, TaMaRa will be developed as a loadable C++ plugin.
 
-TODO diagram of the synthesis flow
+#TODO("diagram of the synthesis flow")
 
 = Aims
 This thesis is governed by two overarching aims:
@@ -127,7 +131,7 @@ produce a pass worth using.
 
 These two major aims can be broken down into smaller aims. Under the design pipeline:
 
-- Research the applications of graph theory to TODO
+- Research the applications of graph theory to #TODO("continue")
 
 == Engineering requirements
 Due to the large and complex nature of the TaMaRa development process, I decided it beneficial to apply the
@@ -180,8 +184,8 @@ keywords are to be interpreted according to RFC 2119 @Bradner1997.
 
     [ Tamara SHALL NOT consider multi-bit upsets ],
     [ Although multi-bit upsets may occur in practice, this work focuses on SEUs in particular. MBUs are much
-    less likely (TODO citation?) and require significant area increases due to extra voters (TODO citation?)
-    ],
+    less likely (#TODO("citation?")) and require significant area increases due to extra voters
+    (#TODO("citation?") ],
 )
 
 *Verification requirements*
@@ -226,6 +230,7 @@ keywords are to be interpreted according to RFC 2119 @Bradner1997.
 )
 
 = Literature review
+== Fault tolerant computing and redundancy
 Although the concept of $N$-modular redundancy dates back to antiquity, the application of triple modular
 redundancy to computer systems was first introduced in academia by #cite(<Lyons1962>, form: "prose"). Like
 much of computer science, however, the authors trace the original concept back to John von Neumann. In
@@ -239,12 +244,19 @@ modules $M$ in the computer system increases, the computer will eventually becom
 to the fact that the voter circuits may not themselves be perfectly reliable, and is important to note for
 FPGA and ASIC designs which may instantiate hundreds or potentially thousands of modules.
 
-TODO more literature
+#TODO("more background literature")
 
+== Single Event Upsets (SEUs)
+#TODO("more literature defining probabilities of SEUs on ASICs/FPGAs in space")
+
+#TODO("also consider talking about rad-hardened CMOS processes for ASICs")
+
+== Post-synthesis automated TMR
 Recognising that prior literature focused mostly around manual or theoretical TMR, and the limitations of a
 manual approach, #cite(<Johnson2010>, form: "prose") introduced four algorithms for the automatic insertion of
 TMR voters in a circuit, with a particular focus on timing and area trade-offs. Together with the thesis this
-paper was based on @Johnson2010a, these two publications form the seminal works on automated TMR.
+paper was based on @Johnson2010a, these two publications form the seminal works on automated TMR for digital
+EDA.
 
 Whilst they provide an excellent design of TMR insertion algorithms, and a very thorough analysis of their
 area and timing trade-offs, #cite(<Johnson2010>, form: "prose") do not have a rigorous analysis of the
@@ -261,13 +273,51 @@ beneficial if the TMR pass was instead integrated directly into the synthesis to
 for Yosys, as Synplify is commercial proprietary software. This is especially important for industry users who
 often have long and complicated synthesis flows.
 
-It's also worth noting that #cite(<Skouson2020>, form: "prose") introduced SpyDrNet, a Python-based netlist
-transformation tool that also implements TMR using the same algorithm as above. SpyDrNet is a great general
-purpose transformation tool for research purposes, but again is a separate tool that is not integrated
-_directly_ into the synthesis process. We instead aim to make a _production_ ready tool, with a focus on
-ease-of-use, correctness and performance.
+It's also worth noting that #cite(<Skouson2020>, form: "prose") (from the same lab as above) introduced
+SpyDrNet , a Python-based netlist transformation tool that also implements TMR using the same algorithm as
+above. SpyDrNet is a great general purpose transformation tool for research purposes, but again is a separate
+tool that is not integrated _directly_ into the synthesis process. We instead aim to make a _production_ ready
+tool, with a focus on ease-of-use, correctness and performance.
+
+Using a similar approach, #cite(<Benites2018>, form: "prose"), and their thesis @Benites2018a, introduce an
+automated TMR approach for use in Cadence tools. They distinguish between "coarse grained TMR" (which they
+call "CGTMR"), applied at the RTL module level, and "fine grained TMR" (which they call "FGTMR"), applied at
+the sub-module (i.e. net) level. Building on that, they develop an approach that replicates both combinatorial
+and sequential circuits, which they call "fine graine distributed TMR" or "FGDTMR".
+
+== Other automated TMR approaches
+Although the most commonly cited literature implements automated TMR post-synthesis on the netlist, other
+authors over time have explored other stages of the ASIC/FPGA synthesis pipeline to insert TMR, both lower
+level and higher level.
+
+On the lower level side, #cite(<Hindman2011>, form: "prose") introduce an ASIC standard-cell based automated
+TMR approach. When digital circuits are synthesised into ASICs (i.e. silicon ICs instead of FPGA gateware),
+they are technology mapped onto standard cells provided by the foundry as part of their Process Design Kit
+(PDK). For example, SkyWater Technology provides an open-source 130 nm ASIC PDK, which contains standard cells
+for NAND gates, muxes and more #TODO("citation?").
+The authors design a TMR flip-flop cell, known as a "Triple Redundant Self Correcting Master-Slave Flip-Flop"
+(TRSCMSFF), that mitigates SEUs on a process level. Since this is so low level and operates below the entire
+synthesis/place and route pipeline, their approach has the advantage that _any_ design - including proprietary
+encrypted IP cores that are (unfortunately) common in industry - can be made redundant. Very importantly, the
+original design need not be aware of the TMR implementation, so this approach fulfills our goal of making TMR
+available seamlessly to designers. The authors demonstrate that the TRSCMSFF cell adds minimal overhead to
+logic speed and power consumption, and even perform a real-life radiation test under a high energy ion beam.
+Overall, this is an excellent approach for ASICs. However, this approach, being standard-cell specific, cannot
+be applied to devices. Rather, the FPGA manufacturers themselves would need to apply this method to harden
+their FPGA (note that an FPGA is itself an ASIC). It would also appear that designers would have to design new
+standard cells for each fab and process node they intend to target. While TaMaRa will have worse power,
+performance and area (PPA) trade-offs on ASICs than this method, it is also more general in that it can target
+FPGAs _and_ ASICs due to being integrated directly into Yosys. Nevertheless, it would appear that for the
+specific case of targeting the best PPA trade-offs for TMR on ASICs, the approach described in @Hindman2011 is
+the most optimal one available.
+
+// future research topic! design a rad hardened FPGA using this approach!
+
+On the opposite side, several authors have investigated applying TMR techniques to HDL source code.
+
+#TODO("")
 
 = Timeline
-TODO
+#TODO("")
 
 #bibliography("proposal.bib", title: "References", style: "institute-of-electrical-and-electronics-engineers")
