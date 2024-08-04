@@ -264,32 +264,32 @@ correctness of these algorithms. They produce experimental results demonstrating
 trade-offs of the TMR algorithms on a real Xilinx Virtix 1000 FPGA, up to the point of P&R, but do not run it
 on a real device. More importantly, they also do not have any formal verification or simulated SEU scenarios
 to prove that the algorithms both work as intended, and keep the underlying behaviour of the circuit the same.
-Finally, in their thesis @Johnson2010a, the authors state that the benchmark designs were synthesised using a
+Finally, in his thesis @Johnson2010a, Johnson states that the benchmark designs were synthesised using a
 combination of the commercial Synopsys Synplify tool, and the _BYU-LANL Triple Modular Redundancy (BL-TMR)
 Tool_. This Java-based set of tools ingest EDIF-format netlists, perform TMR on them, and write the
 processed result to a new EDIF netlist, which can be re-ingested by the synthesis program for place and route.
 This is quite a complex process, and was also designed before Yosys was introduced in 2013. It would be very
-beneficial if the TMR pass was instead integrated directly into the synthesis tool - which is only possible
+better if the TMR pass was instead integrated directly into the synthesis tool - which is only possible
 for Yosys, as Synplify is commercial proprietary software. This is especially important for industry users who
 often have long and complicated synthesis flows.
 
 It's also worth noting that #cite(<Skouson2020>, form: "prose") (from the same lab as above) introduced
 SpyDrNet , a Python-based netlist transformation tool that also implements TMR using the same algorithm as
 above. SpyDrNet is a great general purpose transformation tool for research purposes, but again is a separate
-tool that is not integrated _directly_ into the synthesis process. We instead aim to make a _production_ ready
+tool that is not integrated _directly_ into the synthesis process. I instead aim to make a _production_ ready
 tool, with a focus on ease-of-use, correctness and performance.
 
 Using a similar approach, #cite(<Benites2018>, form: "prose"), and their thesis @Benites2018a, introduce an
 automated TMR approach for use in Cadence tools. They distinguish between "coarse grained TMR" (which they
 call "CGTMR"), applied at the RTL module level, and "fine grained TMR" (which they call "FGTMR"), applied at
 the sub-module (i.e. net) level. Building on that, they develop an approach that replicates both combinatorial
-and sequential circuits, which they call "fine graine distributed TMR" or "FGDTMR".
+and sequential circuits, which they call "fine grain distributed TMR" or "FGDTMR".
 
-== Other automated TMR approaches
 Although the most commonly cited literature implements automated TMR post-synthesis on the netlist, other
 authors over time have explored other stages of the ASIC/FPGA synthesis pipeline to insert TMR, both lower
 level and higher level.
 
+== Low-level TMR approaches
 On the lower level side, #cite(<Hindman2011>, form: "prose") introduce an ASIC standard-cell based automated
 TMR approach. When digital circuits are synthesised into ASICs (i.e. silicon ICs instead of FPGA gateware),
 they are technology mapped onto standard cells provided by the foundry as part of their Process Design Kit
@@ -299,23 +299,44 @@ The authors design a TMR flip-flop cell, known as a "Triple Redundant Self Corre
 (TRSCMSFF), that mitigates SEUs on a process level. Since this is so low level and operates below the entire
 synthesis/place and route pipeline, their approach has the advantage that _any_ design - including proprietary
 encrypted IP cores that are (unfortunately) common in industry - can be made redundant. Very importantly, the
-original design need not be aware of the TMR implementation, so this approach fulfills our goal of making TMR
+original design need not be aware of the TMR implementation, so this approach fulfills my goal of making TMR
 available seamlessly to designers. The authors demonstrate that the TRSCMSFF cell adds minimal overhead to
 logic speed and power consumption, and even perform a real-life radiation test under a high energy ion beam.
 Overall, this is an excellent approach for ASICs. However, this approach, being standard-cell specific, cannot
-be applied to devices. Rather, the FPGA manufacturers themselves would need to apply this method to harden
-their FPGA (note that an FPGA is itself an ASIC). It would also appear that designers would have to design new
-standard cells for each fab and process node they intend to target. While TaMaRa will have worse power,
-performance and area (PPA) trade-offs on ASICs than this method, it is also more general in that it can target
-FPGAs _and_ ASICs due to being integrated directly into Yosys. Nevertheless, it would appear that for the
-specific case of targeting the best PPA trade-offs for TMR on ASICs, the approach described in @Hindman2011 is
-the most optimal one available.
+be applied to FPGA designs. Rather, the FPGA manufacturers themselves would need to apply this method to make
+a series of specially rad-hardened devices (note that an FPGA is itself an ASIC
+#footnote("This terminology may be confusing, so, to clarifty: ASICs encompass the majority of silicon ICs
+with an application-specific purpose. This includes devices like GPUs, NPUs as well as more
+domain-specific chips such as video transcoders or RF transceivers. An FPGA is a specific type of ASIC
+that implements an array of LUTs that can be programmed by SRAM.")
+). It would also appear that designers would have to port the TRSCMSFF cell to each fab and process node they
+intend to target. While TaMaRa will have worse power, performance and area (PPA) trade-offs on ASICs than this
+method, it is also more general in that it can target FPGAs _and_ ASICs due to being integrated directly into
+Yosys. Nevertheless, it would appear that for the specific case of targeting the best PPA trade-offs for TMR
+on ASICs, the approach described in @Hindman2011 is the most optimal one available.
 
 // future research topic! design a rad hardened FPGA using this approach!
 
-On the opposite side, several authors have investigated applying TMR techniques to HDL source code.
-
-#TODO("")
+== High-level TMR approaches
+On the opposite (higher level) side, several authors have investigated applying TMR directly to the HDL source
+code. One of the most notable examples was introduced by #cite(<Kulis2017>, form: "prose") through a tool he
+calls "TMRG". TMRG operates on Verilog RTL by implementing the majority of a Verilog parser and elaborator
+from scratch. It takes as input Verilog RTL, as well as a selection of Verilog source comments that act as
+annotations to guide the tool on its behaviour. In turn, the tool modifies the design code and outputs
+processed Verilog RTL that implements TMR, as well as Synopsys Design Compiler design constraints. Like the
+goal of TaMaRa, the TMRG approach is designed to target both FPGAs and ASICs, and for FPGAs, Kulis correctly
+identifies the issue that not all FPGA blocks can be replicated. For example, a design that instantiates a PLL
+clock divider on an FPGA that only contains one PLL could not be replicated. Kulis also correctly identifies
+that optimisation-driven synthesis tools such as Yosys and Synopsys DC will eliminate TMR logic as part of the
+synthesis pipeline, as the redundancy is, by nature, redundant and subject to removal. In Yosys, this occurs
+specifically in the `opt_share` and `opt_clean` passes according to specific advice from the development team
+@Engelhardt2024. However, unlike Synopsys DC, Yosys is not constraint driven, which means that Kulis'
+constraint-based approach to preserving TMR logic through optimisation would not work in this case.  Finally,
+since TMRG re-implements the majority of a synthesis tool's frontend (including the parser and elaborator), it
+is limited to only supporting Verilog. Yosys natively supports Verilog and some SystemVerilog, with plugins
+@synlig
+providing more complete SV and VHDL support. Since TaMaRa uses Yosys' existing frontend, it should be more
+reliable and useable with many more HDLs.
 
 = Timeline
 #TODO("")
