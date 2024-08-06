@@ -29,8 +29,11 @@
 
 = Background
 == About me
-TODO photo
-
+#grid(columns: (10em, auto), gutter: 15pt,
+[
+    #image("grad_portrait.jpg", width: 100%)
+],
+[
 Matt Young, 21 years old from Brisbane, Australia.
 
 Graduated Bachelor of Computer Science earlier in 2024 from the University of Queensland.
@@ -40,6 +43,9 @@ Currently studying Bachelor of Computer Science (Honours) at UQ, which includes 
 Passionate about digital hardware design, embedded systems, high performance/low-level software/hardware.
 Looking to in future take up a PhD, and eventually research/work in the area of CPU/GPU/ASIC design, or FPGAs,
 or similar.
+]
+
+)
 
 == Motivation
 Fault tolerant computing is important for safety critical sectors (aerospace, defence, medicine, etc.)

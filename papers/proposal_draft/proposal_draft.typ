@@ -231,18 +231,18 @@ keywords are to be interpreted according to RFC 2119 @Bradner1997.
 
 = Literature review
 == Fault tolerant computing and redundancy
-Although the concept of $N$-modular redundancy dates back to antiquity, the application of triple modular
-redundancy to computer systems was first introduced in academia by #cite(<Lyons1962>, form: "prose"). Like
-much of computer science, however, the authors trace the original concept back to John von Neumann. In
-addition to introducing the application of TMR to computer systems, the authors also provide a rigorous
-Monte-Carlo mathematical analysis of the reliability of TMR. One important takeaway from this is that the only
-way to make a system reliably redundant is to split it into multiple components, each of which is more
-reliable than the system as a whole. In the modern FPGA concept, this implies applying TMR at an RTL module
-level, although as we will soon see, more optimal and finer grained TMR can be applied. Although their Monte
-Carlo analysis shows that TMR dramatically improves reliability, they importantly show that as the number of
-modules $M$ in the computer system increases, the computer will eventually become less reliable. This is due
-to the fact that the voter circuits may not themselves be perfectly reliable, and is important to note for
-FPGA and ASIC designs which may instantiate hundreds or potentially thousands of modules.
+The application of triple modular redundancy to computer systems was first introduced in academia by
+#cite(<Lyons1962>, form: "prose"). Like much of computer science, however, the authors trace the original
+concept back to John von Neumann. In addition to introducing the application of TMR to computer systems, the
+authors also provide a rigorous Monte-Carlo mathematical analysis of the reliability of TMR. One important
+takeaway from this is that the only way to make a system reliably redundant is to split it into multiple
+components, each of which is more reliable than the system as a whole. In the modern FPGA concept, this
+implies applying TMR at an RTL module level, although as we will soon see, more optimal and finer grained TMR
+can be applied. Although their Monte Carlo analysis shows that TMR dramatically improves reliability, they
+importantly show that as the number of modules $M$ in the computer system increases, the computer will
+eventually become less reliable. This is due to the fact that the voter circuits may not themselves be
+perfectly reliable, and is important to note for FPGA and ASIC designs which may instantiate hundreds or
+potentially thousands of modules.
 
 #TODO("more background literature")
 
@@ -257,6 +257,7 @@ manual approach, #cite(<Johnson2010>, form: "prose") introduced four algorithms 
 TMR voters in a circuit, with a particular focus on timing and area trade-offs. Together with the thesis this
 paper was based on @Johnson2010a, these two publications form the seminal works on automated TMR for digital
 EDA.
+#TODO("")
 
 Whilst they provide an excellent design of TMR insertion algorithms, and a very thorough analysis of their
 area and timing trade-offs, #cite(<Johnson2010>, form: "prose") do not have a rigorous analysis of the
@@ -279,11 +280,31 @@ above. SpyDrNet is a great general purpose transformation tool for research purp
 tool that is not integrated _directly_ into the synthesis process. I instead aim to make a _production_ ready
 tool, with a focus on ease-of-use, correctness and performance.
 
-Using a similar approach, #cite(<Benites2018>, form: "prose"), and their thesis @Benites2018a, introduce an
-automated TMR approach for use in Cadence tools. They distinguish between "coarse grained TMR" (which they
-call "CGTMR"), applied at the RTL module level, and "fine grained TMR" (which they call "FGTMR"), applied at
-the sub-module (i.e. net) level. Building on that, they develop an approach that replicates both combinatorial
-and sequential circuits, which they call "fine grain distributed TMR" or "FGDTMR".
+Using a similar approach, #cite(<Benites2018>, form: "prose"), and Benites' thesis @Benites2018a, introduce an
+automated TMR approach implemented as a Tcl script for use in Cadence tools. They distinguish between "coarse
+grained TMR" (which they call "CGTMR"), applied at the RTL module level, and "fine grained TMR" (which they
+call "FGTMR"), applied at the sub-module (i.e. net) level. Building on that, they develop an approach that
+replicates both combinatorial and sequential circuits, which they call "fine grain distributed TMR" or
+"FGDTMR". They split their TMR pipeline into three stages: implementation ("TMRi"), optimisation ("TMRo"), and
+verification ("TMRv"). The implementation stage works by creating a new design to house the TMR design (which
+I'll call the "container design"), and instantiating copies of the original circuit in the container design.
+Depending on which mode the user selects, the authors state that either each "sequential gate" will be
+replaced by three copies and a voter, or "triplicated voters" will be inserted. What happens in the
+optimisation stage is not clear as the authors do not elaborate at all, but they do state it's only relevant
+for ASICs and involves "gate sizing". For verification, Benites uses a combination of fault-injection
+simulation (where SEUs are intentionally injected into the simulation), and formal verification through
+equivalence checking. Equivalence checking involves the use of Boolean satisfiability solvers ("SAT solvers")
+to mathematically prove one circuit is equivalent to another.
+
+One of the most important takeaways from these works are related to clock synchronisation. The authors
+interestingly choose to not replicate clocks or asynchronous reset lines, which they state is due to clock
+skew and challenges with multiple clock domains created by the redundancy. Due to the clear challenges
+involved, ignoring clocks and asynchronous resets is a reasonable limitation introduced by the authors, and
+potentially reasonable for us to introduce as well. Nonetheless, it is a limitation I would like to address in
+TaMaRa if possible, since leaving these elements unprotected creates a serious hole that would likely preclude
+its real-world usage. Arguably, the most important takeaway from Benites' work is the use of equivalence
+checking in the TMR verification stage. This is especially important since Johnson @Johnson2010 did not
+formally verify his approach.
 
 Although the most commonly cited literature implements automated TMR post-synthesis on the netlist, other
 authors over time have explored other stages of the ASIC/FPGA synthesis pipeline to insert TMR, both lower
