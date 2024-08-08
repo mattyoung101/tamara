@@ -9,6 +9,10 @@
 #set math.equation(numbering: "(1)")
 #set page(numbering: "1")
 
+#let TODO(msg) = {
+  [#text(fill: red, weight: "bold", size: 12pt)[TODO #msg]]
+}
+
 #align(center, text(20pt)[
     *An automated triple modular redundancy EDA flow for Yosys*
 ])
@@ -26,6 +30,22 @@
 
     August 2024
 ])
+
+#set par(justify: true)
+#align(center)[
+    *Abstract*
+
+    Safety-critical sectors require Application Specific Integrated Circuit (ASIC) designs and Field
+    Programmable Gate Array (FPGA) gateware to be fault-tolerant. In particular, space-fairing computers need
+    to mitigate the effects of Single Event Upsets (SEUs) caused by ionising radiation. One common
+    fault-tolerant design technique is Triple Modular Redundancy (TMR), which mitigates SEUs by triplicating
+    key parts of the design and using voter circuits. Typically, this is manually implemented by designers at
+    the Hardware Description Language (HDL) level, but this is error-prone and time-consuming. Leveraging the
+    power and flexibility of the open-source Yosys Electronic Design Automation (EDA) tool, in this document I
+    will propose TaMaRa: a novel fully automated TMR flow, implemented as a Yosys plugin. I provide a
+    comprehensive review of relevant automated TMR literature, and provide a detailed plan of the TaMaRa
+    project, including its design and verification.
+]
 
 
 // Create a scope for this style: https://typst.app/docs/reference/styling/
@@ -50,13 +70,10 @@
 //     fill: box(width: 1fr, repeat(h(5pt) + "." + h(5pt))) + h(8pt),
 //     target: figure,
 // )
-//#pagebreak()
 
-#let TODO(msg) = {
-  [#text(fill: red, weight: "bold", size: 12pt)[TODO #msg]]
-}
+#pagebreak()
 
-= Introduction
+= Background and introduction
 For safety-critical sectors such as aerospace and defence, both Application Specific Integrated Circuits
 (ASICs) and Field Programmable Gate Array (FPGA) gateware must be designed to be fault tolerant to prevent
 catastrophic malfunctions. In the context of digital electronics, _fault tolerant_ means that the design is
@@ -76,9 +93,6 @@ together. However, this approach is an additional time-consuming and potentially
 already complex design pipeline.
 
 #TODO("diagram of TMR")
-
-To address these issues, I propose TaMaRa: a novel fully automated TMR flow for the open source Yosys
-Electronic Design Automation (EDA) tool @Wolf2013.
 
 Modern digital ICs and FPGAs are described using Hardware Description Languages (HDLs), such as SystemVerilog
 or VHDL. The process of transforming this high level description into a photolithography mask (for ICs) or
@@ -113,121 +127,6 @@ the source code or by developing modular plugins that can be dynamically loaded 
 advice from the Yosys development team @Engelhardt2024, TaMaRa will be developed as a loadable C++ plugin.
 
 #TODO("diagram of the synthesis flow")
-
-= Aims
-This thesis is governed by two overarching aims:
-
-- To design a C++ plugin for the Yosys synthesis tool that, when presented with any Yosys-compatible
-    HDL input, will apply an algorithm to turn the selected HDL module(s) into a triply modular redundant design,
-    suitable for space.
-- To design and a implement a comprehensive verification process for the above pass, including the use of formal
-    methods, HDL simulation, fuzzing and potential real-life radiation exposure.
-
-Much like designing a pass for a compiler, designing a pass for an EDA tool is no light undertaking. It needs
-to handle all possible designs the user may provide as input, and provide a high degree of assurance of
-correctness. This is particularly important given the safety-critical nature of the designs users may provide
-to TaMaRa. I do not undertake this lightly, and the rigorous verification methodology is a necessity to
-produce a pass worth using.
-
-These two major aims can be broken down into smaller aims. Under the design pipeline:
-
-- Research the applications of graph theory to #TODO("continue")
-
-== Engineering requirements
-Due to the large and complex nature of the TaMaRa development process, I decided it beneficial to apply the
-MoSCoW engineering requirements system. I present the requirements and their justifications. The capitalised
-keywords are to be interpreted according to RFC 2119 @Bradner1997.
-
-*TMR pass requirements*
-
-#table(
-    columns: (auto, auto),
-    inset: 5pt,
-    align: horizon,
-    table.header(
-    [*Requirement*], [*Justification*],
-    ),
-    [ Tamara SHALL be implemented as a C++ pass for the Yosys synthesis tool ],
-    [ Yosys is certainly going to be the synthesis tool used, and the C++ plugin API is the most stable. ],
-
-    [ Tamara SHALL process the design in such a way that triple modular redundancy (TMR) is applied to the
-    selected HDL module(s), protecting it from SEUs ],
-    [ This is the overarching goal of the thesis. ],
-
-    [ Tamara MAY operate at any desired level of granularity - anywhere from RTL code level, to elaboration,
-    to techmapping - but it SHALL operate on at least one level of granularity ],
-    [ As long as the TMR is implemented correctly, it doesn't matter what level of granularity the algorithm
-    uses. Each level of granularity has different trade-offs which still require research at this stage. ],
-
-    [ Tamara SHOULD compare coarse and fine grained TMR ],
-    [ It would be interesting to see the area and reliability effects of applying TMR in at least two
-    different ways. This is left as a SHOULD in case of serious time constraints. ],
-
-    [ Tamara SHOULD be capable of handling large designs, up to and including picorv32, in reasonable amounts
-    of time and memory ],
-    [ Also supports the overarching goal of the thesis, but left as a SHOULD in case of major unforeseen
-    implementation issues with the performance. ],
-
-    [ Tamara MAY handle FPGA primitives like SRAMs and DSP slices ],
-    [ Most likely will not handle these primitives as there's no reliable way to replicate them across all
-    FPGA vendors supported by Yosys. ],
-
-    [ Tamara MAY make the voters themselves redundant ],
-    [ Could be added for extra assurance, but not typically considered necessary in industry. ],
-
-    [ Tamara SHOULD NOT be timing driven ],
-    [ Timing is best left up to the P&R tool (Nextpnr). Although some EDA synthesis tools are timing driven,
-    Yosys currently is not. ],
-
-    [ Tamara SHOULD have a clean codebase through the use of tools like clang-tidy ],
-    [ Easy to implement and highly desirable but not strictly necessary for correct functioning. ],
-
-    [ Tamara SHALL NOT consider multi-bit upsets ],
-    [ Although multi-bit upsets may occur in practice, this work focuses on SEUs in particular. MBUs are much
-    less likely (#TODO("citation?")) and require significant area increases due to extra voters
-    (#TODO("citation?") ],
-)
-
-*Verification requirements*
-
-#table(
-    columns: (auto, auto),
-    inset: 5pt,
-    align: horizon,
-    table.header(
-    [*Requirement*], [*Justification*],
-    ),
-    [ Verification simulation SHALL be performed using one or more of: Verilator, Icarus Verilog, cxxrtl ],
-    [ These are the best open-source simulation tools, and each have different trade-offs (e.g. Verilator is
-    fast, but not sub-cycle accurate). ],
-
-    [ Verification SHOULD involve a complex design (e.g. picorv32 CPU) in a simulated SEU environment ],
-    [ This is an important final test, but is left as a SHOULD requirement in case of major unforeseen
-    issues applying TMR to large designs. ],
-
-    [ Verification SHALL involve equivalence checking (formally proving that a design acts the same before
-    and after TMR) using _SymbiYosys_ and _eqy_ ],
-    [ Equivalence checking is necessary to formally prove that the TMR pass does not modify the behaviour of
-    the design, only that it adds TMR. ],
-
-    [ Verification MAY involve fuzzing equivalence checking (generating random RTL modules, applying TMR,
-    and checking they're identical) ],
-    [ It's not clear at the time of writing whether a fully end-to-end, automated fuzzing approach for
-    equivalence checking is possible. ],
-
-    [ Verification SHALL involve mutation coverage (injecting faults into the design and formally proving
-    that TaMaRa mitigates them) using _mcy_ ],
-    [ Mutation coverage is necessary to formally prove that the TMR pass correctly mitigates SEUs. ],
-
-    [ Verification MAY involve fuzzing mutation coverage, if such a thing is possible ],
-    [ Early research indicates that the generation of random RTL _as well as_ random testbenches is still
-    under active research in academia. ],
-
-    [ Verification MAY involve a physical, real-life radiation test whereby an FPGA with a Tamara bitstream
-    on it is exposed to radiation ],
-    [ It's not known at the time of writing whether UQ has the facilities to perform this test, or whether
-    the risks caused by radiation exposure are worth the investigation. ]
-)
 
 = Literature review
 == Fault tolerant computing and redundancy
@@ -290,11 +189,13 @@ verification ("TMRv"). The implementation stage works by creating a new design t
 I'll call the "container design"), and instantiating copies of the original circuit in the container design.
 Depending on which mode the user selects, the authors state that either each "sequential gate" will be
 replaced by three copies and a voter, or "triplicated voters" will be inserted. What happens in the
-optimisation stage is not clear as the authors do not elaborate at all, but they do state it's only relevant
+optimisation stage is not clear as Benites does not elaborate at all, but he does state it's only relevant
 for ASICs and involves "gate sizing". For verification, Benites uses a combination of fault-injection
 simulation (where SEUs are intentionally injected into the simulation), and formal verification through
 equivalence checking. Equivalence checking involves the use of Boolean satisfiability solvers ("SAT solvers")
-to mathematically prove one circuit is equivalent to another.
+to mathematically prove one circuit is equivalent to another. Benites key verification contribution is
+identifying a more optimal way to use equivalence checking to verify fine-grained TMR.
+#TODO("")
 
 One of the most important takeaways from these works are related to clock synchronisation. The authors
 interestingly choose to not replicate clocks or asynchronous reset lines, which they state is due to clock
@@ -304,7 +205,8 @@ potentially reasonable for us to introduce as well. Nonetheless, it is a limitat
 TaMaRa if possible, since leaving these elements unprotected creates a serious hole that would likely preclude
 its real-world usage. Arguably, the most important takeaway from Benites' work is the use of equivalence
 checking in the TMR verification stage. This is especially important since Johnson @Johnson2010 did not
-formally verify his approach.
+formally verify his approach. Benites' usage of formal verification, in particular, equivalence checking, is
+an excellent starting point to design the verification methodology for TaMaRa.
 
 Although the most commonly cited literature implements automated TMR post-synthesis on the netlist, other
 authors over time have explored other stages of the ASIC/FPGA synthesis pipeline to insert TMR, both lower
@@ -327,9 +229,9 @@ Overall, this is an excellent approach for ASICs. However, this approach, being 
 be applied to FPGA designs. Rather, the FPGA manufacturers themselves would need to apply this method to make
 a series of specially rad-hardened devices (note that an FPGA is itself an ASIC
 #footnote("This terminology may be confusing, so, to clarifty: ASICs encompass the majority of silicon ICs
-with an application-specific purpose. This includes devices like GPUs, NPUs as well as more
-domain-specific chips such as video transcoders or RF transceivers. An FPGA is a specific type of ASIC
-that implements an array of LUTs that can be programmed by SRAM.")
+with an application-specific purpose. This includes devices like GPUs, NPUs as well as more domain-specific
+chips such as video transcoders or RF transceivers. An FPGA is a specific type of ASIC that implements an
+array of LUTs that can be programmed by SRAM.")
 ). It would also appear that designers would have to port the TRSCMSFF cell to each fab and process node they
 intend to target. While TaMaRa will have worse power, performance and area (PPA) trade-offs on ASICs than this
 method, it is also more general in that it can target FPGAs _and_ ASICs due to being integrated directly into
@@ -355,11 +257,185 @@ specifically in the `opt_share` and `opt_clean` passes according to specific adv
 constraint-based approach to preserving TMR logic through optimisation would not work in this case.  Finally,
 since TMRG re-implements the majority of a synthesis tool's frontend (including the parser and elaborator), it
 is limited to only supporting Verilog. Yosys natively supports Verilog and some SystemVerilog, with plugins
-@synlig
-providing more complete SV and VHDL support. Since TaMaRa uses Yosys' existing frontend, it should be more
-reliable and useable with many more HDLs.
+@synlig providing more complete SV and VHDL support. Since TaMaRa uses Yosys' existing frontend, it should be
+more reliable and useable with many more HDLs.
 
-= Timeline
+#TODO("The other high level papers")
+
+= Project plan
+== Aims of the project
+This thesis is governed by two overarching aims:
+
+- To design a C++ plugin for the Yosys synthesis tool that, when presented with any Yosys-compatible
+    HDL input, will apply an algorithm to turn the selected HDL module(s) into a triply modular redundant design,
+    suitable for space.
+- To design and a implement a comprehensive verification process for the above pass, including the use of formal
+    methods, HDL simulation, fuzzing and potential real-life radiation exposure.
+
+Much like designing a pass for a compiler, designing a pass for an EDA tool is no light undertaking. It needs
+to handle all possible designs the user may provide as input, and provide a high degree of assurance of
+correctness. This is particularly important given the safety-critical nature of the designs users may provide
+to TaMaRa. I do not undertake this lightly, and the rigorous verification methodology is a necessity to
+produce a pass worth using.
+
+These two major aims can be broken down into smaller aims. Under the design pipeline:
+
+- Research the applications of graph theory to #TODO("continue")
+
+== Engineering requirements
+Due to the large and complex nature of the TaMaRa development process, I decided it beneficial to apply the
+MoSCoW engineering requirements system. I present the requirements and their justifications. The capitalised
+keywords are to be interpreted according to RFC 2119 @Bradner1997.
+
+*TMR pass requirements*
+
+#table(
+    columns: (auto, auto),
+    inset: 5pt,
+    align: horizon,
+    table.header(
+    [*Requirement*], [*Justification*],
+    ),
+    [ TaMaRa SHALL be implemented as a C++ pass for the Yosys synthesis tool ],
+    [ Yosys is certainly going to be the synthesis tool used, and the C++ plugin API is the most stable. ],
+
+    [ TaMaRa SHALL process the design in such a way that triple modular redundancy (TMR) is applied to the
+    selected HDL module(s), protecting it from SEUs ],
+    [ This is the overarching goal of the thesis. ],
+
+    [ TaMaRa MAY operate at any desired level of granularity - anywhere from RTL code level, to elaboration,
+    to techmapping - but it SHALL operate on at least one level of granularity ],
+    [ As long as the TMR is implemented correctly, it doesn't matter what level of granularity the algorithm
+    uses. Each level of granularity has different trade-offs which still require research at this stage. ],
+
+    [ TaMaRa SHOULD compare coarse and fine grained TMR ],
+    [ It would be interesting to see the area and reliability effects of applying TMR in at least two
+    different ways. This is left as a SHOULD in case of serious time constraints. ],
+
+    [ TaMaRa SHOULD be capable of handling large designs, up to and including picorv32, in reasonable amounts
+    of time and memory ],
+    [ Also supports the overarching goal of the thesis, but left as a SHOULD in case of major unforeseen
+    implementation issues with the performance. ],
+
+    [ TaMaRa MAY handle FPGA primitives like SRAMs and DSP slices ],
+    [ Most likely will not handle these primitives as there's no reliable way to replicate them across all
+    FPGA vendors supported by Yosys. ],
+
+    [ TaMaRa MAY make the voters themselves redundant ],
+    [ Could be added for extra assurance, but not typically considered necessary in industry. ],
+
+    [ TaMaRa SHOULD NOT be timing driven ],
+    [ Timing is best left up to the P&R tool (Nextpnr). Although some EDA synthesis tools are timing driven,
+    Yosys currently is not. ],
+
+    [ TaMaRa SHOULD have a clean codebase through the use of tools like clang-tidy ],
+    [ Easy to implement and highly desirable but not strictly necessary for correct functioning. ],
+
+    [ TaMaRa SHALL NOT consider multi-bit upsets ],
+    [ Although multi-bit upsets may occur in practice, this work focuses on SEUs in particular. MBUs are much
+    less likely (#TODO("citation?")) and require significant area increases due to extra voters
+    (#TODO("citation?") ],
+)
+
+*Verification requirements*
+
+#table(
+    columns: (auto, auto),
+    inset: 5pt,
+    align: horizon,
+    table.header(
+    [*Requirement*], [*Justification*],
+    ),
+    [ Verification simulation SHALL be performed using one or more of: Verilator, Icarus Verilog, cxxrtl ],
+    [ These are the best open-source simulation tools, and each have different trade-offs (e.g. Verilator is
+    fast, but not sub-cycle accurate). ],
+
+    [ Verification SHOULD involve a complex design (e.g. picorv32 CPU) in a simulated SEU environment ],
+    [ This is an important final test, but is left as a SHOULD requirement in case of major unforeseen
+    issues applying TMR to large designs. ],
+
+    [ Verification SHALL involve equivalence checking (formally proving that a design acts the same before
+    and after TMR) using _SymbiYosys_ and _eqy_ ],
+    [ Equivalence checking is necessary to formally prove that the TMR pass does not modify the behaviour of
+    the design, only that it adds TMR. ],
+
+    [ Verification MAY involve fuzzing equivalence checking (generating random RTL modules, applying TMR,
+    and checking they're identical) ],
+    [ It's not clear at the time of writing whether a fully end-to-end, automated fuzzing approach for
+    equivalence checking is possible. ],
+
+    [ Verification SHALL involve mutation coverage (injecting faults into the design and formally proving
+    that TaMaRa mitigates them) using _mcy_ ],
+    [ Mutation coverage is necessary to formally prove that the TMR pass correctly mitigates SEUs. ],
+
+    [ Verification MAY involve fuzzing mutation coverage, if such a thing is possible ],
+    [ Early research indicates that the generation of random RTL _as well as_ random testbenches is still
+    under active research in academia. ],
+
+    [ Verification SHOULD NOT involve a physical, real-life radiation test whereby an FPGA with a TaMaRa bitstream
+    on it is exposed to radiation ],
+    [ UQ does not have the facilities to expose a real-life FPGA to radiation. Even if it did, the risks and
+    challenges created by this verification approach would not be worth its utilisation. ]
+)
+== Milestones
 #TODO("")
 
-#bibliography("proposal.bib", title: "References", style: "institute-of-electrical-and-electronics-engineers")
+== Timeline
+To design the timeline of the TaMaRa project, I use a Gantt chart, shown below.
+
+#TODO("")
+
+== Risk assessment
+Before it was known that UQ does not have the facilities to expose an FPGA to real-life radiation, it was
+considered a possibility that TaMaRa would be tested on a real-life device under intense radiation conditions.
+This would have created a number of risks and challenges. However, now that this verification approach has
+been discarded, TaMaRa is a pure software/gateware project, and thus carries no significant health and safety
+risks.
+
+Nonetheless, TaMaRa is not completely risk-free. Due to the fact that it may be deployed on safety-critical
+systems, its correct functioning is important. Hence, a simple risk assessment has been prepared.
+
+#table(
+    columns: (auto, auto, auto, auto),
+    inset: 5pt,
+    align: horizon,
+    table.header(
+    [*Risk*], [*Potential damage*], [*Rating*], [*Mitigation strategy*],
+    [ TaMaRa implementation is not able to be completed in time ],
+    [ Thesis result is worse, unable to verify results ],
+    [ Medium ],
+    [ Proper project planning including formulation of engineering requirements and research questions.
+    Regular meetings with supervisor. Contact with YosysHQ dev team. ],
+
+    [ TaMaRa verification is not able to be completed successfully ],
+    [ Thesis result is worse, not able to prove the TMR algorithm works. Unable to differentiate thesis from
+    previous works. ],
+    [ Medium ],
+    [ Research into formal verification and basing work on prior papers. Contact with YosysHQ dev team. ],
+
+    [ TaMaRa introduces subtle differences in behaviour in the output circuit ],
+    [ Safety-critical systems that TaMaRa is used to design may have unexpected behaviour, potentially
+    leading to severe loss of life or property. ],
+    [ High ],
+    [ Rigorous verification including formal verification and fault-injection simulation. ],
+
+    [ TaMaRa does not implement TMR correctly ],
+    [ Safety-critical systems that TaMaRa is used to design may fail due to SEUs, causing severe loss of
+    life or property. ],
+    [ High ],
+    [ Rigorous verification including formal verification and fault-injection simulation. ]
+    ),
+)
+
+== Ethics
+// As mentioned in the risk assessment, since TaMaRa may be used to design safety-critical systems, its correct
+// functioning is considered very important. In addition to being a risk, a subtle failure that accidentally
+// produces a non-redundant system could be considered an ethical issue.
+
+TaMaRa may be deployed to design defence systems. This is not considered a significant ethical issue.
+
+= Conclusion
+#TODO("")
+
+= References
+#bibliography("proposal.bib", title: none, style: "institute-of-electrical-and-electronics-engineers")
