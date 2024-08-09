@@ -29,6 +29,7 @@
     August 2024
 ])
 
+#[
 #set par(justify: true)
 #align(center)[
     *Abstract*
@@ -44,7 +45,7 @@
     comprehensive review of relevant automated TMR literature, and provide a detailed plan of the TaMaRa
     project, including its design and verification.
 ]
-
+]
 
 // Create a scope for this style: https://typst.app/docs/reference/styling/
 #[
@@ -132,8 +133,8 @@ The automation of triple modular redundancy, as well as associated topics such a
 computing methods and the effects of SEUs on digital hardware, have been studied a fair amount in academic
 literature. Several authors have invented a number of approaches to automate TMR, at various levels of
 granularity, and at various points in the FPGA/ASIC synthesis pipeline. This presents an interesting challenge
-to systematically understand. To address this, Williams @Williams2024 proposed the use of a two-dimensional
-graph, as follows:
+to systematically review and categorise. To address this, Williams @Williams2024 proposed the use of a
+two-dimensional graph, as follows:
 
 #TODO("the 2D graph")
 
@@ -185,11 +186,11 @@ better if the TMR pass was instead integrated directly into the synthesis tool -
 for Yosys, as Synplify is commercial proprietary software. This is especially important for industry users who
 often have long and complicated synthesis flows.
 
-It's also worth noting that Skouson, Keller and Wirthlin @Skouson2020 (from the same lab as above) introduced
-SpyDrNet , a Python-based netlist transformation tool that also implements TMR using the same algorithm as
-above. SpyDrNet is a great general purpose transformation tool for research purposes, but again is a separate
-tool that is not integrated _directly_ into the synthesis process. I instead aim to make a _production_ ready
-tool, with a focus on ease-of-use, correctness and performance.
+Later, Skouson, Keller and Wirthlin @Skouson2020 (from the same lab as above) introduced SpyDrNet, a
+Python-based netlist transformation tool that also implements TMR using the same algorithm as above. SpyDrNet
+is a great general purpose transformation tool for research purposes, but again is a separate tool that is not
+integrated _directly_ into the synthesis process. I instead aim to make a _production_ ready tool, with a
+focus on ease-of-use, correctness and performance.
 
 Using a similar approach, Benites and Kastensmidt @Benites2018, and Benites' thesis @Benites2018a, introduce an
 automated TMR approach implemented as a Tcl script for use in Cadence tools. They distinguish between "coarse
@@ -286,6 +287,11 @@ Khatri @Khatri2020 also proposes a similar approach
 #TODO("The other high level papers")
 
 == TMR verification
+While Benites @Benites2018 @Benites2018a discusses verification of the automated TMR process, there is also
+some literature that exclusively focuses on the verification aspect. Verification is one of the most important
+parts of this process due to the safety-critical nature of the devices TMR is typically deployed to.
+Additionally, there are different interesting trade-offs between different verification processes.
+
 #TODO("")
 
 = Project plan
@@ -432,14 +438,13 @@ systems, its correct functioning is important. Hence, a simple risk assessment h
     table.header(
     [*Risk*], [*Potential damage*], [*Rating*], [*Mitigation strategy*],
     [ TaMaRa implementation is not able to be completed in time ],
-    [ Thesis result is worse, unable to verify results ],
+    [ Thesis result is much worse. Unable to verify results. ],
     [ Medium ],
     [ Proper project planning including formulation of engineering requirements and research questions.
     Regular meetings with supervisor. Contact with YosysHQ dev team. ],
 
     [ TaMaRa verification is not able to be completed successfully ],
-    [ Thesis result is worse, not able to prove the TMR algorithm works. Unable to differentiate thesis from
-    previous works. ],
+    [ Thesis result is worse, not able to prove the TMR algorithm works. ],
     [ Medium ],
     [ Research into formal verification and basing work on prior papers. Contact with YosysHQ dev team. ],
 
