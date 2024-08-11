@@ -1,0 +1,3 @@
+gantt_mermaid:
+    mmdc -i gantt.mmdc -o gantt_mermaid.pdf -b transparent -t default -f
+    dvisvgm --pdf --optimize --no-fonts --exact-bbox --bbox=min --color gantt_mermaid.pdf

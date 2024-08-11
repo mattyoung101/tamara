@@ -85,13 +85,24 @@ TODO
 ## Testing and verification
 TODO
 
-## Compiling the thesis
-This repo also includes my thesis submission, _A triple modular redundancy EDA flow for Yosys_.
+## Compiling papers
+This repo also includes various papers including the proposal draft, presentation slides, and the actual
+thesis itself. The papers are all written in [Typst](https://github.com/typst/typst).
 
-The thesis is written in [Typst](https://github.com/typst/typst). In the `thesis` directory, you can run `typst
-compile uqthesis.typ` to produce `uqthesis.pdf`.
+To compile the papers, you will need:
+- Typst >= 0.11
+- [MermaidJS CLI](https://github.com/mermaid-js/mermaid-cli)
+- [dvisvgm](https://github.com/mgieseki/dvisvgm)
+    - mupdf
+    - mutool
+- [Just](https://github.com/casey/just)
 
-This uses my [uqthesis_eecs_hons](https://github.com/mattyoung101/uqthesis_eecs_hons) Typst template.
+Next, in the papers directory, use `typst watch <file>` to edit and live reload. Or `typst compile` to just
+compile it once.
+
+For the proposal and proposal draft, build the Gantt charts by running `just`.
+
+The thesis uses [uqthesis_eecs_hons](https://github.com/mattyoung101/uqthesis_eecs_hons) Typst template.
 
 ## Licence
 TBA, hopefully MPL 2.0
