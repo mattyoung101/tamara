@@ -1,3 +1,4 @@
+// Copyright (c) 2024 Matt Young.
 #include "kernel/log.h"
 #include "kernel/register.h"
 #include "kernel/yosys_common.h"

@@ -1,3 +1,5 @@
+#import "@preview/cetz:0.2.2": canvas, plot
+
 // Colour links blue like LaTeX
 #show cite: set text(fill: blue)
 #show link: set text(fill: blue)
@@ -134,7 +136,24 @@ computing methods and the effects of SEUs on digital hardware, have been studied
 literature. Several authors have invented a number of approaches to automate TMR, at various levels of
 granularity, and at various points in the FPGA/ASIC synthesis pipeline. This presents an interesting challenge
 to systematically review and categorise. To address this, Williams @Williams2024 proposed the use of a
-two-dimensional graph, as follows:
+two-dimensional graph, which I have implemented as follows:
+
+// #let style = (stroke: black, fill: rgb(0, 0, 200, 75))
+// #let x_axis = ("Low-level", "High-level")
+// #let y_axis = ("Software", "HDL", "Post-synthesis", "Post-techmapping", "Post-implementation", "Multi-FPGA",
+//     "Multi-PCB", "Multi-System")
+// #canvas(length: 1cm, {
+//   plot.plot(size: (12, 6),
+//     x-ticks: x_axis.enumerate().map(((i, s)) => (i+1, raw(s))),
+//     x-tick-step: none,
+//     y-tick-step: none,
+//     x-label: "Granularity",
+//     {
+//       plot.add(
+//         style: style,
+//         domain: (-calc.pi, calc.pi), calc.sin)
+//     })
+// })
 
 #TODO("the 2D graph")
 
@@ -186,7 +205,7 @@ better if the TMR pass was instead integrated directly into the synthesis tool -
 for Yosys, as Synplify is commercial proprietary software. This is especially important for industry users who
 often have long and complicated synthesis flows.
 
-Later, Skouson, Keller and Wirthlin @Skouson2020 (from the same lab as above) introduced SpyDrNet, a
+Later, Skouson et al. @Skouson2020 (from the same lab as above) introduced SpyDrNet, a
 Python-based netlist transformation tool that also implements TMR using the same algorithm as above. SpyDrNet
 is a great general purpose transformation tool for research purposes, but again is a separate tool that is not
 integrated _directly_ into the synthesis process. I instead aim to make a _production_ ready tool, with a
@@ -234,11 +253,11 @@ authors over time have explored other stages of the ASIC/FPGA synthesis pipeline
 level and higher level.
 
 == Low-level TMR approaches
-On the lower level side, Hindman, Clark, Patterson and Holbert @Hindman2011 introduce an ASIC standard-cell
+On the lower level side, Hindman et al. @Hindman2011 introduce an ASIC standard-cell
 based automated TMR approach. When digital circuits are synthesised into ASICs, they are technology mapped
 onto standard cells provided by the foundry as part of their Process Design Kit (PDK). For example, SkyWater
 Technology provides an open-source 130 nm ASIC PDK, which contains standard cells for NAND gates, muxes and
-more #TODO("citation?"). The authors design a TMR flip-flop cell, known as a "Triple Redundant Self Correcting
+more @skywater. The authors design a TMR flip-flop cell, known as a "Triple Redundant Self Correcting
 Master-Slave Flip-Flop" (TRSCMSFF), that mitigates SEUs at the implementation level. Since this is so low
 level and operates below the entire synthesis/place and route pipeline, their approach has the advantage that
 _any_ design - including proprietary encrypted IP cores that are (unfortunately) common in industry - can be
@@ -263,28 +282,46 @@ described in @Hindman2011 is the most optimal one available.
 // future research topic! design a rad hardened FPGA using this approach!
 
 == High-level TMR approaches
-On the higher-level side, several authors have investigated applying TMR directly to the HDL source
-code. One of the most notable examples was introduced by Kulis @Kulis2017, through a tool he calls "TMRG".
-TMRG operates on Verilog RTL by implementing the majority of a Verilog parser and elaborator from scratch. It
-takes as input Verilog RTL, as well as a selection of Verilog source comments that act as annotations to guide
-the tool on its behaviour. In turn, the tool modifies the design code and outputs processed Verilog RTL that
-implements TMR, as well as Synopsys Design Compiler design constraints. Like the goal of TaMaRa, the TMRG
-approach is designed to target both FPGAs and ASICs, and for FPGAs, Kulis correctly identifies the issue that
-not all FPGA blocks can be replicated. For example, a design that instantiates a PLL clock divider on an FPGA
-that only contains one PLL could not be replicated. Kulis also correctly identifies that optimisation-driven
-synthesis tools such as Yosys and Synopsys DC will eliminate TMR logic as part of the synthesis pipeline, as
-the redundancy is, by nature, redundant and subject to removal. In Yosys, this occurs specifically in the
-`opt_share` and `opt_clean` passes according to specific advice from the development team @Engelhardt2024.
-However, unlike Synopsys DC, Yosys is not constraint driven, which means that Kulis' constraint-based approach
-to preserving TMR logic through optimisation would not work in this case.  Finally, since TMRG re-implements
-the majority of a synthesis tool's frontend (including the parser and elaborator), it is limited to only
-supporting Verilog. Yosys natively supports Verilog and some SystemVerilog, with plugins @synlig providing
-more complete SV and VHDL support. Since TaMaRa uses Yosys' existing frontend, it should be more reliable and
-useable with many more HDLs.
+Several authors have investigated applying TMR directly to the HDL source code - a much higher level approach
+than either netlist or gate level. One of the most notable examples was introduced by Kulis @Kulis2017,
+through a tool he calls "TMRG". TMRG operates on Verilog RTL by implementing the majority of a Verilog parser
+and elaborator from scratch. It takes as input Verilog RTL, as well as a selection of Verilog source comments
+that act as annotations to guide the tool on its behaviour. In turn, the tool modifies the design code and
+outputs processed Verilog RTL that implements TMR, as well as Synopsys Design Compiler design constraints.
+Like the goal of TaMaRa, the TMRG approach is designed to target both FPGAs and ASICs, and for FPGAs, Kulis
+correctly identifies the issue that not all FPGA blocks can be replicated. For example, a design that
+instantiates a PLL clock divider on an FPGA that only contains one PLL could not be replicated. Kulis also
+correctly identifies that optimisation-driven synthesis tools such as Yosys and Synopsys DC will eliminate TMR
+logic as part of the synthesis pipeline, as the redundancy is, by nature, redundant and subject to removal. In
+Yosys, this occurs specifically in the `opt_share` and `opt_clean` passes according to specific advice from
+the development team @Engelhardt2024. However, unlike Synopsys DC, Yosys is not constraint driven, which means
+that Kulis' constraint-based approach to preserving TMR logic through optimisation would not work in this
+case.  Finally, since TMRG re-implements the majority of a synthesis tool's frontend (including the parser and
+elaborator), it is limited to only supporting Verilog. Yosys natively supports Verilog and some SystemVerilog,
+with plugins @synlig providing more complete SV and VHDL support. Since TaMaRa uses Yosys' existing frontend,
+it should be more reliable and useable with many more HDLs.
 
-Khatri @Khatri2020 also proposes a similar approach
+Lee et al. @Lee2017 present "TLegUp", an extension to the prior "LegUp" High Level Synthesis (HLS) tool. As
+stated earlier in this document, modern FPGAs and ASICs are typically designed using Hardware Description
+Languages (HDLs). HLS is an alternative approach that aims to synthesise FPGA/ASIC designs from
+high-level software source code, typically the C or C++ programming languages.
+Despite the productivity gains, and in this case the benefits of pipelined voters, HLS does not come without
+its own issues. Lahti et al. @Lahti2019 note that the quality of HLS results continues to be worse than those
+designed with RTL, and HLS generally does not see widespread industry usage in production designs. #TODO("")
 
-#TODO("The other high level papers")
+Khatri et al. @Khatri2018 propose a similar, albeit much less sophisticated approach. They develop a Matlab
+script that ingests a Verilog RTL module, instantiates it three times (to replicate it), and wraps it in a new
+top-level module. They also propose a new majority voter using a 2:1 multiplexer, which they claim has 50%
+better Fault Mask Ratio (FMR) than the traditional AND-gate based approach. The authors test only one single
+circuit, described as a "simple benchmark design", in a fault-injection RTL simulation. They do not use any
+systematic verification methodology that other authors use, only injecting a limited number of faults into one
+single design. Khatri et al. also make no mention of the limitations that other authors identify for this
+high-level TMR approach. This includes the PPA trade-offs that Benites @Benites2018 and Johnson @Johnson2010
+identify, as well as the logic optimisation and resource utilisation issues that Kulis @Kulis2017 correctly
+pointed out. The decision to develop the tool as a GUI application is highly questionable as it significantly
+interrupts the typical command-line based synthesis flow. This is especially true for ASICs, which have very
+long synthesis pipelines that are typically Tcl scripted. Whilst this approach is not exactly very thorough or
+high quality, the higher reliability voter circuit may possibly be worth investigating.
 
 == TMR verification
 While Benites @Benites2018 @Benites2018a discusses verification of the automated TMR process, there is also
@@ -314,7 +351,7 @@ produce a pass worth using.
 
 These two major aims can be broken down into smaller aims. Under the design pipeline:
 
-- Research the applications of graph theory to #TODO("continue")
+#TODO("continue")
 
 == Engineering requirements
 Due to the large and complex nature of the TaMaRa development process, I decided it beneficial to apply the
@@ -418,7 +455,13 @@ keywords are to be interpreted according to RFC 2119 @Bradner1997.
 == Milestones and timeline
 To design the timeline of the TaMaRa project, I use a Gantt chart, shown below.
 
-#TODO("")
+#image("gantt_mermaid.svg", width: 100%)
+
+// #box(
+//     image("gantt_mermaid.svg", width: 100%),
+//     inset: 10%,
+//     clip: true
+// )
 
 == Risk assessment
 Before it was known that UQ does not have the facilities to expose an FPGA to real-life radiation, it was
@@ -473,5 +516,6 @@ TaMaRa may be used to design defence systems. This is not considered a significa
 = Conclusion
 #TODO("")
 
+#pagebreak()
 = References
 #bibliography("proposal.bib", title: none, style: "institute-of-electrical-and-electronics-engineers")
