@@ -41,8 +41,9 @@ Graduated Bachelor of Computer Science earlier in 2024 from the University of Qu
 Currently studying Bachelor of Computer Science (Honours) at UQ, which includes a one year research thesis.
 
 Passionate about digital hardware design, embedded systems, high performance/low-level software/hardware.
-Looking to in future take up a PhD, and eventually research/work in the area of CPU/GPU/ASIC design, or FPGAs,
-or similar.
+Might take up a PhD in future :)
+// Looking to in future take up a PhD, and eventually research/work in the area of CPU/GPU/ASIC design, or FPGAs,
+// or similar.
 ]
 
 )
@@ -53,7 +54,7 @@ Fault tolerant computing is important for safety critical sectors (aerospace, de
 #pause
 For space-based applications, Single Event Upsets (SEUs) are very common
 - Must be mitigated to prevent catastrophic failure
-- Caused by ionising radiation striking transistors on a digital circuit
+- Caused by ionising radiation //striking transistors on a digital circuit
 
 #pause
 Even in terrestrial applications, SEUs can still occur
@@ -94,7 +95,8 @@ TMR can be added manually...
 
 #pause
 
-but this is another time consuming and error prone step in the _already_ complex design process.
+but this is *time consuming* and *error prone*.
+//another time consuming and error prone step in the _already_ complex design process.
 
 #pause
 
@@ -103,18 +105,21 @@ Let's automate it!
 = TaMaRa methodology
 == Concept
 Implement TMR as a pass in an EDA synthesis tool.
-- Integrated with the rest of the flow, easy to use
+- Integrated with the rest of the flow
+- Easy to use
 - Fully automated
 
 #pause
 
-Goal: Pick any design, of any complexity, "press a button" and have it be rad-hardened.
+*Goal*: Pick any design, of any complexity, "press a button" and have it be rad-hardened.
 
 #pause
 
 Yosys @Shah2019 is the best (and the only) open-source, research grade EDA synthesis tool.
 #pause
-- Proprietary vendor tools (Synopsys, Cadence, Xilinx, etc) immediately ignored as they can't be extended
+- Proprietary vendor tools (Synopsys, Cadence, Xilinx, etc) immediately discarded
+- Can't be extended to add custom passes
+//ignored as they can't be extended
 
 == Existing works
 Very important prior work done by #cite(<Johnson2010>, form: "prose") at BYU.
@@ -128,13 +133,16 @@ TODO algorithm
 TODO
 
 == Verification
-Designing an EDA pass means verification needs to be taken very seriously.
+// Designing an EDA pass means verification needs to be taken very seriously.
+//
+// #pause
 
-#pause
+//I plan to have a
 
-I plan to have a comprehensive verification procedure using formal methods, simulation and fuzzing.
+Comprehensive verification procedure using formal methods, simulation and fuzzing.
 
-All driven by SymbiYosys tools _eqy_ and _mcy_ (in turn driven by theorem provers/SAT solvers)
+Driven by SymbiYosys tools _eqy_ and _mcy_
+- In turn driven by theorem provers/SAT solvers
 
 == Formal verification
 Equivalence checking: Formally verify that the circuit is functionally equivalent before and after the TaMaRa
@@ -177,13 +185,13 @@ We want to simulate an SEU environment.
 
 Use one of Verilator, Icarus Verilog or Yosys' own cxxrtl to simulate a full design.
 - Each simulator has different trade-offs
-- Currently considering picorv32 as the DUT
+- Currently considering picorv32 or Hazard3 as the DUT
 //- Most likely will use Verilator or possibly cxxrtl
 
 #pause
 
 Concept:
-- Iterate over the netlist, randomly consider flipping a bit every cycle.
+- Iterate over the netlist, randomly consider flipping a bit every cycle
 - Write a self-checking testbench and ensure that the DUT responds correctly
 
 == Technical implementation
@@ -211,7 +219,7 @@ TODO
 
 Mostly focused around literature reviews, scoping out the problem, formulating requirements, etc.
 
-That being said, I also have a skeleton Yosys plugin loading.
+Skeleton plugin does exist.
 
 == The future
 This will be implemented for my Honours thesis over the next 1 year.
@@ -220,12 +228,18 @@ This will be implemented for my Honours thesis over the next 1 year.
 
 #pause
 
+Programming hopefully finished _around_ January 2025.
+
+#pause
+
 Ideally, TaMaRa will be released open-source under the MPL 2.0.
-- Pending university IP shenanigans, but there is a good chance of being allowed to open-source it.
+- Pending university IP shenanigans...
 
 = Conclusion
 == Summary
-TODO
+- Automated triple modular redundancy EDA flow for Yosys
+- Takes any circuit, helps to prevent it from experiencing SEUs
+- Click a button and have any circuit run in space/in high reliability environments!
 
 == Bibliography
 #bibliography("slides.bib", style: "institute-of-electrical-and-electronics-engineers", title: none)

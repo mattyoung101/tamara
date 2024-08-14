@@ -1,4 +1,5 @@
 #import "@preview/cetz:0.2.2": canvas, plot
+#import "@preview/fletcher:0.5.1" as fletcher: diagram, node, edge
 
 // Colour links blue like LaTeX
 #show cite: set text(fill: blue)
@@ -11,7 +12,8 @@
 #set math.equation(numbering: "(1)")
 #set page(numbering: "1")
 
-#let TODO(msg) = {
+// Todo macro. Pass --input final=true to typst compile to hide these macros.
+#let TODO(msg) = if (not ("final" in sys.inputs.keys())) {
   [#text(fill: red, weight: "bold", size: 12pt)[TODO #msg]]
 }
 
@@ -98,7 +100,12 @@ already complex design pipeline.
 Modern digital ICs and FPGAs are described using Hardware Description Languages (HDLs), such as SystemVerilog
 or VHDL. The process of transforming this high level description into a photolithography mask (for ICs) or
 bitstream (for FPGAs) is achieved through the use of Electronic Design Automation (EDA) tools. This generally
-comprises of the following stages:
+comprises of the following stages (@fig:synthflow):
+
+#figure(
+    image("diagrams/synthesis_flow.svg"),
+    caption: [ Simplified representation of the Yosys/Nextpnr synthesis flow ]
+) <fig:synthflow>
 
 - *Synthesis*: The transformation of a high-level textual HDL description into a lower level synthesisable
     netlist.
@@ -127,7 +134,26 @@ process nodes (e.g. Skywater 130nm). Importantly, for this thesis, Yosys can be 
 the source code or by developing modular plugins that can be dynamically loaded at runtime. Due to specific
 advice from the Yosys development team @Engelhardt2024, TaMaRa will be developed as a loadable C++ plugin.
 
-#TODO("diagram of the synthesis flow")
+#TODO("also cite nextpnr")
+
+// #diagram(
+//     node-stroke: .1em,
+//     spacing: 2em,
+//     //node((0, 0), [Input HDL], name: <inputhdl>),
+//     node((0, 0), [Elaboration], name: <elaboration>),
+//     node((1, 0), [Optimisation], name: <opt>),
+//     node((2, 0), [Technology \ mapping], name: <techmap>),
+//     node((3, 0), [Placement], name: <placement>),
+//     node((4, 0), [Routing], name: <routing>),
+//     //node((5, 0), [Bitstream generation], name: <bitstream>),
+//
+//     edge((-1, 0), <elaboration>, "-|>", label: [HDL], label-pos: 0, label-side: center),
+//     edge(<routing>, (5, 0), "-|>", label: [HDL], label-pos: 0, label-side: center),
+//     edge(<elaboration>, <opt>, "-|>"),
+//     edge(<opt>, <techmap>, "-|>"),
+//     edge(<techmap>, <placement>, "-|>"),
+//     edge(<placement>, <routing>, "-|>")
+// )
 
 = Literature review
 == Introduction, methodology and terminology
@@ -135,8 +161,16 @@ The automation of triple modular redundancy, as well as associated topics such a
 computing methods and the effects of SEUs on digital hardware, have been studied a fair amount in academic
 literature. Several authors have invented a number of approaches to automate TMR, at various levels of
 granularity, and at various points in the FPGA/ASIC synthesis pipeline. This presents an interesting challenge
-to systematically review and categorise. To address this, Williams @Williams2024 proposed the use of a
-two-dimensional graph, which I have implemented as follows:
+to systematically review and categorise. To address this, we propose that all automated TMR approaches can be
+fundamentally categorised into the following dichotomy:
+
+- *Design-level approaches* ("thinking in terms of HDL"): These approaches treat the design as _modules_, and
+    introduce TMR by replicating these modules. A module could be anything from an entire CPU, to a
+    register file, to even a single combinatorial circuit or AND gate. Once the modules are replicated, voters are
+    inserted.
+- *Netlist-level approaches* ("thinking in terms of circuits"): These approaches treat the design as a
+    _circuit_ or _netlist_, which is internally represented as a graph, TMR is introduced using graph theory
+    algorithms to _cut_ the graph in a particular way and insert voters.
 
 // #let style = (stroke: black, fill: rgb(0, 0, 200, 75))
 // #let x_axis = ("Low-level", "High-level")
@@ -155,14 +189,10 @@ two-dimensional graph, which I have implemented as follows:
 //     })
 // })
 
-#TODO("the 2D graph")
-
 == Fault tolerant computing and redundancy
-The application of triple modular redundancy to computer systems was first introduced into academia by
-Lyons and Vanderkul @Lyons1962 in 1962. Like much of computer science, however, the authors trace the original
-concept back to John von Neumann
-#footnote("von Neumann was a prolific academic who invented many concepts important in computer science.")
-. In addition to introducing the application of TMR to computer systems, the
+The application of triple modular redundancy to computer systems was first introduced into academia by Lyons
+and Vanderkul @Lyons1962 in 1962. Like much of computer science, however, the authors trace the original
+concept back to John von Neumann . In addition to introducing the application of TMR to computer systems, the
 authors also provide a rigorous Monte-Carlo mathematical analysis of the reliability of TMR. One important
 takeaway from this is that the only way to make a system reliably redundant is to split it into multiple
 components, each of which is more reliable than the system as a whole. In the modern FPGA concept, this
@@ -469,12 +499,30 @@ keywords are to be interpreted according to RFC 2119 @Bradner1997.
 )
 
 == Implementation plan
+To design the TaMaRa algorithm, I synthesise a number of approaches from the literature review to form a new
+approach suitable for implementation in Yosys.
+
+I propose a modification to the synthesis flow that inserts TaMaRa after optimisation, but before technology
+mapping (@fig:tamarasynthflow). This means that the circuit can be processed at a reasonably low level,
+without having to worry about optimisation removing the redundant logic or non-replicable FPGA primitives (see
+@Kulis2017).
+
+#figure(
+    image("diagrams/tamara_synthesis_flow.svg", width: 60%),
+    caption: [ Proposed modification to synthesis flow including TaMaRa TMR ]
+) <fig:tamarasynthflow>
+
+Specifically, I propose to implement TaMaRa as a Yosys plugin in C++20, using CMake as the build tool. This
+will compile a Linux shared library, `libtamara.so`, which can be loaded into Yosys using the command
+`plugin -i libtamara.so`. This plugin will expose a command, `tmr`, which can be run before technology mapping to
+apply TMR.
+
 #TODO("")
 
 == Milestones and timeline
 To design the timeline of the TaMaRa project, I use a Gantt chart, shown below.
 
-#image("gantt_mermaid.svg", width: 100%)
+#image("diagrams/gantt_mermaid.svg", width: 100%)
 
 // #box(
 //     image("gantt_mermaid.svg", width: 100%),
