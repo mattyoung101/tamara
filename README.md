@@ -94,7 +94,7 @@ To compile the papers, you will need:
 - [MermaidJS CLI](https://github.com/mermaid-js/mermaid-cli)
 - [dvisvgm](https://github.com/mgieseki/dvisvgm)
     - mupdf
-    - mutool
+    - mupdf-tools
 - [Just](https://github.com/casey/just)
 
 Next, in the papers directory, use `typst watch <file>` to edit and live reload. Or `typst compile` to just

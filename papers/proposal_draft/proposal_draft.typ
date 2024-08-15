@@ -8,6 +8,7 @@
 #show footnote: set text(fill: blue)
 
 #set list(indent: 12pt)
+#set enum(indent: 12pt)
 #set heading(numbering: "1.")
 #set math.equation(numbering: "(1)")
 #set page(numbering: "1")
@@ -156,7 +157,7 @@ advice from the Yosys development team @Engelhardt2024, TaMaRa will be developed
 // )
 
 = Literature review
-== Introduction, methodology and terminology
+== Introduction, methodology and terminology <section:litintro>
 The automation of triple modular redundancy, as well as associated topics such as general fault-tolerant
 computing methods and the effects of SEUs on digital hardware, have been studied a fair amount in academic
 literature. Several authors have invented a number of approaches to automate TMR, at various levels of
@@ -382,8 +383,6 @@ Additionally, there are different interesting trade-offs between different verif
 
 = Project plan
 == Aims of the project
-#TODO("this needs an overhaul based on our latest meetings with John and Janet")
-
 This thesis is governed by two overarching aims:
 
 - To design a C++ plugin for the Yosys synthesis tool that, when presented with any Yosys-compatible
@@ -499,25 +498,80 @@ keywords are to be interpreted according to RFC 2119 @Bradner1997.
 )
 
 == Implementation plan
-To design the TaMaRa algorithm, I synthesise a number of approaches from the literature review to form a new
-approach suitable for implementation in Yosys.
+To design the TaMaRa algorithm, I synthesise existing approaches from the literature review to form a novel
+approach suitable for implementation in Yosys. Specifically, I synthesise the voter insertion algorithms of
+Johnson @Johnson2010, the RTL annotation-driven approach of Kulis @Kulis2017, and parts of the verification
+methodology of Benites @Benites2018, to form the TaMaRa algorithm and verification methodology. Based on the
+dichotomy identified in @section:litintro, TaMaRa will be classified as a _netlist-driven_ approach, as the
+algorithms are designed by treating the design as a circuit (rather than HDL). Despite this, TaMaRa aims to
+combine the best of both worlds, by supporting a `triplicate` annotation that allows end users to select the
+level of granularity they want to apply TMR at. Johnson's algorithm processes the entire netlist in one go,
+whereas TaMaRa aims to use the `triplicate` annotation to allow more fine-grained selections, allowing studies
+to compare different levels of TMR design granularity.
 
-I propose a modification to the synthesis flow that inserts TaMaRa after optimisation, but before technology
-mapping (@fig:tamarasynthflow). This means that the circuit can be processed at a reasonably low level,
-without having to worry about optimisation removing the redundant logic or non-replicable FPGA primitives (see
-@Kulis2017).
+I propose a modification to the synthesis flow that inserts TaMaRa after technology mapping
+(@fig:tamarasynthflow). This means that the circuit can be processed at a low level, without having to worry
+about optimisation removing the redundant logic.
 
 #figure(
-    image("diagrams/tamara_synthesis_flow.svg", width: 60%),
+    image("diagrams/tamara_synthesis_flow.svg", width: 80%),
     caption: [ Proposed modification to synthesis flow including TaMaRa TMR ]
 ) <fig:tamarasynthflow>
 
-Specifically, I propose to implement TaMaRa as a Yosys plugin in C++20, using CMake as the build tool. This
-will compile a Linux shared library, `libtamara.so`, which can be loaded into Yosys using the command
-`plugin -i libtamara.so`. This plugin will expose a command, `tmr`, which can be run before technology mapping to
-apply TMR.
+For the specific implementation details, I propose to implement TaMaRa as a Yosys plugin in C++20, using CMake
+as the build tool. This will compile a Linux shared library, `libtamara.so`, which can be loaded into Yosys
+using the command `plugin -i libtamara.so`. Then, various commands (yet to be determined but likely `tamara`
+and possibly `tamara_propagate`) will be made available to end users.
 
-#TODO("")
+Briefly, the general overview of the TaMaRa algorithm looks as follows:
+
+1. Mark cells with the `triplicate` annotation in the netlist
+2. Replicate each cell marked with the `triplicate` annotation an additional 2 times
+    (so there are now 3 instances of each cell with the `triplicate` annotation)
+3. Wire up the replicated cells
+4. Construct a simplified graph representation from the updated netlist, with replications added
+5. Insert voters using Johnson's algorithm @Johnson2010 @Johnson2010a, using the graph we generated in step (4)
+
+TaMaRa aims to address a number of the limitations identified by authors in the literature review. Kulis
+@Kulis2017 identified two important limitations: that TMR may attempt to replicate FPGA primitives that do not
+have enough physical resources (e.g. trying to replicate a PLL of which only one exists on the FPGA), and that
+synthesis optimisation may remove the redundant TMR logic. TaMaRa will not attempt to legalise the design,
+instead, if an FPGA primitive is attempted to be replicated and there are not enough physical resources to
+back it up, this will be picked up by nextpnr at the placement stage and an error reported. Unfortunately, it
+may not be possible (or at least, not easily possible) to mitigate the problem entirely, so reporting an error
+is the best we can do. Since TaMaRa operates after technology mapping, by which time all optimisation has
+completed, there is no need to worry about the redundant logic being eliminated.
+
+Some existing approaches @Johnson2010 @Skouson2020 @Lee2017 @Khatri2018 do not have a rigorous verification
+methodology, or a methodology which lacks formal verification. TaMaRa aims to be production grade, so I
+consider verification to be an important step in the process of ensuring reliability. As mentioned in the
+engineering requirements and aims, I propose a rigorous verification methodology based on fault-injection
+simulation _and_ formal methods, partially inspired by Benites @Benites2018. The verification can be broken
+down as follows:
+
+#TODO("talk about fuzzing")
+
+- *Fault injection simulation:* Using an open-source simulator like Verilator, Icarus Verilog or cxxrtl, a
+    complex design will have TMR applied to it and be subject to a simulation with controlled random injected
+    SEUs each cycle. I intend to use a simple RISC-V core, either Hazard3 or picorv32 as the Device Under Test
+    (DUT). I plan to use the RISC-V port of CoreMark @GalOn2012 as a benchmark program and then check the
+    program passes correctly even with SEUs.
+- *Equivalence checking (fuzzing):* This aims to prove that TaMaRa does not change the underlying behaviour of the
+    circuit after it's run. TMR is only supposed to make the circuit redundant, not change its behaviour or
+    timing. The methodology is as follows:
+    1. Randomly generate Verilog using Verismith @Herklotz2020
+    2. Run TaMaRa and synthesise the circuit
+    3. Use _SymbiYosys_ and _eqy_ to check that the circuits before and after TMR are identical
+- *Mutation coverage:* This aims to prove that TMR works as intended. Ideally, I would also like to use
+    fuzzing to generate random Verilog RTL as in equivalence checking, but this is still under active research in
+    academia. Instead, using carefully selected testbenches and designs I will use formal verification to prove
+    the TaMaRa removes injected faults. The methodology is as follows:
+    1. Pick a simple test case, for example, a parity checker or CRC8 calculator
+    2. Write a self checking testbench for the example
+    3. Use Yosys _mcy_ (mutation coverage) to check that the testbench works
+    4. Use TaMaRa to add TMR and synthesise the circuit
+    5. Inject faults into the redundant netlist
+    6. Use mcy to check that the injected faults are removed by the TMR process
 
 == Milestones and timeline
 To design the timeline of the TaMaRa project, I use a Gantt chart, shown below.
@@ -573,10 +627,10 @@ systems, its correct functioning is important. Hence, a simple risk assessment h
 )
 
 == Ethics
-As mentioned in the risk assessment, since TaMaRa may be used to design safety-critical systems, its correct
-functioning is considered very important. In addition to being a risk, a subtle failure that accidentally
-produces a non-redundant system could be considered an ethical issue, especially if it does result in
-destruction or loss of life. This will (hopefully) be mitigated by a rigorous verification methodology.
+// As mentioned in the risk assessment, since TaMaRa may be used to design safety-critical systems, its correct
+// functioning is considered very important. In addition to being a risk, a subtle failure that accidentally
+// produces a non-redundant system could be considered an ethical issue, especially if it does result in
+// destruction or loss of life. This will (hopefully) be mitigated by a rigorous verification methodology.
 
 TaMaRa may be used to design defence systems. This is not considered a significant ethical issue.
 
