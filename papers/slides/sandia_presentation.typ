@@ -2,11 +2,9 @@
 
 #let s = themes.metropolis.register(aspect-ratio: "16-9")
 
-// Set the numbering of section and subsection
-//#let s = (s.methods.numbering)(self: s, section: "1.", "1.1")
-
-// Set the speaker notes configuration
-// #let s = (s.methods.show-notes-on-second-screen)(self: s, right)
+#set text(
+  font: "Inria Sans",
+)
 
 // Global information configuration
 #let s = (s.methods.info)(
@@ -17,11 +15,12 @@
   institution: [University of Queensland \ Prepared for YosysHQ and Sandia National Laboratories],
 )
 
+#set list(indent: 12pt)
+#set enum(indent: 12pt)
+
 // Extract methods
 #let (init, slides, touying-outline, alert, speaker-note) = utils.methods(s)
 #show: init
-
-// #show strong: alert
 
 // Extract slide functions
 #let (slide, empty-slide) = utils.slides(s)
@@ -122,15 +121,31 @@ Yosys @Shah2019 is the best (and the only) open-source, research grade EDA synth
 //ignored as they can't be extended
 
 == Existing works
-Very important prior work done by #cite(<Johnson2010>, form: "prose") at BYU.
+//Very important prior work done by #cite(<Johnson2010>, form: "prose") at BYU.
+Two main paradigms:
 
-#pause
-
-TODO algorithm
+- *Design-level approaches* ("thinking in terms of HDL")
+    - Kulis @Kulis2017, Lee @Lee2017
+- *Netlist-level approaches* ("thinking in terms of circuits")
+    - Johnson @Johnson2010, Benites @Benites2018, Skouson @Skouson2020
 
 == The TaMaRa algorithm
 
-TODO
+TaMaRa will mainly be netlist-driven, using Johnson's @Johnson2010 voter insertion algorithm.
+
+Also aim to propagate a `(* triplicate *)` HDL annotation to select TMR granularity (similar to Kulis
+@Kulis2017)
+
+== The TaMaRa algorithm
+
+Why netlist driven with the `(* triplicate *)` annotation?
+
+#pause
+
+- Removes the possibility of Yosys optimisation eliminating redundant TMR logic
+- Removes the necessity of complex blackboxing logic and trickery to bypass the normal design flow
+- Cell type shouldn't matter, TaMaRa targets FPGAs and ASICs
+- Still allows selecting TMR granularity - *best of both worlds*
 
 == Verification
 // Designing an EDA pass means verification needs to be taken very seriously.
@@ -186,7 +201,7 @@ We want to simulate an SEU environment.
 Use one of Verilator, Icarus Verilog or Yosys' own cxxrtl to simulate a full design.
 - Each simulator has different trade-offs
 - Currently considering picorv32 or Hazard3 as the DUT
-//- Most likely will use Verilator or possibly cxxrtl
+- Most likely will use Verilator or cxxrtl
 
 #pause
 
@@ -241,8 +256,10 @@ Ideally, TaMaRa will be released open-source under the MPL 2.0.
 - Takes any circuit, helps to prevent it from experiencing SEUs
 - Click a button and have any circuit run in space/in high reliability environments!
 
-== Bibliography
+#slide[
+#set text(size: 10pt)
 #bibliography("slides.bib", style: "institute-of-electrical-and-electronics-engineers", title: none)
+]
 
 == Thank you!
 *Any questions?*

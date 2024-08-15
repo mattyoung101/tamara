@@ -1,4 +1,5 @@
 // 16-bit parallel in, serial out shift register
+(*triplicate*)
 module shiftreg_piso(
     input logic clk,
     input logic rst,
