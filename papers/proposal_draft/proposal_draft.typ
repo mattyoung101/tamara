@@ -83,7 +83,7 @@ For safety-critical sectors such as aerospace and defence, both Application Spec
 catastrophic malfunctions. In the context of digital electronics, _fault tolerant_ means that the design is
 able to gracefully recover and continue operating in the event of a fault, or upset. A Single Event Upset
 (SEU) occurs when ionising radiation strikes a transistor on a digital circuit, causing it to transition from
-a 1 to a 0, or vice versa. This type of upset is most common in space, where the Earth's atmosphere is not
+a 1 to a 0, or vice versa. This type of upset is most common in space, where the Earth's magnetosphere is not
 present to dissipate the ionising particles @OBryan2021. On an unprotected system, an unlucky SEU may corrupt
 the system's state to such a severe degree that it may cause destruction or loss of life - particularly
 important given the safety-critical nature of most space-fairing systems (satellites, crew capsules, missiles,
@@ -131,11 +131,11 @@ their own devices, which are often cheaper or free. However, these tools are sti
 cannot be modified by researchers. Until recently, there was no freely available, research-grade, open-source
 EDA tool available for study and improvement. That changed with the introduction of Yosys @Wolf2013. Yosys is
 a capable synthesis tool that can emit optimised netlists for various FPGA families as well as a few silicon
-process nodes (e.g. Skywater 130nm). Importantly, for this thesis, Yosys can be modified either by changing
-the source code or by developing modular plugins that can be dynamically loaded at runtime. Due to specific
-advice from the Yosys development team @Engelhardt2024, TaMaRa will be developed as a loadable C++ plugin.
-
-#TODO("also cite nextpnr")
+process nodes (e.g. Skywater 130nm). When combined with nextpnr @Shah2019, Yosys+nextpnr forms a fully
+end-to-end FPGA synthesis flow for Lattice iCE40 and ECP5 devices. Importantly, for this thesis, Yosys can be
+modified either by changing the source code or by developing modular plugins that can be dynamically loaded at
+runtime. Due to specific advice from the Yosys development team @Engelhardt2024, TaMaRa will be developed as a
+loadable C++ plugin.
 
 // #diagram(
 //     node-stroke: .1em,
@@ -383,28 +383,54 @@ Additionally, there are different interesting trade-offs between different verif
 
 = Project plan
 == Aims of the project
-This thesis is governed by two overarching aims:
+The development of TaMaRa aims to answer the following research questions:
 
-- To design a C++ plugin for the Yosys synthesis tool that, when presented with any Yosys-compatible
+1. What are the trade-offs between low-level/high-level TMR; and TMR in general?
+	- What are the power, performance and area (PPA) trade-offs?
+	- What are the reliability trade-offs?
+	- Is coarse-grained (high-level) or fine-grained (low-level) TMR better?
+	- What is the best point in the synthesis pipeline to perform TMR?
+2. What are the best methods to verify TMR, and what are the trade-offs between them?
+	- Is formal verification possible?
+	- Does fault-injection simulation prove the validity of TMR to a sufficient level?
+3. Can an automated TMR approach be implemented to production-grade quality? (i.e., can it accept all
+    circuits and generate a reasonable output in a reasonable amount of time?)
+
+To investigate these research questions, I propose two major project aims we should set out to achieve:
+
+1. To design a C++ plugin for the Yosys synthesis tool that, when presented with any Yosys-compatible
     HDL input, will apply an algorithm to turn the selected HDL module(s) into a triply modular redundant design,
     suitable for space.
-- To design and a implement a comprehensive verification process for the above pass, including the use of formal
+2. To design and a implement a comprehensive verification process for the above pass, including the use of formal
     methods, HDL simulation, fuzzing and potential real-life radiation exposure.
 
-Much like designing a pass for a compiler, designing a pass for an EDA tool is no light undertaking. It needs
-to handle all possible designs the user may provide as input, and provide a high degree of assurance of
-correctness. This is particularly important given the safety-critical nature of the designs users may provide
-to TaMaRa. I do not undertake this lightly, and the rigorous verification methodology is a necessity to
-produce a pass worth using.
+To further analyse the situation, I decided to break up each major goal into further sub-goals.
 
-These two major aims can be broken down into smaller aims. Under the design pipeline:
+*Major aim 1 sub-goals:*
+- Design and implement an algorithm for doing netlist-level TMR in Yosys
+- Research the applications of graph theory, including connected components, to automated netlist-level TMR
+- Understand and decide between the different trade-offs of where in the synthesis pipeline TMR should be
+    implemented
+- Understand and consider the effects of clock skew and clock domain crossing for clock lines on
+    TMR circuits
 
-#TODO("continue")
+*Major aim 2 sub-goals:*
+- Understand the application of equivalence checking (Yosys _eqy_) to circuits
+- Understand the application of formal fault checking/coverage (Yosys _mcy_) to circuits
+- Design and implement an RTL simulation with fault injection for the purpose of verifying TMR
+- Understand the limitations and benefits of formal verification vs. RTL simulation for the purposes of
+    verifying TMR
+
+// Much like designing a pass for a compiler, designing a pass for an EDA tool is no light undertaking. It needs
+// to handle all possible designs the user may provide as input, and provide a high degree of assurance of
+// correctness. This is particularly important given the safety-critical nature of the designs users may provide
+// to TaMaRa. I do not undertake this lightly, and the rigorous verification methodology is a necessity to
+// produce a pass worth using.
 
 == Engineering requirements
 Due to the large and complex nature of the TaMaRa development process, I decided it beneficial to apply the
-MoSCoW engineering requirements system. I present the requirements and their justifications. The capitalised
-keywords are to be interpreted according to RFC 2119 @Bradner1997.
+MoSCoW engineering requirements system, based on the goals presented above. I present the requirements and
+their justifications. The capitalised keywords are to be interpreted according to RFC 2119 @Bradner1997.
 
 *TMR pass requirements*
 
@@ -502,7 +528,7 @@ To design the TaMaRa algorithm, I synthesise existing approaches from the litera
 approach suitable for implementation in Yosys. Specifically, I synthesise the voter insertion algorithms of
 Johnson @Johnson2010, the RTL annotation-driven approach of Kulis @Kulis2017, and parts of the verification
 methodology of Benites @Benites2018, to form the TaMaRa algorithm and verification methodology. Based on the
-dichotomy identified in @section:litintro, TaMaRa will be classified as a _netlist-driven_ approach, as the
+dichotomy identified in @section:litintro, TaMaRa will be classified as a _netlist-level_ approach, as the
 algorithms are designed by treating the design as a circuit (rather than HDL). Despite this, TaMaRa aims to
 combine the best of both worlds, by supporting a `triplicate` annotation that allows end users to select the
 level of granularity they want to apply TMR at. Johnson's algorithm processes the entire netlist in one go,
@@ -525,12 +551,14 @@ and possibly `tamara_propagate`) will be made available to end users.
 
 Briefly, the general overview of the TaMaRa algorithm looks as follows:
 
-1. Mark cells with the `triplicate` annotation in the netlist
-2. Replicate each cell marked with the `triplicate` annotation an additional 2 times
+1. Propagate the `(* triplicate *)` annotation. For example, if a module is marked with triplicate,
+    then all ports and processes in it should be marked with triplicate.
+2. Mark cells with the `triplicate` annotation in the netlist
+3. Replicate each cell marked with the `triplicate` annotation an additional 2 times
     (so there are now 3 instances of each cell with the `triplicate` annotation)
-3. Wire up the replicated cells
-4. Construct a simplified graph representation from the updated netlist, with replications added
-5. Insert voters using Johnson's algorithm @Johnson2010 @Johnson2010a, using the graph we generated in step (4)
+4. Wire up the replicated cells
+5. Construct a simplified graph representation from the updated netlist, with replications added
+6. Insert voters using Johnson's algorithm @Johnson2010 @Johnson2010a, using the graph we generated in step (4)
 
 TaMaRa aims to address a number of the limitations identified by authors in the literature review. Kulis
 @Kulis2017 identified two important limitations: that TMR may attempt to replicate FPGA primitives that do not
@@ -546,10 +574,10 @@ Some existing approaches @Johnson2010 @Skouson2020 @Lee2017 @Khatri2018 do not h
 methodology, or a methodology which lacks formal verification. TaMaRa aims to be production grade, so I
 consider verification to be an important step in the process of ensuring reliability. As mentioned in the
 engineering requirements and aims, I propose a rigorous verification methodology based on fault-injection
-simulation _and_ formal methods, partially inspired by Benites @Benites2018. The verification can be broken
-down as follows:
-
-#TODO("talk about fuzzing")
+simulation _and_ formal methods, partially inspired by Benites @Benites2018. In addition, I aim to undertake a
+large-scale fuzzing exercise to further strengthen the quality of verification. Fuzzing in this case will
+involve the generation and verification of randomly generated RTL en mass, rather than just verifying on a few
+selected testbenches. The verification can be broken down as follows:
 
 - *Fault injection simulation:* Using an open-source simulator like Verilator, Icarus Verilog or cxxrtl, a
     complex design will have TMR applied to it and be subject to a simulation with controlled random injected
@@ -635,6 +663,9 @@ systems, its correct functioning is important. Hence, a simple risk assessment h
 TaMaRa may be used to design defence systems. This is not considered a significant ethical issue.
 
 = Conclusion
+In this draft proposal, I have presented the plan and literature background for TaMaRa, an automated triple
+modular redundancy EDA flow for Yosys.
+
 #TODO("")
 
 #pagebreak()

@@ -136,6 +136,8 @@ TaMaRa will mainly be netlist-driven, using Johnson's @Johnson2010 voter inserti
 Also aim to propagate a `(* triplicate *)` HDL annotation to select TMR granularity (similar to Kulis
 @Kulis2017)
 
+#image("tamara_synthesis_flow.svg")
+
 == The TaMaRa algorithm
 
 Why netlist driven with the `(* triplicate *)` annotation?
@@ -216,25 +218,26 @@ Currently implemented in C++20, using CMake.
 
 Load into Yosys: `plugin -i libtamara.so`
 
-#pause
-
-TMR is implemented as two separate commands: `tmr` and `tmr_finalise`
+TMR is implemented as two separate commands: `tamara_propagate` and `tamara_tmr`
 
 #pause
 
-Run `tmr` after synthesis, but before techmapping.
+Run `tamara_propagate` after `read_verilog` to propagate the `(* triplicate *)` annotations.
 
 #pause
 
-Run `tmr_finalise` just before techmapping (ensuring no more optimisation passes will run).
+Run `tamara_tmr` after techmapping to perform triplication and voter insertion (add TMR).
 
 = Current status & future
 == Current status
-TODO
-
 Mostly focused around literature reviews, scoping out the problem, formulating requirements, etc.
 
-Skeleton plugin does exist.
+Programming expected to start in the next 1-2 weeks.
+
+Skeleton plugin does exist with CMake/Ninja-based toolchain.
+
+== The future
+#image("gantt_mermaid.svg", width: 100%)
 
 == The future
 This will be implemented for my Honours thesis over the next 1 year.
@@ -243,11 +246,11 @@ This will be implemented for my Honours thesis over the next 1 year.
 
 #pause
 
-Programming hopefully finished _around_ January 2025.
+Programming hopefully finished _around_ February 2025, verification by April 2025.
 
 #pause
 
-Ideally, TaMaRa will be released open-source under the MPL 2.0.
+Ideally, TaMaRa will be released open-source under MPL 2.0.
 - Pending university IP shenanigans...
 
 = Conclusion
