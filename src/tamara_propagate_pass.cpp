@@ -8,17 +8,17 @@ USING_YOSYS_NAMESPACE
 PRIVATE_NAMESPACE_BEGIN
 
 /**
- * The tmr_finalise command, used to "unblackbox" the modules that were blackboxed in the tmr command.
+ * The tamara_propagate command propagates (* triplicate *) Verilog annotations throughout the design.
  */
-struct TamaraFinalisePass : public Pass {
+struct TamaraPropagatePass : public Pass {
 
-    TamaraFinalisePass() : Pass("tmr_finalise", "Finalises the TaMaRa TMR pipeline") {
+    TamaraPropagatePass() : Pass("tamara_propagate", "Propagates TaMaRa triplicate annotations") {
     }
 
     void help() override {
         //   |---v---|---v---|---v---|---v---|---v---|---v---|---v---|---v---|---v---|---v---|
         log("\n");
-        log("    tmr_finalise\n");
+        log("    tamara_propagate\n");
         log("\n");
 
         log("Finalises the TaMaRa automated TMR process by unpacking blackboxes.\n");
@@ -26,12 +26,12 @@ struct TamaraFinalisePass : public Pass {
     }
 
     void execute(std::vector<std::string> args, RTLIL::Design *design) override {
-        log_header(design, "Finalising TaMaRa automated triple modular redundancy\n\n");
+        log_header(design, "Propagating TaMaRa triplicate annotations\n\n");
         log_push();
 
         log_pop();
     }
 
-} const TamaraFinalisePass;
+} const TamaraPropagatePass;
 
 PRIVATE_NAMESPACE_END

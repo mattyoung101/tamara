@@ -12,7 +12,7 @@ PRIVATE_NAMESPACE_BEGIN
  */
 struct TamaraTmrPass : public Pass {
 
-    TamaraTmrPass() : Pass("tmr", "Starts TaMaRa automated TMR pipeline") {
+    TamaraTmrPass() : Pass("tamara_tmr", "Starts TaMaRa automated TMR pipeline") {
     }
 
     void help() override {
