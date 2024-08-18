@@ -91,12 +91,15 @@ etc). Thus, fault tolerant computing is widely studied and applied for space-bas
 
 One common fault-tolerant design technique is Triple Modular Redundancy (TMR), which mitigates SEUs by
 triplicating key parts of the design and using voter circuits to select a non-corrupted result if an SEU
-occurs. Typically, TMR is manually designed at the Hardware Description Language (HDL) level, for example, by
-manually instantiating three copies of the target module, designing a voter circuit, and linking them all
-together. However, this approach is an additional time-consuming and potentially error-prone step in the
-already complex design pipeline.
+occurs (see @fig:tmrdiagram). Typically, TMR is manually designed at the Hardware Description Language (HDL)
+level, for example, by manually instantiating three copies of the target module, designing a voter circuit,
+and linking them all together. However, this approach is an additional time-consuming and potentially
+error-prone step in the already complex design pipeline.
 
-#TODO("diagram of TMR")
+#figure(
+    image("diagrams/tmr_diagram.svg"),
+    caption: [ Diagram demonstrating how TMR is inserted into an abstract design ]
+) <fig:tmrdiagram>
 
 Modern digital ICs and FPGAs are described using Hardware Description Languages (HDLs), such as SystemVerilog
 or VHDL. The process of transforming this high level description into a photolithography mask (for ICs) or
@@ -105,7 +108,7 @@ comprises of the following stages (@fig:synthflow):
 
 #figure(
     image("diagrams/synthesis_flow.svg"),
-    caption: [ Simplified representation of the Yosys/Nextpnr synthesis flow ]
+    caption: [ Simplified representation of a typical EDA synthesis flow ]
 ) <fig:synthflow>
 
 - *Synthesis*: The transformation of a high-level textual HDL description into a lower level synthesisable
@@ -131,11 +134,10 @@ their own devices, which are often cheaper or free. However, these tools are sti
 cannot be modified by researchers. Until recently, there was no freely available, research-grade, open-source
 EDA tool available for study and improvement. That changed with the introduction of Yosys @Wolf2013. Yosys is
 a capable synthesis tool that can emit optimised netlists for various FPGA families as well as a few silicon
-process nodes (e.g. Skywater 130nm). When combined with nextpnr @Shah2019, Yosys+nextpnr forms a fully
-end-to-end FPGA synthesis flow for Lattice iCE40 and ECP5 devices. Importantly, for this thesis, Yosys can be
-modified either by changing the source code or by developing modular plugins that can be dynamically loaded at
-runtime. Due to specific advice from the Yosys development team @Engelhardt2024, TaMaRa will be developed as a
-loadable C++ plugin.
+process nodes (e.g. Skywater 130nm). When combined with the Nextpnr place and route tool @Shah2019,
+Yosys+nextpnr forms a fully end-to-end FPGA synthesis flow for Lattice iCE40 and ECP5 devices. Importantly,
+for this thesis, Yosys can be modified either by changing the source code or by developing modular plugins
+that can be dynamically loaded at runtime.
 
 // #diagram(
 //     node-stroke: .1em,
@@ -162,7 +164,7 @@ The automation of triple modular redundancy, as well as associated topics such a
 computing methods and the effects of SEUs on digital hardware, have been studied a fair amount in academic
 literature. Several authors have invented a number of approaches to automate TMR, at various levels of
 granularity, and at various points in the FPGA/ASIC synthesis pipeline. This presents an interesting challenge
-to systematically review and categorise. To address this, we propose that all automated TMR approaches can be
+to systematically review and categorise. To address this, I propose that all automated TMR approaches can be
 fundamentally categorised into the following dichotomy:
 
 - *Design-level approaches* ("thinking in terms of HDL"): These approaches treat the design as _modules_, and
@@ -170,8 +172,11 @@ fundamentally categorised into the following dichotomy:
     register file, to even a single combinatorial circuit or AND gate. Once the modules are replicated, voters are
     inserted.
 - *Netlist-level approaches* ("thinking in terms of circuits"): These approaches treat the design as a
-    _circuit_ or _netlist_, which is internally represented as a graph, TMR is introduced using graph theory
+    _circuit_ or _netlist_, which is internally represented as a graph. TMR is introduced using graph theory
     algorithms to _cut_ the graph in a particular way and insert voters.
+
+Using these two axes as a guiding point, I analyse the literature on automated TMR, as well as background
+literature on fault-tolerant computing.
 
 // #let style = (stroke: black, fill: rgb(0, 0, 200, 75))
 // #let x_axis = ("Low-level", "High-level")
@@ -205,21 +210,32 @@ perfectly reliable, and is important to note for FPGA and ASIC designs which may
 potentially thousands of modules.
 
 However, the hardening of space and safety-critical systems is not just limited to triple modular redundancy.
+Instead, ASICs can be designed using rad-hardened CMOS processes and design techniques. One such example is
+Bessot and Velazco @Bessot1993, who presented a rad-hardened CMOS memory cell. Despite these approaches, and
+the well-known limitations in power, performance and area (PPA) caused by TMR, the technique does have the
+advantage of being more general purpose and cost-effective. TMR can be applied to any design, FPGA or ASIC, at
+various different levels of granularity and hierarchy. Additionally, rad-hardened CMOS designs are extremely
+expensive: the RAD750 rad-hardened CPU costs more than \$338,000 USD in 2023
+#TODO("cite")
+Instead, with a sufficiently reliable TMR technique (that this research ideally would like to help create), it
+should theoretically be possible to use a commercial-off-the-shelf (COTS) FPGA for mission critical space
+systems.
 
-#TODO("more background literature")
+// Much has been written about rad-hardened microprocessors, which remain the main way to protect space systems
+// from SEUs today.
 
-== Single Event Upsets (SEUs)
-#TODO("more literature defining probabilities of SEUs on ASICs/FPGAs in space")
+#TODO("more background literature on other approaches to rad-hardening: rad-hardened CMOS and TMR CPUs and
+scrubbing")
 
-#TODO("also consider talking about rad-hardened CMOS processes for ASICs")
+#TODO("more literature defining probabilities and effects of SEUs on ASICs/FPGAs in space")
 
-== Post-synthesis automated TMR
+== Netlist-level approaches
 Recognising that prior literature focused mostly around manual or theoretical TMR, and the limitations of a
 manual approach, Johnson and Wirthlin @Johnson2010 introduced four algorithms for the automatic insertion of
 TMR voters in a circuit, with a particular focus on timing and area trade-offs. Together with the thesis this
 paper was based on @Johnson2010a, these two publications form the seminal works on automated TMR for digital
 EDA.
-#TODO("")
+#TODO("more details on Johnson")
 
 Whilst they provide an excellent design of TMR insertion algorithms, and a very thorough analysis of their
 area and timing trade-offs, Johnson and Wirthlin do not have a rigorous analysis of the
@@ -279,11 +295,6 @@ checking in the TMR verification stage. This is especially important since Johns
 formally verify his approach. Benites' usage of formal verification, in particular, equivalence checking, is
 an excellent starting point to design the verification methodology for TaMaRa.
 
-Although the most commonly cited literature implements automated TMR post-synthesis on the netlist, other
-authors over time have explored other stages of the ASIC/FPGA synthesis pipeline to insert TMR, both lower
-level and higher level.
-
-== Low-level TMR approaches
 On the lower level side, Hindman et al. @Hindman2011 introduce an ASIC standard-cell
 based automated TMR approach. When digital circuits are synthesised into ASICs, they are technology mapped
 onto standard cells provided by the foundry as part of their Process Design Kit (PDK). For example, SkyWater
@@ -310,27 +321,29 @@ that it can target FPGAs _and_ ASICs due to being integrated directly into Yosys
 appear that for the specific case of targeting the best PPA trade-offs for TMR on ASICs, the approach
 described in @Hindman2011 is the most optimal one available.
 
+#TODO("Xilinx industry paper")
+
 // future research topic! design a rad hardened FPGA using this approach!
 
-== High-level TMR approaches
-Several authors have investigated applying TMR directly to the HDL source code - a much higher level approach
-than either netlist or gate level. One of the most notable examples was introduced by Kulis @Kulis2017,
-through a tool he calls "TMRG". TMRG operates on Verilog RTL by implementing the majority of a Verilog parser
-and elaborator from scratch. It takes as input Verilog RTL, as well as a selection of Verilog source comments
-that act as annotations to guide the tool on its behaviour. In turn, the tool modifies the design code and
-outputs processed Verilog RTL that implements TMR, as well as Synopsys Design Compiler design constraints.
-Like the goal of TaMaRa, the TMRG approach is designed to target both FPGAs and ASICs, and for FPGAs, Kulis
-correctly identifies the issue that not all FPGA blocks can be replicated. For example, a design that
-instantiates a PLL clock divider on an FPGA that only contains one PLL could not be replicated. Kulis also
-correctly identifies that optimisation-driven synthesis tools such as Yosys and Synopsys DC will eliminate TMR
-logic as part of the synthesis pipeline, as the redundancy is, by nature, redundant and subject to removal. In
-Yosys, this occurs specifically in the `opt_share` and `opt_clean` passes according to specific advice from
-the development team @Engelhardt2024. However, unlike Synopsys DC, Yosys is not constraint driven, which means
-that Kulis' constraint-based approach to preserving TMR logic through optimisation would not work in this
-case.  Finally, since TMRG re-implements the majority of a synthesis tool's frontend (including the parser and
-elaborator), it is limited to only supporting Verilog. Yosys natively supports Verilog and some SystemVerilog,
-with plugins @synlig providing more complete SV and VHDL support. Since TaMaRa uses Yosys' existing frontend,
-it should be more reliable and useable with many more HDLs.
+== Design-level approaches
+Several authors have investigated applying TMR directly to HDL source code. One of the most notable examples
+was introduced by Kulis @Kulis2017, through a tool he calls "TMRG". TMRG operates on Verilog RTL by
+implementing the majority of a Verilog parser and elaborator from scratch. It takes as input Verilog RTL, as
+well as a selection of Verilog source comments that act as annotations to guide the tool on its behaviour. In
+turn, the tool modifies the design code and outputs processed Verilog RTL that implements TMR, as well as
+Synopsys Design Compiler design constraints. Like the goal of TaMaRa, the TMRG approach is designed to target
+both FPGAs and ASICs, and for FPGAs, Kulis correctly identifies the issue that not all FPGA blocks can be
+replicated. For example, a design that instantiates a PLL clock divider on an FPGA that only contains one PLL
+could not be replicated. Kulis also correctly identifies that optimisation-driven synthesis tools such as
+Yosys and Synopsys DC will eliminate TMR logic as part of the synthesis pipeline, as the redundancy is, by
+nature, redundant and subject to removal. In Yosys, this occurs specifically in the `opt_share` and
+`opt_clean` passes according to specific advice from the development team @Engelhardt2024. However, unlike
+Synopsys DC, Yosys is not constraint driven, which means that Kulis' constraint-based approach to preserving
+TMR logic through optimisation would not work in this case.  Finally, since TMRG re-implements the majority of
+a synthesis tool's frontend (including the parser and elaborator), it is limited to only supporting Verilog.
+Yosys natively supports Verilog and some SystemVerilog, with plugins @synlig providing more complete SV and
+VHDL support. Since TaMaRa uses Yosys' existing frontend, it should be more reliable and useable with many
+more HDLs.
 
 Lee et al. @Lee2017 present "TLegUp", an extension to the prior "LegUp" High Level Synthesis (HLS) tool. As
 stated earlier in this document, modern FPGAs and ASICs are typically designed using Hardware Description
@@ -379,7 +392,7 @@ is also some literature that exclusively focuses on the verification aspect. Ver
 important parts of this process due to the safety-critical nature of the devices TMR is typically deployed to.
 Additionally, there are different interesting trade-offs between different verification processes.
 
-#TODO("")
+#TODO("verification papers")
 
 = Project plan
 == Aims of the project
@@ -547,18 +560,22 @@ about optimisation removing the redundant logic.
 For the specific implementation details, I propose to implement TaMaRa as a Yosys plugin in C++20, using CMake
 as the build tool. This will compile a Linux shared library, `libtamara.so`, which can be loaded into Yosys
 using the command `plugin -i libtamara.so`. Then, various commands (yet to be determined but likely `tamara`
-and possibly `tamara_propagate`) will be made available to end users.
+and possibly `tamara_propagate`) will be made available to end users. Since Yosys is open source, there are
+two ways to add changes: either contributing improvements to the upstream codebase, or by writing a plugin.
+I am electing to develop a plugin due to specific personal advice from the Yosys development team
+@Engelhardt2024.
 
 Briefly, the general overview of the TaMaRa algorithm looks as follows:
 
 1. Propagate the `(* triplicate *)` annotation. For example, if a module is marked with triplicate,
-    then all ports and processes in it should be marked with triplicate.
+    then all ports and processes in it should also be marked with `triplicate`.
 2. Mark cells with the `triplicate` annotation in the netlist
 3. Replicate each cell marked with the `triplicate` annotation an additional 2 times
     (so there are now 3 instances of each cell with the `triplicate` annotation)
-4. Wire up the replicated cells
-5. Construct a simplified graph representation from the updated netlist, with replications added
-6. Insert voters using Johnson's algorithm @Johnson2010 @Johnson2010a, using the graph we generated in step (4)
+4. Wire up the replicated cells to the original circuit
+5. Construct a simplified graph representation from the updated netlist (including with the added replicas)
+6. Insert voters using Johnson's algorithm @Johnson2010 @Johnson2010a, using the graph we generated in prior
+    step
 
 TaMaRa aims to address a number of the limitations identified by authors in the literature review. Kulis
 @Kulis2017 identified two important limitations: that TMR may attempt to replicate FPGA primitives that do not
@@ -568,22 +585,26 @@ instead, if an FPGA primitive is attempted to be replicated and there are not en
 back it up, this will be picked up by nextpnr at the placement stage and an error reported. Unfortunately, it
 may not be possible (or at least, not easily possible) to mitigate the problem entirely, so reporting an error
 is the best we can do. Since TaMaRa operates after technology mapping, by which time all optimisation has
-completed, there is no need to worry about the redundant logic being eliminated.
+completed, there is no need to worry about the redundant logic being eliminated. This is the key reason for
+the selection of a netlist-level algorithm, rather than a design-level one.
 
 Some existing approaches @Johnson2010 @Skouson2020 @Lee2017 @Khatri2018 do not have a rigorous verification
 methodology, or a methodology which lacks formal verification. TaMaRa aims to be production grade, so I
 consider verification to be an important step in the process of ensuring reliability. As mentioned in the
 engineering requirements and aims, I propose a rigorous verification methodology based on fault-injection
-simulation _and_ formal methods, partially inspired by Benites @Benites2018. In addition, I aim to undertake a
-large-scale fuzzing exercise to further strengthen the quality of verification. Fuzzing in this case will
-involve the generation and verification of randomly generated RTL en mass, rather than just verifying on a few
-selected testbenches. The verification can be broken down as follows:
+simulation _and_ formal methods, partially inspired by Benites @Benites2018. Formal verification is widely
+utilised in industry designs, and is being increasingly researched in academia, so makes sense to use for
+TaMaRa. In addition to formal verification, I aim to undertake a large-scale fuzzing exercise to further
+strengthen the quality of verification. Fuzzing in this case will involve the generation and verification of
+random Verilog RTL in large quantities, rather than just verifying on a few selected testbenches. The
+verification can be broken down as follows:
 
 - *Fault injection simulation:* Using an open-source simulator like Verilator, Icarus Verilog or cxxrtl, a
     complex design will have TMR applied to it and be subject to a simulation with controlled random injected
     SEUs each cycle. I intend to use a simple RISC-V core, either Hazard3 or picorv32 as the Device Under Test
     (DUT). I plan to use the RISC-V port of CoreMark @GalOn2012 as a benchmark program and then check the
-    program passes correctly even with SEUs.
+    program passes correctly even with SEUs. CoreMark is self-checking, so should fail if an SEU disrupts the
+    processor. It will also have the added bonus of indicating how CPU performance is affected by TMR.
 - *Equivalence checking (fuzzing):* This aims to prove that TaMaRa does not change the underlying behaviour of the
     circuit after it's run. TMR is only supposed to make the circuit redundant, not change its behaviour or
     timing. The methodology is as follows:
@@ -591,12 +612,13 @@ selected testbenches. The verification can be broken down as follows:
     2. Run TaMaRa and synthesise the circuit
     3. Use _SymbiYosys_ and _eqy_ to check that the circuits before and after TMR are identical
 - *Mutation coverage:* This aims to prove that TMR works as intended. Ideally, I would also like to use
-    fuzzing to generate random Verilog RTL as in equivalence checking, but this is still under active research in
-    academia. Instead, using carefully selected testbenches and designs I will use formal verification to prove
-    the TaMaRa removes injected faults. The methodology is as follows:
+    fuzzing to generate random Verilog RTL as in equivalence checking, but the generation of random Verilog
+    with valid testbenches is a topic still under active research in
+    academia. Instead, using carefully selected designs and testbenches, I will use formal verification to prove
+    that TaMaRa removes injected faults. The methodology is as follows:
     1. Pick a simple test case, for example, a parity checker or CRC8 calculator
     2. Write a self checking testbench for the example
-    3. Use Yosys _mcy_ (mutation coverage) to check that the testbench works
+    3. Use Yosys _mcy_ (mutation coverage) to check that the testbench is valid and high quality
     4. Use TaMaRa to add TMR and synthesise the circuit
     5. Inject faults into the redundant netlist
     6. Use mcy to check that the injected faults are removed by the TMR process
