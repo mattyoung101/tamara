@@ -210,19 +210,32 @@ perfectly reliable, and is important to note for FPGA and ASIC designs which may
 potentially thousands of modules.
 
 However, the hardening of space and safety-critical systems is not just limited to triple modular redundancy.
-Instead, ASICs can be designed using rad-hardened CMOS processes and design techniques. One such example is
-Bessot and Velazco @Bessot1993, who presented a rad-hardened CMOS memory cell. Despite these approaches, and
-the well-known limitations in power, performance and area (PPA) caused by TMR, the technique does have the
-advantage of being more general purpose and cost-effective. TMR can be applied to any design, FPGA or ASIC, at
-various different levels of granularity and hierarchy. Additionally, rad-hardened CMOS designs are extremely
-expensive: the RAD750 rad-hardened CPU costs more than \$338,000 USD in 2023
-#TODO("cite")
+Instead, ASICs can be designed using rad-hardened CMOS processes and design techniques. Particularly, much has
+been written about rad-hardened microprocessors, which remain the main way to protect space systems from SEUs
+today. One such example is the RAD750 @Berger2001, a rad-hardened PowerPC CPU for space applications designed
+by Berger et al. of BAE Systems. The processor is manufactured on a six-layer 250 nm process node, using
+specialty design considerations for the RAM, PLLs, and standard cell libraries. The designers also used an
+extensive verification methodology, including the formal verification of the gate-level netlist and functional
+VHDL simulation. The RAD750 has been deployed on numerous high-profile missions including the James Webb Space
+Telescope and Curiosity Mars rover. Despite its wide utilisation, however, the RAD750 remains extremely
+expensive - costing over \$200,000 USD in 2021 @Hagedoorn2021. This makes it well out of the reach of research
+groups, and possibly even difficult to acquire for space agencies like NASA.
+
+#TODO("make sure we cover all of the RAD750!")
+
 Instead, with a sufficiently reliable TMR technique (that this research ideally would like to help create), it
 should theoretically be possible to use a commercial-off-the-shelf (COTS) FPGA for mission critical space
-systems.
-
-// Much has been written about rad-hardened microprocessors, which remain the main way to protect space systems
-// from SEUs today.
+systems, reducing cost enormously - this is one of the key value propositions of automated TMR research. Of
+course, TMR is not flawless: its well-known limitations in power, performance and area (PPA) have been
+documented extensively in the literature, particularly by Johnson @Johnson2010 @Johnson2010a. Despite this,
+TMR does have the advantage of being more general purpose and cost-effective than a specially designed ASIC
+like the RAD750. TMR can be applied to any design, FPGA or ASIC, at various different levels of granularity
+and hierarchy, allowing for studies of different trade-offs. For ASICs in particular, unlike the RAD750, TMR
+as a design technique does not need to be specially ported to new process nodes: an automated TMR approach
+could be applied to a circuit on a 250 nm or 25 nm process node without any major design changes. Nonetheless,
+specialty rad-hardened ASICs will likely to see future use in space applications. In fact, it's entirely
+possible that a rad-hardened FPGA _in combination_ with an automated TMR technique is the best way of ensuring
+reliability.
 
 #TODO("more background literature on other approaches to rad-hardening: rad-hardened CMOS and TMR CPUs and
 scrubbing")
