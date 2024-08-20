@@ -18,21 +18,31 @@
   [#text(fill: red, weight: "bold", size: 12pt)[TODO #msg]]
 }
 
-#align(center, text(20pt)[
+#v(6em)
+
+#align(center, text(24pt)[
     *An automated triple modular redundancy EDA flow for Yosys*
 ])
 
 #align(center, text(16pt)[
-    _REIT4882 Draft Thesis Project Proposal_
+    REIT4882 Draft Thesis Project Proposal
 ])
+
+#v(3em)
 
 #align(center, text(12pt)[
     Matt Young
 
-    m.young2\@student.uq.edu.au
+    School of Electrical Engineering and Computer Science
+
+    University of Queensland
+    //
+    // m.young2\@student.uq.edu.au
 
     August 2024
 ])
+
+#v(6em)
 
 #[
 #set par(justify: true)
@@ -51,6 +61,8 @@
     project, including its design and verification.
 ]
 ]
+
+#pagebreak()
 
 // Create a scope for this style: https://typst.app/docs/reference/styling/
 #[
@@ -209,19 +221,24 @@ eventually become less reliable. This is due to the fact that the voter circuits
 perfectly reliable, and is important to note for FPGA and ASIC designs which may instantiate hundreds or
 potentially thousands of modules.
 
-However, the hardening of space and safety-critical systems is not just limited to triple modular redundancy.
-Instead, ASICs can be designed using rad-hardened CMOS processes and design techniques. Particularly, much has
-been written about rad-hardened microprocessors, which remain the main way to protect space systems from SEUs
-today. One such example is the RAD750 @Berger2001, a rad-hardened PowerPC CPU for space applications designed
-by Berger et al. of BAE Systems. The processor is manufactured on a six-layer 250 nm process node, using
-specialty design considerations for the RAM, PLLs, and standard cell libraries. The designers also used an
-extensive verification methodology, including the formal verification of the gate-level netlist and functional
-VHDL simulation. The RAD750 has been deployed on numerous high-profile missions including the James Webb Space
-Telescope and Curiosity Mars rover. Despite its wide utilisation, however, the RAD750 remains extremely
-expensive - costing over \$200,000 USD in 2021 @Hagedoorn2021. This makes it well out of the reach of research
-groups, and possibly even difficult to acquire for space agencies like NASA.
+For ASICs, instead of triple modular redundancy, ASICs can be designed using rad-hardened CMOS process nodes
+or design techniques. Much has been written about rad-hardened microprocessors, of which many are deployed
+(and continue to be deployed) in space to this day. One such example is the RAD750 @Berger2001, a rad-hardened
+PowerPC CPU for space applications designed by Berger et al. of BAE Systems. They claim "5-6 orders of
+magnitude" better SEU performance compared to a stock PowerPC 750 under intense radiation conditions. The
+processor is manufactured on a six-layer commercial 250 nm process node, using specialty design considerations
+for the RAM, PLLs, and standard cell libraries. Despite using special design techniques, the process node
+itself is standard commercial CMOS node and is not inherently rad-hardened. The authors particularly draw
+attention to the development of a special SEU-hardened RAM cell, although unfortunately they do not elaborate
+on the exact implementation method used. However, they do mention that these techniques increase the die area
+from 67 mm#super("2") in a standard PowerPC 750, to 120 mm#super("2") in the RAD750, a ~1.7x increase. Berger
+et al. also used an extensive verification methodology, including the formal verification of the gate-level
+netlist and functional VHDL simulation. The RAD750 has been deployed on numerous high-profile missions
+including the James Webb Space Telescope and Curiosity Mars rover. Despite its wide utilisation, however, the
+RAD750 remains extremely expensive - costing over \$200,000 USD in 2021 @Hagedoorn2021. This makes it well out
+of the reach of research groups, and possibly even difficult to acquire for space agencies like NASA.
 
-#TODO("make sure we cover all of the RAD750!")
+#TODO("rad-hardened CMOS process nodes")
 
 Instead, with a sufficiently reliable TMR technique (that this research ideally would like to help create), it
 should theoretically be possible to use a commercial-off-the-shelf (COTS) FPGA for mission critical space
@@ -260,7 +277,7 @@ Finally, in his thesis @Johnson2010a, Johnson states that the benchmark designs 
 combination of the commercial Synopsys Synplify tool, and the _BYU-LANL Triple Modular Redundancy (BL-TMR)
 Tool_. This Java-based set of tools ingest EDIF-format netlists, perform TMR on them, and write the
 processed result to a new EDIF netlist, which can be re-ingested by the synthesis program for place and route.
-This is quite a complex process, and was also designed before Yosys was introduced in 2013. It would be very
+This is quite a complex process, and was also designed before Yosys was introduced in 2013. It would be
 better if the TMR pass was instead integrated directly into the synthesis tool - which is only possible
 for Yosys, as Synplify is commercial proprietary software. This is especially important for industry users who
 often have long and complicated synthesis flows.
@@ -697,11 +714,9 @@ systems, its correct functioning is important. Hence, a simple risk assessment h
 
 TaMaRa may be used to design defence systems. This is not considered a significant ethical issue.
 
-= Conclusion
-In this draft proposal, I have presented the plan and literature background for TaMaRa, an automated triple
-modular redundancy EDA flow for Yosys.
-
-#TODO("")
+// = Conclusion
+// In this draft proposal, I have presented the plan and literature background for TaMaRa, an automated triple
+// modular redundancy EDA flow for Yosys.
 
 #pagebreak()
 = References
