@@ -7,6 +7,7 @@ module counter(
 
 logic[15:0] count;
 
+(* triplicate *)
 always_ff @(posedge i_clk) begin
     if (i_rst) begin
         count <= 0;

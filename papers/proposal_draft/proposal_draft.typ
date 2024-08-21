@@ -187,8 +187,8 @@ fundamentally categorised into the following dichotomy:
     _circuit_ or _netlist_, which is internally represented as a graph. TMR is introduced using graph theory
     algorithms to _cut_ the graph in a particular way and insert voters.
 
-Using these two axes as a guiding point, I analyse the literature on automated TMR, as well as background
-literature on fault-tolerant computing.
+Using these two design paradigms as a guiding point, I analyse the literature on automated TMR, as well as
+background literature on fault-tolerant computing.
 
 // #let style = (stroke: black, fill: rgb(0, 0, 200, 75))
 // #let x_axis = ("Low-level", "High-level")
@@ -214,12 +214,12 @@ concept back to John von Neumann . In addition to introducing the application of
 authors also provide a rigorous Monte-Carlo mathematical analysis of the reliability of TMR. One important
 takeaway from this is that the only way to make a system reliably redundant is to split it into multiple
 components, each of which is more reliable than the system as a whole. In the modern FPGA concept, this
-implies applying TMR at an RTL module level, although as we will soon see, more optimal and finer grained TMR
-can be applied. Although their Monte Carlo analysis shows that TMR dramatically improves reliability, they
-importantly show that as the number of modules $M$ in the computer system increases, the computer will
-eventually become less reliable. This is due to the fact that the voter circuits may not themselves be
-perfectly reliable, and is important to note for FPGA and ASIC designs which may instantiate hundreds or
-potentially thousands of modules.
+implies applying TMR at an Register Transfer Level (RTL) module level, although as we will soon see, more
+optimal and finer grained TMR can be applied. Although their Monte Carlo analysis shows that TMR dramatically
+improves reliability, they importantly show that as the number of modules $M$ in the computer system
+increases, the computer will eventually become less reliable. This is due to the fact that the voter circuits
+may not themselves be perfectly reliable, and is important to note for FPGA and ASIC designs which may
+instantiate hundreds or potentially thousands of modules.
 
 For ASICs, instead of triple modular redundancy, ASICs can be designed using rad-hardened CMOS process nodes
 or design techniques. Much has been written about rad-hardened microprocessors, of which many are deployed
@@ -238,21 +238,25 @@ including the James Webb Space Telescope and Curiosity Mars rover. Despite its w
 RAD750 remains extremely expensive - costing over \$200,000 USD in 2021 @Hagedoorn2021. This makes it well out
 of the reach of research groups, and possibly even difficult to acquire for space agencies like NASA.
 
-#TODO("rad-hardened CMOS process nodes")
+In addition to commercial CMOS process nodes, there are also specialty rad-hardened process nodes designed by
+several fabs. One such example is Skywater Technologies' 90 nm FD-SOI ("Fully Depleted Silicon-On-Insulator")
+node. The FD-SOI process, in particular, has been shown to have inherent resistance to SEUs and ionising
+radiation due to its top thin silicon film and buried insulating oxide layer @Zhao2014. Despite this,
+unfortunately, FD-SOI is an advanced process node that is often expensive to manufacture.
 
-Instead, with a sufficiently reliable TMR technique (that this research ideally would like to help create), it
-should theoretically be possible to use a commercial-off-the-shelf (COTS) FPGA for mission critical space
-systems, reducing cost enormously - this is one of the key value propositions of automated TMR research. Of
-course, TMR is not flawless: its well-known limitations in power, performance and area (PPA) have been
-documented extensively in the literature, particularly by Johnson @Johnson2010 @Johnson2010a. Despite this,
-TMR does have the advantage of being more general purpose and cost-effective than a specially designed ASIC
-like the RAD750. TMR can be applied to any design, FPGA or ASIC, at various different levels of granularity
-and hierarchy, allowing for studies of different trade-offs. For ASICs in particular, unlike the RAD750, TMR
-as a design technique does not need to be specially ported to new process nodes: an automated TMR approach
-could be applied to a circuit on a 250 nm or 25 nm process node without any major design changes. Nonetheless,
-specialty rad-hardened ASICs will likely to see future use in space applications. In fact, it's entirely
-possible that a rad-hardened FPGA _in combination_ with an automated TMR technique is the best way of ensuring
-reliability.
+Instead of the above, with a sufficiently reliable TMR technique (that this research ideally would like to
+help create), it should theoretically be possible to use a commercial-off-the-shelf (COTS) FPGA for mission
+critical space systems, reducing cost enormously - this is one of the key value propositions of automated TMR
+research. Of course, TMR is not flawless: its well-known limitations in power, performance and area (PPA) have
+been documented extensively in the literature, particularly by Johnson @Johnson2010 @Johnson2010a. Despite
+this, TMR does have the advantage of being more general purpose and cost-effective than a specially designed
+ASIC like the RAD750. TMR can be applied to any design, FPGA or ASIC, at various different levels of
+granularity and hierarchy, allowing for studies of different trade-offs. For ASICs in particular, unlike the
+RAD750, TMR as a design technique does not need to be specially ported to new process nodes: an automated TMR
+approach could be applied to a circuit on a 250 nm or 25 nm process node without any major design changes.
+Nonetheless, specialty rad-hardened ASICs will likely to see future use in space applications. In fact, it's
+entirely possible that a rad-hardened FPGA _in combination_ with an automated TMR technique is the best way of
+ensuring reliability.
 
 #TODO("more background literature on other approaches to rad-hardening: rad-hardened CMOS and TMR CPUs and
 scrubbing")
@@ -325,30 +329,24 @@ checking in the TMR verification stage. This is especially important since Johns
 formally verify his approach. Benites' usage of formal verification, in particular, equivalence checking, is
 an excellent starting point to design the verification methodology for TaMaRa.
 
-On the lower level side, Hindman et al. @Hindman2011 introduce an ASIC standard-cell
-based automated TMR approach. When digital circuits are synthesised into ASICs, they are technology mapped
-onto standard cells provided by the foundry as part of their Process Design Kit (PDK). For example, SkyWater
-Technology provides an open-source 130 nm ASIC PDK, which contains standard cells for NAND gates, muxes and
-more @skywater. The authors design a TMR flip-flop cell, known as a "Triple Redundant Self Correcting
-Master-Slave Flip-Flop" (TRSCMSFF), that mitigates SEUs at the implementation level. Since this is so low
-level and operates below the entire synthesis/place and route pipeline, their approach has the advantage that
-_any_ design - including proprietary encrypted IP cores that are (unfortunately) common in industry - can be
-made redundant. Very importantly, the original design need not be aware of the TMR implementation, so this
-approach fulfills my goal of making TMR available seamlessly to designers. The authors demonstrate that the
-TRSCMSFF cell adds minimal overhead to logic speed and power consumption, and even perform a real-life
-radiation test under a high energy ion beam. Overall, this is an excellent approach for ASICs. However, this
-approach, being standard-cell specific, cannot be applied to FPGA designs. Rather, the FPGA manufacturers
-themselves would need to apply this method to make a series of specially rad-hardened devices (note that an
-FPGA is itself an ASIC
-#footnote([This terminology may be confusing, so, to clarifty: ASICs encompass the majority of silicon
-    ICs with an application-specific purpose. This includes devices like GPUs, NPUs as well as more
-    domain-specific chips such as video transcoders or RF transceivers. An FPGA is a specific type of ASIC
-    that implements an array of LUTs that can be programmed by SRAM.])).
-It would also appear that designers
-would have to port the TRSCMSFF cell to each fab and process node they intend to target. While TaMaRa will
-have worse power, performance and area (PPA) trade-offs on ASICs than this method, it is also more general in
-that it can target FPGAs _and_ ASICs due to being integrated directly into Yosys. Nevertheless, it would
-appear that for the specific case of targeting the best PPA trade-offs for TMR on ASICs, the approach
+On the lower level side, Hindman et al. @Hindman2011 introduce an ASIC standard-cell based automated TMR
+approach. When digital circuits are synthesised into ASICs, they are technology mapped onto standard cells
+provided by the foundry as part of their Process Design Kit (PDK). For example, SkyWater Technology provides
+an open-source 130 nm ASIC PDK, which contains standard cells for NAND gates, muxes and more @skywater. The
+authors design a TMR flip-flop cell, known as a "Triple Redundant Self Correcting Master-Slave Flip-Flop"
+(TRSCMSFF), that mitigates SEUs at the implementation level. Since this is so low level and operates below the
+entire synthesis/place and route pipeline, their approach has the advantage that _any_ design - including
+proprietary encrypted IP cores that are (unfortunately) common in industry - can be made redundant. Very
+importantly, the original design need not be aware of the TMR implementation, so this approach fulfills my
+goal of making TMR available seamlessly to designers. The authors demonstrate that the TRSCMSFF cell adds
+minimal overhead to logic speed and power consumption, and even perform a real-life radiation test under a
+high energy ion beam. Overall, this is an excellent approach for ASICs. However, this approach, being
+standard-cell specific, cannot be applied to FPGA designs. Rather, the FPGA manufacturers themselves would
+need to apply this method to make a series of specially rad-hardened devices. It would also appear that
+designers would have to port the TRSCMSFF cell to each fab and process node they intend to target. While
+TaMaRa will have worse power, performance and area (PPA) trade-offs on ASICs than this method, it is also more
+general in that it can target FPGAs _and_ ASICs due to being integrated directly into Yosys. Nevertheless, it
+would appear that for the specific case of targeting the best PPA trade-offs for TMR on ASICs, the approach
 described in @Hindman2011 is the most optimal one available.
 
 #TODO("Xilinx industry paper")
@@ -417,12 +415,26 @@ high quality, the higher reliability voter circuit may possibly be worth investi
 
 == TMR verification
 While Benites @Benites2018 @Benites2018a discusses verification of the automated TMR process, and other
-authors @Lee2017 @Khatri2018 @Hindman2011 also use various different verification/testing methodologies, there
-is also some literature that exclusively focuses on the verification aspect. Verification is one of the most
-important parts of this process due to the safety-critical nature of the devices TMR is typically deployed to.
-Additionally, there are different interesting trade-offs between different verification processes.
+authors @Lee2017 @Khatri2018 @Hindman2011 @Berger2001 also use various different verification/testing
+methodologies, there is also some literature that exclusively focuses on the verification aspect. Verification
+is one of the most important parts of this process due to the safety-critical nature of the devices TMR is
+typically deployed to. Additionally, there are interesting trade-offs between different verification
+methodologies, particularly fault injection vs. formal verification.
 
-#TODO("verification papers")
+Beltrame @Beltrame2015 uses a divide and conquer approach for TMR netlist verification. Specifically,
+identifying limitations with prior fault-injection simulation and formal verification techniques, he presents
+an approach described as fault injection combined with formal verification: instead of simulating the entire
+netlist with timing accurate simulation, he uses a behavioural timeless simulation of small submodules ("logic
+cones") extracted by automatic analysis. This seems to be an effective and rigorous approach, and the code for
+the tool appears to be available on GitHub as "InFault". It would be highly worthwhile investigating the use
+of this tool for verification, as it has already been proven in prior research and may overall save time. That
+being said, a quick analysis of the code appears to reveal it to be "research quality" (i.e. zero documentation
+and seems partially unfinished). The question would be whether figuring out how to use InFault takes more time
+than simply implementing formal verification ourselves in Yosys.
+
+#TODO("more on Beltrame")
+
+#TODO("other verification papers?")
 
 = Project plan
 == Aims of the project
@@ -521,8 +533,7 @@ their justifications. The capitalised keywords are to be interpreted according t
 
     [ TaMaRa SHALL NOT consider multi-bit upsets ],
     [ Although multi-bit upsets may occur in practice, this work focuses on SEUs in particular. MBUs are much
-    less likely (#TODO("citation?")) and require significant area increases due to extra voters
-    (#TODO("citation?") ],
+    less likely to occur @Swift2000 and requires more complex methods to deal with @Santos2017. ],
 )
 
 *Verification requirements*
