@@ -17,13 +17,18 @@
 
 #set list(indent: 12pt)
 #set enum(indent: 12pt)
+// Colour links blue like LaTeX
+#show cite: set text(fill: blue)
+#show link: set text(fill: blue)
+#show ref: set text(fill: blue)
+#show footnote: set text(fill: blue)
 
 // Extract methods
 #let (init, slides, touying-outline, alert, speaker-note) = utils.methods(s)
 #show: init
 
 // Extract slide functions
-#let (slide, empty-slide) = utils.slides(s)
+#let (slide, empty-slide, focus-slide) = utils.slides(s)
 #show: slides
 
 = Background
@@ -64,6 +69,8 @@ ASICs and FPGAs commonly deployed in space (and on Earth)...
 #pause
 but protection from SEUs remains expensive!
 
+RAD750 CPU @Berger2001 is commonly used, but costs >\$200,000 USD @Hagedoorn2021!
+
 // == Motivation
 // RAD750 IMAGE
 //
@@ -87,7 +94,9 @@ but protection from SEUs remains expensive!
 // Can we do better?
 
 == Triple Modular Redundancy
-TODO describe TMR
+#align(center)[
+    #image("tmr_diagram.svg", width: 65%)
+]
 
 == Triple Modular Redundancy
 TMR can be added manually...
@@ -99,7 +108,7 @@ but this is *time consuming* and *error prone*.
 
 #pause
 
-Let's automate it!
+Can we automate it?
 
 = TaMaRa methodology
 == Concept
@@ -114,7 +123,7 @@ Implement TMR as a pass in an EDA synthesis tool.
 
 #pause
 
-Yosys @Shah2019 is the best (and the only) open-source, research grade EDA synthesis tool.
+Yosys @Wolf2013 is the best (and the only) open-source, research grade EDA synthesis tool.
 #pause
 - Proprietary vendor tools (Synopsys, Cadence, Xilinx, etc) immediately discarded
 - Can't be extended to add custom passes
@@ -134,9 +143,13 @@ Two main paradigms:
 TaMaRa will mainly be netlist-driven, using Johnson's @Johnson2010 voter insertion algorithm.
 
 Also aim to propagate a `(* triplicate *)` HDL annotation to select TMR granularity (similar to Kulis
-@Kulis2017)
+@Kulis2017).
 
-#image("tamara_synthesis_flow.svg")
+Runs after techmapping (i.e. after `abc` in Yosys)
+
+#align(center)[
+    #image("tamara_synthesis_flow.svg", width: 55%)
+]
 
 == The TaMaRa algorithm
 
@@ -172,6 +185,11 @@ pass.
 Mutation: Formally verify that TaMaRa-processed circuits correct SEUs (single bit only)
 #pause
 - Ensures TaMaRa does its job!
+
+#pause
+
+Also considering Beltrame's verification tool @Beltrame2015, and other literature on TMR formal
+verification.
 
 == Fuzzing
 TaMaRa must work for _all_ input circuits, so we need to test at scale.
@@ -212,7 +230,7 @@ Concept:
 - Write a self-checking testbench and ensure that the DUT responds correctly
 
 == Technical implementation
-Currently implemented in C++20, using CMake.
+Implemented in C++20, using CMake.
 
 #pause
 
@@ -255,14 +273,19 @@ Ideally, TaMaRa will be released open-source under MPL 2.0.
 
 = Conclusion
 == Summary
-- Automated triple modular redundancy EDA flow for Yosys
-- Takes any circuit, helps to prevent it from experiencing SEUs
-- Click a button and have any circuit run in space/in high reliability environments!
+- TaMaRa: Automated triple modular redundancy EDA flow for Yosys
+- Fully integrated into Yosys suite
+- Takes any circuit, helps to prevent it from experiencing SEUs by adding TMR
+- Netlist-driven algorithm based on Johnson's work @Johnson2010
+- *Key goal:* "Click a button" and have any circuit run in space/in high reliability environments!
 
+== References
 #slide[
 #set text(size: 10pt)
 #bibliography("slides.bib", style: "institute-of-electrical-and-electronics-engineers", title: none)
 ]
 
-== Thank you!
-*Any questions?*
+// == Thank you!
+// *Any questions?*
+
+#focus-slide[Thank you! Any questions?]
