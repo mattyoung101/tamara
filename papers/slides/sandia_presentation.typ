@@ -38,14 +38,16 @@
     #image("grad_portrait.jpg", width: 100%)
 ],
 [
-Matt Young, 21 years old from Brisbane, Australia.
+Hi! I'm Matt Young, 21 years old from Brisbane, Australia.
 
 Graduated Bachelor of Computer Science earlier in 2024 from the University of Queensland.
 
-Currently studying Bachelor of Computer Science (Honours) at UQ, which includes a one year research thesis.
+Currently studying Bachelor of Computer Science (Honours) at UQ, involves one year research thesis.
 
-Passionate about digital hardware design, embedded systems, high performance/low-level software/hardware.
-Might take up a PhD in future :)
+Despite the email, thesis is is *not* associated with my employer (Emesent).
+
+// Passionate about digital hardware design, embedded systems, high performance/low-level software/hardware.
+// Might take up a PhD in future :)
 // Looking to in future take up a PhD, and eventually research/work in the area of CPU/GPU/ASIC design, or FPGAs,
 // or similar.
 ]
@@ -60,7 +62,6 @@ For space-based applications, Single Event Upsets (SEUs) are very common
 - Must be mitigated to prevent catastrophic failure
 - Caused by ionising radiation //striking transistors on a digital circuit
 
-#pause
 Even in terrestrial applications, SEUs can still occur
 - Must be mitigated for high reliability applications
 
@@ -101,12 +102,8 @@ RAD750 CPU @Berger2001 is commonly used, but costs >\$200,000 USD @Hagedoorn2021
 == Triple Modular Redundancy
 TMR can be added manually...
 
-#pause
-
 but this is *time consuming* and *error prone*.
 //another time consuming and error prone step in the _already_ complex design process.
-
-#pause
 
 Can we automate it?
 
@@ -232,8 +229,6 @@ Concept:
 == Technical implementation
 Implemented in C++20, using CMake.
 
-#pause
-
 Load into Yosys: `plugin -i libtamara.so`
 
 TMR is implemented as two separate commands: `tamara_propagate` and `tamara_tmr`
@@ -248,19 +243,21 @@ Run `tamara_tmr` after techmapping to perform triplication and voter insertion (
 
 = Current status & future
 == Current status
-Mostly focused around literature reviews, scoping out the problem, formulating requirements, etc.
+Mostly initial academic work: literature reviews, project proposals, etc.
 
-Programming expected to start in the next 1-2 weeks.
+`tamara_propagate` pass already basically complete (just under 100 lines of C++).
 
-Skeleton plugin does exist with CMake/Ninja-based toolchain.
+Work for the next \~6 months will focus on understanding, implementing and verifying Johnson's @Johnson2010
+algorithm in Yosys, and exploring Beltrame's @Beltrame2015 verification.
 
 == The future
 #image("gantt_mermaid.svg", width: 100%)
 
 == The future
 This will be implemented for my Honours thesis over the next 1 year.
-- Honours is kind of of like mini masters, it's an Australia-specific thing.
+- Honours is kind of of like mini masters, it's an Australia-specific thing
 - Supervised by Assoc. Prof. John Williams (former PetaLogix, Xilinx)
+- Ideally would like to publish if all goes well
 
 #pause
 
