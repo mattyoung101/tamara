@@ -1,6 +1,7 @@
 // Copyright (c) 2024 Matt Young.
 #include "kernel/log.h"
 #include "kernel/register.h"
+#include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
 #include <functional>
 #include <queue>
@@ -10,7 +11,8 @@ USING_YOSYS_NAMESPACE
 
 PRIVATE_NAMESPACE_BEGIN
 
-const auto PROPAGATE_ANNOTATION = ID(tamara_triplicate);
+const auto TRIPLICATE_ANNOTATION = ID(tamara_triplicate);
+const auto IGNORE_ANNOTATION = ID(tamara_ignore);
 
 /**
  * The tamara_propagate command propagates (* tamara_triplicate *) Verilog annotations throughout the design.
@@ -45,26 +47,40 @@ struct TamaraPropagatePass : public Pass {
     /// Propagate (* tamara_triplicate *) annotations applied to modules to all the module processes and cells
     static void propagateModules(RTLIL::Design *design) {
         for (const auto &module : design->selected_modules()) {
-            if (module->has_attribute(PROPAGATE_ANNOTATION)) {
+            if (module->has_attribute(TRIPLICATE_ANNOTATION) && shouldPropagate(module)) {
                 log("Propagating module '%s'\n", log_id(module->name));
 
                 // processes
                 for (const auto &processPair : module->processes) {
-                    log("    Visit process '%s'\n", log_id(processPair.second->name));
-                    processPair.second->set_bool_attribute(PROPAGATE_ANNOTATION);
+                    auto *const process = processPair.second;
+                    if (shouldPropagate(process)) {
+                        log("    Propagate process '%s'\n", log_id(process->name));
+                        process->set_bool_attribute(TRIPLICATE_ANNOTATION);
+                    } else {
+                        log("    Ignore process '%s'\n", log_id(process->name));
+                    }
                 }
 
                 // memories
                 // TODO do we want to do this for memories? or do we want to skip memories?
                 for (const auto &memoryPair : module->memories) {
-                    log("    Visit memory '%s'\n", log_id(memoryPair.second->name));
-                    memoryPair.second->set_bool_attribute(PROPAGATE_ANNOTATION);
+                    auto *const memory = memoryPair.second;
+                    if (shouldPropagate(memory)) {
+                        log("    Propagate memory '%s'\n", log_id(memory->name));
+                        memory->set_bool_attribute(TRIPLICATE_ANNOTATION);
+                    } else {
+                        log("    Ignore memory '%s'\n", log_id(memory->name));
+                    }
                 }
 
                 // cells
                 for (const auto &cell : module->cells()) {
-                    log("    Visit cell '%s'\n", log_id(cell->name));
-                    cell->set_bool_attribute(PROPAGATE_ANNOTATION);
+                    if (shouldPropagate(cell)) {
+                        log("    Propagate cell '%s'\n", log_id(cell->name));
+                        cell->set_bool_attribute(TRIPLICATE_ANNOTATION);
+                    } else {
+                        log("    Ignore cell '%s'\n", log_id(cell->name));
+                    }
                 }
 
                 // TODO ports: should they have the annotation applied?
@@ -72,21 +88,10 @@ struct TamaraPropagatePass : public Pass {
         }
     }
 
-    /// Performs a BFS, starting from the cell `cell`, applying the function `visitor`.
-    // static void visitCellsBFS(RTLIL::Cell *cell, const std::function<void(RTLIL::Cell *)> &visitor) {
-    //     std::queue<RTLIL::Cell *> queue{};
-    //     queue.push(cell);
-    //
-    //     while (!queue.empty()) {
-    //         auto *const item = queue.front();
-    //         queue.pop();
-    //
-    //         // apply visitor
-    //         visitor(item);
-    //
-    //         // add children
-    //     }
-    // }
+    /// Determines if an RTLIL object should be propagated, i.e. it does not have the ignore annotation.
+    static constexpr bool shouldPropagate(RTLIL::AttrObject *object) {
+        return !object->has_attribute(IGNORE_ANNOTATION);
+    }
 
 } const TamaraPropagatePass;
 
