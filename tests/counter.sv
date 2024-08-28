@@ -1,12 +1,12 @@
-// 16 bit counter
+// 2 bit counter
 (* tamara_triplicate *)
 module counter(
     input logic i_clk,
     input logic i_rst,
-    output logic[15:0] o_count
+    output logic[1:0] o_count
 );
 
-logic[15:0] count;
+logic[1:0] count;
 
 always_ff @(posedge i_clk) begin
     if (i_rst) begin
