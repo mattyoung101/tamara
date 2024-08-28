@@ -1,3 +1,4 @@
+// TaMaRa: An automated triple modular redundancy EDA flow for Yosys.
 // Copyright (c) 2024 Matt Young.
 #include "kernel/log.h"
 #include "kernel/register.h"
@@ -32,6 +33,12 @@ struct TamaraTmrPass : public Pass {
     void execute(std::vector<std::string> args, RTLIL::Design *design) override {
         log_header(design, "Starting TaMaRa automated triple modular redundancy\n\n");
         log_push();
+
+        // first check we have run propagate
+        if (!design->scratchpad_get_bool("tamara_propagate.didRun")) {
+            log_error("You have not yet run tamara_propagate! See 'help tamara_propagate'.\n");
+            return;
+        }
 
         // process each selected module from the design
         for (auto *const module : design->selected_modules()) {

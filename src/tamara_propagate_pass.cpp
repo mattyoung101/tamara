@@ -1,10 +1,9 @@
+// TaMaRa: An automated triple modular redundancy EDA flow for Yosys.
 // Copyright (c) 2024 Matt Young.
 #include "kernel/log.h"
 #include "kernel/register.h"
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
-#include <functional>
-#include <queue>
 #include <vector>
 
 USING_YOSYS_NAMESPACE
@@ -31,7 +30,9 @@ struct TamaraPropagatePass : public Pass {
         log("Propagates (* tamara_triplicate *) annotations through the design hierarchy.\n");
         log("For example, modules marked (* tamara_triplicate *) will have this annotation\n");
         log("applied to all their sub-processes and sub-cells.\n");
-        log("This command should be run after 'read_verilog', before 'tamara_triplicate'.\n\n");
+        log("Anything with (* tamara_ignore *) will NOT have the triplicate annotation\n");
+        log("propagated.\n\n");
+        log("This command should be run after 'read_verilog', before 'tamara_triplicate'.\n");
     }
 
     void execute(std::vector<std::string> args, RTLIL::Design *design) override {
@@ -39,6 +40,7 @@ struct TamaraPropagatePass : public Pass {
         log_push();
 
         propagateModules(design);
+        design->scratchpad_set_bool("tamara_propagate.didRun", true);
 
         log_pop();
     }

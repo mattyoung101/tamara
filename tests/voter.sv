@@ -1,11 +1,13 @@
-// Majority voter
+// 1-bit majority voter
 module voter(
-    input logic[15:0] a,
-    input logic[15:0] b,
-    input logic[15:0] c,
-    output logic[15:0] out,
+    input logic a,
+    input logic b,
+    input logic c,
+    output logic out,
+    output logic err,
 );
 
     assign out = (a && b) || (b && c) || (a && c);
+    assign err = (a && b && c) || (!a && !b && !c);
 
 endmodule
