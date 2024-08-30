@@ -668,17 +668,38 @@ systems, its correct functioning is important. Hence, a simple risk assessment h
     [ Safety-critical systems that TaMaRa is used to design may fail due to SEUs, causing severe loss of
     life or property. ],
     [ High ],
-    [ Rigorous verification including formal verification and fault-injection simulation. ]
+    [ Rigorous verification including formal verification and fault-injection simulation. ],
+
+    [ Yosys has bugs (e.g. Yosys optimisation passes break circuits and thus break TMR) ],
+    [ Verification may not be possible until upstream Yosys bugs are fixed. ],
+    [ Low ],
+    [ Rely on strong upstream unit tests to cover this possibility. ]
     ),
 )
 
 == Ethics
-// As mentioned in the risk assessment, since TaMaRa may be used to design safety-critical systems, its correct
-// functioning is considered very important. In addition to being a risk, a subtle failure that accidentally
-// produces a non-redundant system could be considered an ethical issue, especially if it does result in
-// destruction or loss of life. This will (hopefully) be mitigated by a rigorous verification methodology.
+TaMaRa operates in the context of a very open and free EDA community, which is a rarity in the semiconductor
+industry. Only recently has software like Yosys and Nextpnr existed, and it's important to keep the trend
+going and make TaMaRa's contributions available widely to the academic and industrial community, free of
+charge, for others to build on and utilise.
+
+To that end, I plan to release the intellectual property (IP) produced during this thesis, including the
+TaMaRa C++ plugin code and full test suite, under the open-source Mozilla Public Licence v2.0. This is a weak
+copyleft licence used by projects like Firefox and Eigen, that elegantly balances the desire for TaMaRa to
+receive contributions back to its upstream, with developer freedoms to use TaMaRa how they see fit (including
+in proprietary software). I strongly believe this is the right thing to do, as TaMaRa is built on the back of
+brilliant open-source projects like Yosys. Although I will make every attempt possible to release TaMaRa
+open-source, I may be limited by UQ IP policies.
+
+If the project goes well, I would also like to publish TaMaRa in a journal or conference. I am a strong
+believer in open science, and will make every attempt possible to either publish TaMaRa in an open access
+journal, or provide a free preprint on arXiv. I would also like to make the thesis document available for free
+on the UQ library thesis portal.
 
 TaMaRa may be used to design defence systems. This is not considered a significant ethical issue.
+
+== Acknowledgements
+I would like to thank YosysHQ GmbH and Sandia National Laboratories for their support.
 
 // = Conclusion
 // In this draft proposal, I have presented the plan and literature background for TaMaRa, an automated triple
