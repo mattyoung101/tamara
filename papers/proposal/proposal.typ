@@ -192,7 +192,7 @@ for the RAM, PLLs, and standard cell libraries. Despite using special design tec
 itself is standard commercial CMOS node and is not inherently rad-hardened. The authors particularly draw
 attention to the development of a special SEU-hardened RAM cell, although unfortunately they do not elaborate
 on the exact implementation method used. However, they do mention that these techniques increase the die area
-from 67 mm#super("2") in a standard PowerPC 750, to 120 mm#super("2") in the RAD750, a ~1.7x increase. Berger
+from 67 mm#super("2") in a standard PowerPC 750, to 120 mm#super("2") in the RAD750, a \~1.7x increase. Berger
 et al. also used an extensive verification methodology, including the formal verification of the gate-level
 netlist and functional VHDL simulation. The RAD750 has been deployed on numerous high-profile missions
 including the James Webb Space Telescope and Curiosity Mars rover. Despite its wide utilisation, however, the
@@ -386,14 +386,42 @@ Beltrame @Beltrame2015 uses a divide and conquer approach for TMR netlist verifi
 identifying limitations with prior fault-injection simulation and formal verification techniques, he presents
 an approach described as fault injection combined with formal verification: instead of simulating the entire
 netlist with timing accurate simulation, he uses a behavioural timeless simulation of small submodules ("logic
-cones") extracted by automatic analysis. This seems to be an effective and rigorous approach, and the code for
-the tool appears to be available on GitHub as "InFault". It would be highly worthwhile investigating the use
-of this tool for verification, as it has already been proven in prior research and may overall save time. That
-being said, a quick analysis of the code appears to reveal it to be "research quality" (i.e. zero documentation
-and seems partially unfinished). The question would be whether figuring out how to use InFault takes more time
-than simply implementing formal verification ourselves in Yosys.
+cones") extracted by automatic analysis. The algorithm then has three main phases:
+1. Triplet identification: Determine all the FF (flip-flop) triplets present in each logic cone.
+2. TMR structure analysis: Perform exhaustive fault injection on valid configurations.
+3. Clock and reset tree verification: Assure that no FF triplets have common clock or set/reset lines.
+This seems to be an effective and rigorous approach, as Beltrame mentions he was able to find TMR bugs in the
+radiation-hardened netlist of a LEON3 processor. Importantly, the code for the tool appears is available on
+GitHub as _InFault_. It would be highly worthwhile investigating the use of this tool for verification, as it
+has already been proven in prior research and may overall save time. That being said, a quick analysis of the
+code appears to reveal it to be "research quality" (i.e. zero documentation and seems partially unfinished).
+Another problematic issue is that the code does not seem to readily compile under a modern version of GCC or
+Clang, and would require manual fixing in order to do so. Finally, the _InFault_ tool implements a custom
+Verilog frontend for reading designs. This has the exact same problem as Kulis' @Kulis2017 custom Verilog
+frontend: it's not clear to what standard this is implemented. We may have to write a custom RTLIL or EDIF
+frontend to ingest Yosys netlists. The main question is whether resolving these issues would take more time
+than implementing formal verification ourselves in Yosys. One other important limitation not yet mentioned in
+Beltrame's approach is the presence of false positives. Beltrame's "splitting algorithm" requires a tunable
+threshold which, if set too low, may cause false positive detections of invalid TMR FFs. These false positives
+require manual inspection of the netlist graph in order to understand. This is extremely problematic for large
+designs, as it would seem to require many laborious hours from an engineer familiar with the _InFault_
+algorithm to determine if any given detection was a false positive or not. It's also not immediately clear
+what the range of suitable thresholds for this value are that would prevent or possibly eliminate false
+positives.
 
-#TODO("more on Beltrame")
+// In this case, we may even prefer false _negatives_ (under the
+// assumption that a sufficiently safety-critical design will be manually tested) than combing through many false
+// positives.
+
+Even if we do not end up using Beltrame's @Beltrame2015 approach in its entirety (for example, if the false
+positives are a significant issue or if it's too much work to read Yosys designs), we may nonetheless be able
+to repurpose parts of his work for TaMaRa. One aspect that would work particularly well inside of Yosys
+itself is step 3 from the algorithm, clock and reset tree verification. Yosys already has tools to identify
+clock and reset lines, so it should not be too much extra work to build a pass that verifies the clock and
+resets in the netlist are suitable for TMR. In addition, parts of Beltrame's algorithm may be implementable
+using other Yosys formal verification tools, particularly SymbiYosys.
+
+// TODO does yosys actually have clock detection code??
 
 #TODO("other verification papers?")
 
@@ -699,7 +727,8 @@ on the UQ library thesis portal.
 TaMaRa may be used to design defence systems. This is not considered a significant ethical issue.
 
 == Acknowledgements
-I would like to thank YosysHQ GmbH and Sandia National Laboratories for their support.
+I would like to thank YosysHQ (particularly N. Engelhardt) and Sandia National Laboratories for their advice
+and encouragement during the planning phase of this thesis.
 
 // = Conclusion
 // In this draft proposal, I have presented the plan and literature background for TaMaRa, an automated triple
