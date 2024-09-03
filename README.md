@@ -23,6 +23,8 @@ any selectable HDL module.
 For more information, please see my thesis: TODO
 
 ## Building
+**Toolchain and environment**
+
 You will need the following tools:
 - CMake 3.20+
 - A C++20 compiler _(Clang is recommended)_
@@ -31,7 +33,7 @@ You will need the following tools:
 First, clone the repo:
 
 ```bash
-git clone --recurse-submodules -j8 TODO
+git clone --recurse-submodules -j8 git@github.com:mattyoung101/tamara.git
 ```
 
 TaMaRa is compiled against a specific version of Yosys, which is linked as a Git submodule in the `lib`
@@ -43,7 +45,7 @@ When a new version of the Yosys submodule is pushed, use this to update it:
 git submodule update --init --recursive --remote
 ```
 
-To compile TaMaRa:
+**Compiling and running**
 
 Generate the project (assuming you've installed Ninja, otherwise omit `-G Ninja`):
 
@@ -60,10 +62,12 @@ ninja
 This will generate the main artefact, `libtamara.so`. You can load this in Yosys as follows:
 
 ```bash
-plugin -i libtamara.so
+$ yosys
+yosys> plugin -i libtamara.so
 ```
 
-This will then make available the `tmr` and `tmr` commands.
+This will then make available the `tamara_propagate` and `tamara_tmr` commands (with their help as well, which
+you should look at!)
 
 For a quick build and run cycle, you can compile and load TaMaRa at the same time:
 
@@ -75,11 +79,6 @@ If you have Yosys installed on your system, you can run `ninja install` to insta
 (TODO this is not yet true)
 
 ## Usage in Yosys
-As mentioned above, you first need to use `plugin -i libtamara.so` to load the TaMaRa plugin.
-
-You can use `help tmr` and `help tmr_finalise` to see more about what the commands do (and check that they
-have been installed correctly).
-
 TODO
 
 ## Testing and verification
@@ -105,4 +104,9 @@ For the proposal and proposal draft, build the Gantt charts by running `just`.
 The thesis uses [uqthesis_eecs_hons](https://github.com/mattyoung101/uqthesis_eecs_hons) Typst template.
 
 ## Licence
-TBA, hopefully MPL 2.0
+Copyright 2024 Matt Young. Available under the **Mozilla Public License v2.0**.
+
+> This Source Code Form is subject to the terms of the Mozilla Public
+> License, v. 2.0. If a copy of the MPL was not distributed with this
+> file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
