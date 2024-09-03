@@ -1,3 +1,6 @@
 [submodule "lib/yosys"]
 	path = lib/yosys
     url = https://github.com/YosysHQ/yosys.git
+[submodule "lib/prjtrellis"]
+	path = lib/prjtrellis
+	url = https://github.com/YosysHQ/prjtrellis.git
