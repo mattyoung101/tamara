@@ -44,7 +44,7 @@ struct TamaraDebug : public Pass {
         if (task == "forcePropagateDone") {
             log("Forcing propagate to be marked as done\n");
             design->scratchpad_set_bool("tamara_propagate.didRun", true);
-        } else if (task == "mkvote") {
+        } else if (task == "mkvoter") {
             log("Generating one voter\n");
             tamara::VoterBuilder::build(design);
             // TODO

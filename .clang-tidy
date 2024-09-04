@@ -12,6 +12,14 @@ Checks: >
   -readability-uppercase-literal-suffix,
   -cppcoreguidelines-pro-type-vararg,
   -modernize-use-trailing-return-type,
+  -readability-identifier-length,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -readability-isolate-declaration,
+  -cppcoreguidelines-macro-usage
+
+# NOTES:
+# We would like pro-bounds-pointer-arithmetic but Yosys uses arithmetic in the ID($) macro
+# Same with readability-isolate-declaration
 
 # -bugprone-easily-swappable-parameters,
 # -cppcoreguidelines-avoid-magic-numbers,

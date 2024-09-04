@@ -1,0 +1,7 @@
+# run from the build directory
+# ninja && yosys -s ../tests/scripts/gen_voter.ys
+
+plugin -i libtamara.so
+tamara_debug mkvoter
+write_rtlil
+show
