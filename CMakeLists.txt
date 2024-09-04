@@ -13,6 +13,8 @@ include(GNUInstallDirs)
 add_library(tamara SHARED
     src/tamara_tmr_pass.cpp
     src/tamara_propagate_pass.cpp
+    src/tamara_debug.cpp
+    src/voter_builder.cpp
 )
 target_include_directories(tamara PRIVATE include lib/yosys)
 target_compile_options(tamara PRIVATE "-Wall" "-Wextra" "-Wno-unused-parameter" "-ggdb")
