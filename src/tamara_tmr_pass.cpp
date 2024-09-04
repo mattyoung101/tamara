@@ -1,5 +1,9 @@
 // TaMaRa: An automated triple modular redundancy EDA flow for Yosys.
+//
 // Copyright (c) 2024 Matt Young.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL
+// was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #include "kernel/log.h"
 #include "kernel/register.h"
 #include "kernel/yosys_common.h"
@@ -8,9 +12,7 @@ USING_YOSYS_NAMESPACE
 
 PRIVATE_NAMESPACE_BEGIN
 
-/**
- * This is the main TaMaRa TMR command, which starts the TMR process.
- */
+//! This is the main TaMaRa TMR command, which starts the TMR process.
 struct TamaraTmrPass : public Pass {
 
     TamaraTmrPass() : Pass("tamara_tmr", "Starts TaMaRa automated TMR pipeline") {

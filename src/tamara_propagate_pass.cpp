@@ -1,5 +1,9 @@
 // TaMaRa: An automated triple modular redundancy EDA flow for Yosys.
+//
 // Copyright (c) 2024 Matt Young.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL
+// was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #include "kernel/log.h"
 #include "kernel/register.h"
 #include "kernel/rtlil.h"
@@ -13,9 +17,7 @@ PRIVATE_NAMESPACE_BEGIN
 const auto TRIPLICATE_ANNOTATION = ID(tamara_triplicate);
 const auto IGNORE_ANNOTATION = ID(tamara_ignore);
 
-/**
- * The tamara_propagate command propagates (* tamara_triplicate *) Verilog annotations throughout the design.
- */
+//! The tamara_propagate command propagates (* tamara_triplicate *) Verilog annotations throughout the design.
 struct TamaraPropagatePass : public Pass {
 
     TamaraPropagatePass() : Pass("tamara_propagate", "Propagates TaMaRa triplicate annotations") {

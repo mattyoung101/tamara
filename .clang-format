@@ -1,5 +1,5 @@
 ---
-BasedOnStyle: LLVM
+BasedOnStyle: WebKit
 AllowShortFunctionsOnASingleLine: None
 ColumnLimit: '110'
 Cpp11BracedListStyle: 'false'
