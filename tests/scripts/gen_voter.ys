@@ -4,4 +4,5 @@
 plugin -i libtamara.so
 tamara_debug mkvoter
 write_rtlil
+write_verilog
 show

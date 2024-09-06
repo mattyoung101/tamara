@@ -12,9 +12,9 @@ USING_YOSYS_NAMESPACE
 
 // NOLINTBEGIN(bugprone-macro-parentheses) These macros do not need parentheses
 #define WIRE(A, B) auto A##_##B##_wire = module->addWire(NEW_ID_SUFFIX(#A "_" #B "_wire"));
-#define NOT(number, A, B) auto *not##number = module->addLogicNot(NEW_ID_SUFFIX("not" #number), A, B)
-#define AND(number, A, B, Y) auto *and##number = module->addLogicNot(NEW_ID_SUFFIX("and" #number), A, B, Y)
-#define OR(number, A, B, Y) auto *or##number = module->addLogicOr(NEW_ID_SUFFIX("or" #number), A, B, Y)
+#define NOT(number, A, B) module->addLogicNot(NEW_ID_SUFFIX("not" #number), A, B)
+#define AND(number, A, B, Y) module->addLogicAnd(NEW_ID_SUFFIX("and" #number), A, B, Y)
+#define OR(number, A, B, Y) module->addLogicOr(NEW_ID_SUFFIX("or" #number), A, B, Y)
 // NOLINTEND(bugprone-macro-parentheses)
 
 void tamara::VoterBuilder::build(RTLIL::Design *design) {
@@ -39,7 +39,6 @@ void tamara::VoterBuilder::build(RTLIL::Design *design) {
 
     // add wires to ports
     module->fixup_ports();
-
 
     // N.B. This is all based on the Logisim design (tests/manual_tests/simple_tmr.circ)
 
@@ -92,16 +91,10 @@ void tamara::VoterBuilder::build(RTLIL::Design *design) {
     OR(1, and2_or1_wire, and3_or1_wire, or1_or3_wire);
 
     // or0, and4 -> or2 -> out
-    WIRE(or2, out);
-    OR(2, or0_or2_wire, and4_or2_wire, or2_out_wire);
+    OR(2, or0_or2_wire, and4_or2_wire, out);
 
     // or1, and5 -> or3 -> err
-    WIRE(or3, err);
-    OR(3, or1_or3_wire, and5_or3_wire, or3_err_wire);
+    OR(3, or1_or3_wire, and5_or3_wire, err);
 
-
-
-    // FIXME now we need to connect all the wires!, or find some other way of doing this using RTLIL::Sig
-    //module->connect(and2, or3);
-    // I'm not sure if the wires are the way to go tbh
+    module->check();
 }
