@@ -290,6 +290,32 @@ checking in the TMR verification stage. This is especially important since Johns
 formally verify his approach. Benites' usage of formal verification, in particular, equivalence checking, is
 an excellent starting point to design the verification methodology for TaMaRa.
 
+Xilinx, the largest designer of FPGAs, also has a netlist-level TMR software package known as TMRTool
+@Xilinx2017. This implements a Xilinx proprietary algorithm known as XTMR, which differs from traditional TMR
+approaches in that it also aims to correct faults introduced into the circuit by SEUs. Xilinx also aims to
+address single-event transients ("SETs"), where ionising radiation causes voltage spikes on the FPGA routing
+fabric. TMRTool follows a similar approach to the other netlist-level algorithms described above, with some
+small improvements and Xilinx-specific features. The flow first triplicates all inputs, combinatorial logic
+and routing. Then, it inserts voters downstream in the circuit, particularly on finite state machine (FSM)
+feedback paths. One important difference is that, at this point in the flow, Xilinx also decides to triplicate
+the voters themselves. This means there is no single point of failure (which improves redundancy), although
+it has a higher area cost than approaches that do not triplicate voters. In addition, TMRTool is designed to
+be used with configuration scrubbing.
+
+#TODO("config scrubbing app note citation")
+
+Two very relevant components of TMRTool to the TaMaRa algorithm are its consideration of feedback paths for
+FSMs, and consideration of redundant clock domains. Both of these considerations are mentioned in the other
+netlist-level approaches, but it seems to occupy a considerable amount of engineering time and effort for
+Xilinx, and thus can be expected to be a significant issue for TaMaRa as well. TMRTool's FSM feedback is
+important to ensure the synchronisation of triplicated redundant FSMs, but unfortunately requires manual
+verification in some cases to ensure Xilinx's synthesis has not caused problems with the design. Finally,
+TMRTool also a very flexible architecture. The implementation strategy can be customised to various different
+approaches. Most are Xilinx-specific, but two relevant ones to TaMaRa are "Standard" and "Don't Touch".
+Standard works by triplicating the underlying FPGA primitives and inserting voters, as usual. "Don't Touch",
+however, is important to be added to FPGA primitives that cannot be replicated, and avoids TMR entirely. This
+would be very beneficial to add as an option to the TaMaRa algorithm.
+
 On the lower level side, Hindman et al. @Hindman2011 introduce an ASIC standard-cell based automated TMR
 approach. When digital circuits are synthesised into ASICs, they are technology mapped onto standard cells
 provided by the foundry as part of their Process Design Kit (PDK). For example, SkyWater Technology provides
@@ -309,8 +335,6 @@ TaMaRa will have worse power, performance and area (PPA) trade-offs on ASICs tha
 general in that it can target FPGAs _and_ ASICs due to being integrated directly into Yosys. Nevertheless, it
 would appear that for the specific case of targeting the best PPA trade-offs for TMR on ASICs, the approach
 described in @Hindman2011 is the most optimal one available.
-
-#TODO("Xilinx industry paper")
 
 // future research topic! design a rad hardened FPGA using this approach!
 
