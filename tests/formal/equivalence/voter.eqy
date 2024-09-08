@@ -11,4 +11,4 @@ prep -top voter
 [strategy sby]
 use sby
 depth 2
-engine smtbmc z3
+engine smtbmc boolector

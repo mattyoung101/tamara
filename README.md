@@ -91,8 +91,11 @@ On Arch, you can install them from the AUR using your package manager, something
 mcy-nightly`. You will also need the nightly version of Yosys, which you can install using `yay -S
 yosys-nightly`.
 
-Once you've installed these tools, you will also need an SMT solver backend. I recommend using either, or
-both, of z3 and Bitwuzla. You can install them using `yay -S z3 bitwuzla`.
+Once you've installed these tools, you will also need an SMT solver backend. I recommend installing z3, yices,
+Bitwuzla and Boolector. You can install them using `yay -S z3 bitwuzla-git boolector yices`. Note that there
+is currently an [upstream issue](https://github.com/YosysHQ/oss-cad-suite-build/issues/87) (of which I have
+made a [pull request](https://github.com/YosysHQ/yosys/pull/4589) to partially fix) that currently prevents
+Bitwuzla from working with Yosys, so you'll have to rely on z3, boolector or yices.
 
 Once this is complete, in the `build` directory, use `eqy -f ../tests/formal/equivalence/<test>.eqy` for
 equivalence checking.
