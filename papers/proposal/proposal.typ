@@ -86,6 +86,7 @@
 
 #pagebreak()
 
+#set par(justify: true)
 = Background and introduction
 For safety-critical sectors such as aerospace and defence, both Application Specific Integrated Circuits
 (ASICs) and Field Programmable Gate Array (FPGA) gateware must be designed to be fault tolerant to prevent
@@ -144,7 +145,7 @@ cannot be modified by researchers. Until recently, there was no freely available
 EDA tool available for study and improvement. That changed with the introduction of Yosys @Wolf2013. Yosys is
 a capable synthesis tool that can emit optimised netlists for various FPGA families as well as a few silicon
 process nodes (e.g. Skywater 130nm). When combined with the Nextpnr place and route tool @Shah2019,
-Yosys+nextpnr forms a fully end-to-end FPGA synthesis flow for Lattice iCE40 and ECP5 devices. Importantly,
+Yosys+Nextpnr forms a fully end-to-end FPGA synthesis flow for Lattice iCE40 and ECP5 devices. Importantly,
 for this thesis, Yosys can be modified either by changing the source code or by developing modular plugins
 that can be dynamically loaded at runtime.
 
@@ -171,7 +172,7 @@ background literature on fault-tolerant computing.
 == Fault tolerant computing and redundancy
 The application of triple modular redundancy to computer systems was first introduced into academia by Lyons
 and Vanderkul @Lyons1962 in 1962. Like much of computer science, however, the authors trace the original
-concept back to John von Neumann . In addition to introducing the application of TMR to computer systems, the
+concept back to John von Neumann. In addition to introducing the application of TMR to computer systems, the
 authors also provide a rigorous Monte-Carlo mathematical analysis of the reliability of TMR. One important
 takeaway from this is that the only way to make a system reliably redundant is to split it into multiple
 components, each of which is more reliable than the system as a whole. In the modern FPGA concept, this
@@ -298,9 +299,9 @@ fabric. TMRTool follows a similar approach to the other netlist-level algorithms
 small improvements and Xilinx-specific features. The flow first triplicates all inputs, combinatorial logic
 and routing. Then, it inserts voters downstream in the circuit, particularly on finite state machine (FSM)
 feedback paths. One important difference is that, at this point in the flow, Xilinx also decides to triplicate
-the voters themselves. This means there is no single point of failure (which improves redundancy), although
-it has a higher area cost than approaches that do not triplicate voters. In addition, TMRTool is designed to
-be used with configuration scrubbing. Xilinx has much further research on FPGA configuration scrubbing
+the voters themselves. This means there is no single point of failure (which improves redundancy), although it
+has a higher area cost than approaches that do not triplicate voters. In addition, TMRTool is designed to be
+used with configuration scrubbing. Xilinx has much further research on FPGA configuration scrubbing
 @Bridford2008. The two main approaches are either a full reboot, or a partial runtime reconfiguration. Since
 the FPGA configuration is stored in an SRAM that's read at boot-up, a full reboot will naturally reconfigure
 the device, and thus correct any logic/routing issues caused by SEUs. However, a more efficient solution is
@@ -309,19 +310,18 @@ runtime reconfiguration. Unfortunately, as noted in the Xilinx documentation, th
 a vendor-specific process. It would not be possible to design a multi-vendor runtime reconfiguration approach,
 and worse still, much of this specification is still undocumented and proprietary, precluding its integration
 with Yosys or Nextpnr. Despite this, we could provide end-users with an error signal from the majority voter,
-which could be used to one form of reconfiguration if desired.
-#TODO("citation on this")
-The two most relevant components of TMRTool to the TaMaRa algorithm are its consideration of feedback paths
-for FSMs, and its consideration of redundant clock domains. Both of these considerations are mentioned in the
-other netlist-level approaches, but it seems to occupy a considerable amount of engineering time and effort
-for Xilinx, and thus can be expected to be a significant issue for TaMaRa as well. TMRTool's FSM feedback is
-important to ensure the synchronisation of triplicated redundant FSMs, but unfortunately requires manual
-verification in some cases to ensure Xilinx's synthesis has not introduced problems to the design. Finally,
-TMRTool also has a very flexible architecture. The implementation strategy can be customised to various
-different approaches. Most are Xilinx-specific, but two relevant ones to TaMaRa are "Standard" and "Don't
-Touch". "Standard" works by triplicating the underlying FPGA primitives and inserting voters, as usual. "Don't
-Touch", however, is important to be added to FPGA primitives that cannot be replicated, and avoids TMR
-entirely. This would be very beneficial to add as an option to the TaMaRa algorithm.
+which could be used to one form of reconfiguration if desired. The two most relevant components of TMRTool to
+the TaMaRa algorithm are its consideration of feedback paths for FSMs, and its consideration of redundant
+clock domains. Both of these considerations are mentioned in the other netlist-level approaches, but it seems
+to occupy a considerable amount of engineering time and effort for Xilinx, and thus can be expected to be a
+significant issue for TaMaRa as well. TMRTool's FSM feedback is important to ensure the synchronisation of
+triplicated redundant FSMs, but unfortunately requires manual verification in some cases to ensure Xilinx's
+synthesis has not introduced problems to the design. Finally, TMRTool also has a very flexible architecture.
+The implementation strategy can be customised to various different approaches. Most are Xilinx-specific, but
+two relevant ones to TaMaRa are "Standard" and "Don't Touch". "Standard" works by triplicating the underlying
+FPGA primitives and inserting voters, as usual. "Don't Touch", however, is important to be added to FPGA
+primitives that cannot be replicated, and avoids TMR entirely. This would be very beneficial to add as an
+option to the TaMaRa algorithm.
 
 On the lower level side, Hindman et al. @Hindman2011 introduce an ASIC standard-cell based automated TMR
 approach. When digital circuits are synthesised into ASICs, they are technology mapped onto standard cells
@@ -609,12 +609,33 @@ level of granularity they want to apply TMR at. Johnson's algorithm processes th
 whereas TaMaRa aims to use the `triplicate` annotation to allow more fine-grained selections, allowing studies
 to compare different levels of TMR design granularity.
 
-I propose a modification to the synthesis flow that inserts TaMaRa after technology mapping
-(@fig:tamarasynthflow). This means that the circuit can be processed at a low level, without having to worry
-about optimisation removing the redundant logic.
+I propose a modification to the synthesis flow that inserts TaMaRa before technology mapping
+(@fig:tamarasynthflow). This means that the circuit can be processed at a low level, with less concerns about
+optimisation removing the redundant TMR logic. However, as shown in @list:synthecp5, some Yosys synthesis
+scripts do perform additional optimisation _after_ technology mapping, which again risks the removal of the
+TMR logic. Yet, we also cannot operate after technology mapping, since TaMaRa voter circuits are described
+using relatively high level circuit primitives (AND gates, NOT gates, etc) instead of vendor-specific FPGA
+primitives like LUTs. This presents a serious issue, and the solution is not immediately clear as of the time
+of writing. The best solution is likely either going to be modifying the synthesis scripts, or patching Yosys
+to add an option to skip the `opt` passes if requested.
+
+// TODO format this a bit better, bold the opt call
+#figure(
+    ```
+    map_gates:
+        techmap -map +/techmap.v -map +/ecp5/arith_map.v
+        iopadmap -bits -outpad OB I:O -inpad IB O:I -toutpad OBZ ~T:I:O -tinoutpad BB ~T:O:I:B A:top    (only if '-iopad')
+        attrmvcp -attr src -attr LOC t:OB %x:+[O] t:OBZ %x:+[O] t:BB %x:+[B]
+        attrmvcp -attr src -attr LOC -driven t:IB %x:+[I]
+        opt -fast
+        abc -dff -D 1    (only if -retime)
+    ```,
+    caption: [ Excerpt of Yosys `synth_ecp5` synthesis script for the Lattice ECP5 FPGA, showing the
+    problematic optimisation call in `map_gates` ]
+) <list:synthecp5>
 
 #figure(
-    image("diagrams/tamara_synthesis_flow.svg", width: 80%),
+    image("diagrams/tamara_synthesis_flow.svg", width: 70%),
     caption: [ Proposed modification to synthesis flow including TaMaRa TMR ]
 ) <fig:tamarasynthflow>
 
@@ -643,11 +664,15 @@ TaMaRa aims to address a number of the limitations identified by authors in the 
 have enough physical resources (e.g. trying to replicate a PLL of which only one exists on the FPGA), and that
 synthesis optimisation may remove the redundant TMR logic. TaMaRa will not attempt to legalise the design,
 instead, if an FPGA primitive is attempted to be replicated and there are not enough physical resources to
-back it up, this will be picked up by nextpnr at the placement stage and an error reported. Unfortunately, it
+back it up, this will be picked up by Nextpnr at the placement stage and an error reported. Unfortunately, it
 may not be possible (or at least, not easily possible) to mitigate the problem entirely, so reporting an error
-is the best we can do. Since TaMaRa operates after technology mapping, by which time all optimisation has
-completed, there is no need to worry about the redundant logic being eliminated. This is the key reason for
-the selection of a netlist-level algorithm, rather than a design-level one.
+is the best we can do. TaMaRa operates just before technology mapping, by which time most of Yosys' main
+optimisation passes have completed. This means there is less risk of redundant TMR logic being eliminated.
+However, as mentioned earlier, some synthesis scripts do a final optimisation pass after running the `abc`
+technology mapper. Additional care will need to be taken to ensure that these optimisation passes do not
+disrupt the TMR logic. If these final optimisations need to be disabled entirely, it is possible that
+resulting designs will be slightly less optimal. However, this is still a much better outcome than for example
+Lee @Lee2017, who disables _all_ optimisations that interfere with TMR throughout the entire pipeline.
 
 Some existing approaches @Johnson2010 @Skouson2020 @Lee2017 @Khatri2018 do not have a rigorous verification
 methodology, or a methodology which lacks formal verification. TaMaRa aims to be production grade, so I
@@ -747,8 +772,7 @@ TaMaRa C++ plugin code and full test suite, under the open-source Mozilla Public
 copyleft licence used by projects like Firefox and Eigen, that elegantly balances the desire for TaMaRa to
 receive contributions back to its upstream, with developer freedoms to use TaMaRa how they see fit (including
 in proprietary software). I strongly believe this is the right thing to do, as TaMaRa is built on the back of
-brilliant open-source projects like Yosys. Although I will make every attempt possible to release TaMaRa
-open-source, I may be limited by UQ IP policies.
+brilliant open-source projects like Yosys.
 
 If the project goes well, I would also like to publish TaMaRa in a journal or conference. I am a strong
 believer in open science, and will make every attempt possible to either publish TaMaRa in an open access
