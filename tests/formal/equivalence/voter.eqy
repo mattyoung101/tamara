@@ -1,0 +1,14 @@
+[gold]
+read_verilog -sv ../tests/verilog/voter.sv
+prep -top voter
+
+[gate]
+plugin -i libtamara.so
+tamara_debug mkvoter
+rename $auto$voter_builder.cpp:23:build$tamara_voter$1 voter
+prep -top voter
+
+[strategy sby]
+use sby
+depth 2
+engine smtbmc z3

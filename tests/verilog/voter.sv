@@ -6,8 +6,6 @@ module voter(
     output logic out,
     output logic err
 );
-
     assign out = (a && b) || (b && c) || (a && c);
-    assign err = (a && b && c) || (!a && !b && !c);
-
+    assign err = (!a && c) || (a && !b) || (b && !c);
 endmodule

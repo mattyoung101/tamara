@@ -82,6 +82,29 @@ If you have Yosys installed on your system, you can run `ninja install` to insta
 TODO
 
 ## Testing and verification
+**Formal verification**
+
+The formal verification flows are based on Yosys' excellent [eqy](https://github.com/YosysHQ/eqy) and
+[mcy](https://github.com/YosysHQ/mcy) tools.
+
+On Arch, you can install them from the AUR using your package manager, something like: `yay -S eqy-nightly
+mcy-nightly`. You will also need the nightly version of Yosys, which you can install using `yay -S
+yosys-nightly`.
+
+Once you've installed these tools, you will also need an SMT solver backend. I recommend using either, or
+both, of z3 and Bitwuzla. You can install them using `yay -S z3 bitwuzla`.
+
+Once this is complete, in the `build` directory, use `eqy -f ../tests/formal/equivalence/<test>.eqy` for
+equivalence checking.
+
+TODO: mutation coverage
+
+**Fault-injection simulation**
+
+TODO
+
+**Bitstream fault injection using ecp5_shotgun**
+
 TODO
 
 ## Compiling papers
