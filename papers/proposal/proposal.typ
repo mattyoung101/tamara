@@ -195,22 +195,22 @@ increases, the computer will eventually become less reliable. This is due to the
 may not themselves be perfectly reliable, and is important to note for FPGA and ASIC designs which may
 instantiate hundreds or potentially thousands of modules.
 
-For ASICs, instead of triple modular redundancy, ASICs can be designed using rad-hardened CMOS process nodes
-or design techniques. Much has been written about rad-hardened microprocessors, of which many are deployed
-(and continue to be deployed) in space to this day. One such example is the RAD750 @Berger2001, a rad-hardened
-PowerPC CPU for space applications designed by Berger et al. of BAE Systems. They claim "5-6 orders of
-magnitude" better SEU performance compared to a stock PowerPC 750 under intense radiation conditions. The
-processor is manufactured on a six-layer commercial 250 nm process node, using specialty design considerations
-for the RAM, PLLs, and standard cell libraries. Despite using special design techniques, the process node
-itself is standard commercial CMOS node and is not inherently rad-hardened. The authors particularly draw
-attention to the development of a special SEU-hardened RAM cell, although unfortunately they do not elaborate
-on the exact implementation method used. However, they do mention that these techniques increase the die area
-from 67 mm#super("2") in a standard PowerPC 750, to 120 mm#super("2") in the RAD750, a \~1.7x increase. Berger
-et al. also used an extensive verification methodology, including the formal verification of the gate-level
-netlist and functional VHDL simulation. The RAD750 has been deployed on numerous high-profile missions
-including the James Webb Space Telescope and Curiosity Mars rover. Despite its wide utilisation, however, the
-RAD750 remains extremely expensive - costing over \$200,000 USD in 2021 @Hagedoorn2021. This makes it well out
-of the reach of research groups, and possibly even difficult to acquire for space agencies like NASA.
+Instead of triple modular redundancy, ASICs can be designed using rad-hardened CMOS process nodes or design
+techniques. Much has been written about rad-hardened microprocessors, of which many are deployed (and continue
+to be deployed) in space to this day. One such example is the RAD750 @Berger2001, a rad-hardened PowerPC CPU
+for space applications designed by Berger et al. of BAE Systems. They claim "5-6 orders of magnitude" better
+SEU performance compared to a stock PowerPC 750 under intense radiation conditions. The processor is
+manufactured on a six-layer commercial 250 nm process node, using specialty design considerations for the RAM,
+PLLs, and standard cell libraries. Despite using special design techniques, the process node itself is
+standard commercial CMOS node and is not inherently rad-hardened. The authors particularly draw attention to
+the development of a special SEU-hardened RAM cell, although unfortunately they do not elaborate on the exact
+implementation method used. However, they do mention that these techniques increase the die area from 67
+mm#super("2") in a standard PowerPC 750, to 120 mm#super("2") in the RAD750, a \~1.7x increase. Berger et al.
+also used an extensive verification methodology, including the formal verification of the gate-level netlist
+and functional VHDL simulation. The RAD750 has been deployed on numerous high-profile missions including the
+James Webb Space Telescope and Curiosity Mars rover. Despite its wide utilisation, however, the RAD750 remains
+extremely expensive - costing over \$200,000 USD in 2021 @Hagedoorn2021. This makes it well out of the reach
+of research groups, and possibly even difficult to acquire for space agencies like NASA.
 
 In addition to commercial CMOS process nodes, there are also specialty rad-hardened process nodes designed by
 several fabs. One such example is Skywater Technologies' 90 nm FD-SOI ("Fully Depleted Silicon-On-Insulator")
@@ -246,7 +246,8 @@ EDA. Johnson's algorithm operates on a post-synthesis netlist before technology 
 three copies of the original circuit, then triplicates component instantiations and wire nets, and finally
 connects the nets in such a way that the behaviour of the original circuit is preserved. This is described as
 the "easy part" of TMR - the more complex step is selecting both a valid _and_ optimal placement for majority
-voters. Johnson identifies four main classes of voters:
+voters. Johnson identifies four main classes of voters. Note that in this section, "SRAM scrubbing" refers to
+Johnson's method of dynamic runtime reconfiguration of the FPGA configuration SRAM to correct SEUs.
 
 1. *Reducing voters*: Combines the output from three TMR replicas into a single output, in other words,
     a single majority voter. Used on circuit outputs.
@@ -260,7 +261,7 @@ voters. Johnson identifies four main classes of voters:
     and having _too many_ partitions which reduces reliability due to the voters being affected. This relates
     to the early research conducted by Lyons and Vanderkul @Lyons1962.
 3. *Clock domain crossing voters*: These are used due to the special considerations when TMR circuits cross
-    multiple clock domain. In particular, metastability effects are a serious consideration for clock domain
+    multiple clock domains. In particular, metastability effects are a serious consideration for clock domain
     crossing voters. Johnson implements this type of voter using a small train of consecutive flip-flops to
     attempt to reduce the probability of metastable values propagating. However, for TaMaRa, due to the very
     tight time constraints of an Honours thesis, we will likely not consider multiple clock domains, and thus
@@ -272,10 +273,22 @@ voters. Johnson identifies four main classes of voters:
     the majority voters. Rather than supporting dynamic SRAM scrubbing (as in Bridford et al. @Bridford2008),
     we will suggest users simply reset the device when a fault is detected.
 
-// TODO illegal voter locations
-
-The rest of Johnson's voter insertion algorithm is based on Strongly Connected Component (SCC) graph theory
-partitioning on the netlist.
+One other consideration that Johnson takes into account is illegal or undesirable voter cuts (a "voter cut" is
+his terminology for splicing a netlist and inserting a majority voter). He notes that some netlist cuts are
+illegal, for example, some Xilinx FPGAs do not support configurable routing between different types of
+primitives, particularly DSP primitives. He also very interestingly notes that there are undesirable, but not
+strictly illegal cuts that may be performed. These would, for example, break high speed carry chains on Xilinx
+devices and impact performance. This is a very interesting observation, as it implies the possibility of a
+placement/routing aware TMR algorithm. This is a fascinating topic for future research, but time does not
+permit its implementation in TaMaRa. Instead, TaMaRa will likely leave design legalisation to Nextpnr and not
+strictly consider performance when inserting voters. The majority of Johnson's work, and the complexity he
+describes, concerns the insertion of synchronisation voters using graph theory algorithms such as Strongly
+Connected Components (SCC). For TaMaRa, we declared that we do not need synchronisation voters, as we do not
+perform dynamic SRAM scrubbing, instead fully rebooting the device if we detect a fault. This should mean that
+TaMaRa is a lot easier to implement. Nonetheless, however, I believe it may be possible to use some of
+Johnson's SCC algorithm to elegantly decompose a netlist into partitions, and insert partition voters. We will
+most likely insert reducing voters and partitioning voters, and if time permits, clock domain crossing voters
+as well.
 
 Whilst they provide an excellent design of TMR insertion algorithms, and a very thorough analysis of their
 area and timing trade-offs, Johnson and Wirthlin do not have a rigorous analysis of the
@@ -337,7 +350,8 @@ point to design the verification methodology for TaMaRa.
 
 Xilinx, the largest designer of FPGAs, also has a netlist-level TMR software package known as TMRTool
 @Xilinx2017. This implements a Xilinx proprietary algorithm known as XTMR, which differs from traditional TMR
-approaches in that it also aims to correct faults introduced into the circuit by SEUs. Xilinx also aims to
+approaches in that it also aims to correct faults introduced into the circuit by SEUs (rather than just
+masking their existence). Xilinx also aims to
 address single-event transients ("SETs"), where ionising radiation causes voltage spikes on the FPGA routing
 fabric. TMRTool follows a similar approach to the other netlist-level algorithms described above, with some
 small improvements and Xilinx-specific features. The flow first triplicates all inputs, combinatorial logic
@@ -480,7 +494,8 @@ to repurpose parts of his work for TaMaRa. One aspect that would work particular
 itself is step 3 from the algorithm, clock and reset tree verification. Yosys already has tools to identify
 clock and reset lines, so it should not be too much extra work to build a pass that verifies the clock and
 resets in the netlist are suitable for TMR. In addition, parts of Beltrame's algorithm may be implementable
-using other Yosys formal verification tools, particularly SymbiYosys.
+using other Yosys formal verification tools, particularly SymbiYosys. His terminology as well, particularly
+the use of "logic cones", will likely be critical in the development of TaMaRa.
 
 // TODO does yosys actually have clock detection code??
 
@@ -505,7 +520,7 @@ To investigate these research questions, I propose two major project aims we sho
 
 1. To design a C++ plugin for the Yosys synthesis tool that, when presented with any Yosys-compatible
     HDL input, will apply an algorithm to turn the selected HDL module(s) into a triply modular redundant design,
-    suitable for space.
+    suitable for space applications.
 2. To design and a implement a comprehensive verification process for the above pass, including the use of formal
     methods, HDL simulation, fuzzing and potential real-life radiation exposure.
 
@@ -631,13 +646,14 @@ their justifications. The capitalised keywords are to be interpreted according t
 To design the TaMaRa algorithm, I synthesise existing approaches from the literature review to form a novel
 approach suitable for implementation in Yosys. Specifically, I synthesise the voter insertion algorithms of
 Johnson @Johnson2010, the RTL annotation-driven approach of Kulis @Kulis2017, and parts of the verification
-methodology of Benites @Benites2018, to form the TaMaRa algorithm and verification methodology. Based on the
-dichotomy identified in @section:litintro, TaMaRa will be classified as a _netlist-level_ approach, as the
-algorithms are designed by treating the design as a circuit (rather than HDL). Despite this, TaMaRa aims to
-combine the best of both worlds, by supporting a `triplicate` annotation that allows end users to select the
-level of granularity they want to apply TMR at. Johnson's algorithm processes the entire netlist in one go,
-whereas TaMaRa aims to use the `triplicate` annotation to allow more fine-grained selections, allowing studies
-to compare different levels of TMR design granularity.
+methodology of Benites @Benites2018 and Beltrame @Beltrame2015, to form the TaMaRa algorithm and verification
+methodology. Based on the dichotomy identified in @section:litintro, TaMaRa will be classified as a
+_netlist-level_ approach, as the algorithms are designed by treating the design as a circuit (rather than
+HDL). Despite this, TaMaRa aims to combine the best of both worlds, by supporting a `(* tamara_triplicate *)`
+annotation that allows end users to select the level of granularity they want to apply TMR at. Johnson's
+algorithm processes the entire netlist in one go, whereas TaMaRa aims to use the `(* tamara_triplicate *)`
+annotation to allow more fine-grained selections, allowing studies to compare different levels of TMR design
+granularity.
 
 I propose a modification to the synthesis flow that inserts TaMaRa before technology mapping
 (@fig:tamarasynthflow). This means that the circuit can be processed at a low level, with less concerns about
@@ -647,7 +663,9 @@ TMR logic. Yet, we also cannot operate after technology mapping, since TaMaRa vo
 using relatively high level circuit primitives (AND gates, NOT gates, etc) instead of vendor-specific FPGA
 primitives like LUTs. This presents a serious issue, and the solution is not immediately clear as of the time
 of writing. The best solution is likely either going to be modifying the synthesis scripts, or patching Yosys
-to add an option to skip the `opt` passes if requested.
+to add an option to skip the `opt` passes if requested. One other, more complicated solution is to actually
+synthesise the voters directly to vendor-specific FPGA primitives, and then insert those directly into the
+post-synthesis netlist. This will be implemented if time permits.
 
 // TODO format this a bit better, bold the opt call
 #figure(
@@ -657,7 +675,7 @@ to add an option to skip the `opt` passes if requested.
         iopadmap -bits -outpad OB I:O -inpad IB O:I -toutpad OBZ ~T:I:O -tinoutpad BB ~T:O:I:B A:top    (only if '-iopad')
         attrmvcp -attr src -attr LOC t:OB %x:+[O] t:OBZ %x:+[O] t:BB %x:+[B]
         attrmvcp -attr src -attr LOC -driven t:IB %x:+[I]
-        opt -fast
+        opt -fast       # NOTE: Problematic "opt" call here!
         abc -dff -D 1    (only if -retime)
     ```,
     caption: [ Excerpt of Yosys `synth_ecp5` synthesis script for the Lattice ECP5 FPGA, showing the
@@ -679,11 +697,11 @@ I am electing to develop a plugin due to specific personal advice from the Yosys
 
 Briefly, the general overview of the TaMaRa algorithm looks as follows:
 
-1. Propagate the `(* triplicate *)` annotation. For example, if a module is marked with triplicate,
-    then all ports and processes in it should also be marked with `triplicate`.
-2. Mark cells with the `triplicate` annotation in the netlist
-3. Replicate each cell marked with the `triplicate` annotation an additional 2 times
-    (so there are now 3 instances of each cell with the `triplicate` annotation)
+1. Propagate the `(* tamara_triplicate *)` annotation. For example, if a module is marked with triplicate,
+    then all ports and processes in it should also be marked with `tamara_triplicate`.
+2. Mark cells with the `tamara_triplicate` annotation in the netlist
+3. Replicate each cell marked with the `tamara_triplicate` annotation an additional 2 times
+    (so there are now 3 instances of each cell with the `tamara_triplicate` annotation)
 4. Wire up the replicated cells to the original circuit
 5. Construct a simplified graph representation from the updated netlist (including with the added replicas)
 6. Insert voters using Johnson's algorithm @Johnson2010 @Johnson2010a, using the graph we generated in prior
@@ -724,7 +742,8 @@ verification can be broken down as follows:
 - *Equivalence checking (fuzzing):* This aims to prove that TaMaRa does not change the underlying behaviour of the
     circuit after it's run. TMR is only supposed to make the circuit redundant, not change its behaviour or
     timing. The methodology is as follows:
-    1. Randomly generate Verilog using Verismith @Herklotz2020
+    1. Randomly generate Verilog using Verismith @Herklotz2020 #footnote([Note that initial testing thus far
+has proven Verismith very challenging to build, which in the worst case may prevent its usage in TaMaRa.])
     2. Run TaMaRa and synthesise the circuit
     3. Use _SymbiYosys_ and _eqy_ to check that the circuits before and after TMR are identical
 - *Mutation coverage:* This aims to prove that TMR works as intended. Ideally, I would also like to use
@@ -738,6 +757,17 @@ verification can be broken down as follows:
     4. Use TaMaRa to add TMR and synthesise the circuit
     5. Inject faults into the redundant netlist
     6. Use mcy to check that the injected faults are removed by the TMR process
+
+Despite saying all this, due to time constraints, there are various complexities of real world circuits that
+TaMaRa may not be able to address. This particularly concerns the complexities laid out in detail by Johnson
+@Johnson2010a in his thesis concerning clock domain crossing (particularly metastability) and synchronisation
+issues of dynamic SRAM scrubbing. TaMaRa is currently planned to avoid these issues by detecting problematic
+clock domain crossing signals and throwing an error, and leaving SRAM scrubbing for the end user to implement.
+If users do wish to perform SRAM scrubbing, there is an error signal attached to each voter, which could for
+example be triggered to simply reboot the device as Bridford et al. @Bridford2008 identified. Additionally, as
+TaMaRa aims to support ASICs as well (which cannot be runtime reconfigured), SRAM scrubbing is not an option
+for every device. In that aspect, TaMaRa aims to be somewhat of a minimalist, whose job is to focus _only_ on
+managing the correct insertion of TMR into an FPGA or ASIC.
 
 == Milestones and timeline
 To design the timeline of the TaMaRa project, I use a Gantt chart, shown below.
