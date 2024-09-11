@@ -15,6 +15,10 @@
   [#text(fill: red, weight: "bold", size: 12pt)[TODO #msg]]
 }
 
+#align(center, [
+    #image("diagrams/uqlogo.png", width: 60%)
+])
+
 #v(6em)
 
 #align(center, text(24pt)[
@@ -27,7 +31,7 @@
 
 #v(3em)
 
-#align(center, text(12pt)[
+#align(center, text(14pt)[
     Matt Young
 
     School of Electrical Engineering and Computer Science
@@ -41,11 +45,19 @@
 
 #v(6em)
 
+#align(center, text(14pt)[
+    Supervisor
+
+    Associate Professor John Williams
+])
+
+#pagebreak()
 #[
 #set par(justify: true)
-#align(center)[
+#align(center, text(16pt)[
     *Abstract*
-
+])
+#align(center)[
     Safety-critical sectors require Application Specific Integrated Circuit (ASIC) designs and Field
     Programmable Gate Array (FPGA) gateware to be fault-tolerant. In particular, space-fairing computers need
     to mitigate the effects of Single Event Upsets (SEUs) caused by ionising radiation. One common
@@ -220,18 +232,50 @@ Nonetheless, specialty rad-hardened ASICs will likely to see future use in space
 entirely possible that a rad-hardened FPGA _in combination_ with an automated TMR technique is the best way of
 ensuring reliability.
 
-#TODO("more background literature on other approaches to rad-hardening: rad-hardened CMOS and TMR CPUs and
-scrubbing")
+// TODO more background literature on other approaches to rad-hardening: rad-hardened CMOS and TMR CPUs and
+// scrubbing
 
-#TODO("more literature defining probabilities and effects of SEUs on ASICs/FPGAs in space")
+// TODO more literature defining probabilities and effects of SEUs on ASICs/FPGAs in space
 
 == Netlist-level approaches
 Recognising that prior literature focused mostly around manual or theoretical TMR, and the limitations of a
 manual approach, Johnson and Wirthlin @Johnson2010 introduced four algorithms for the automatic insertion of
 TMR voters in a circuit, with a particular focus on timing and area trade-offs. Together with the thesis this
 paper was based on @Johnson2010a, these two publications form the seminal works on automated TMR for digital
-EDA.
-#TODO("more details on Johnson")
+EDA. Johnson's algorithm operates on a post-synthesis netlist before technology mapping. First, he creates
+three copies of the original circuit, then triplicates component instantiations and wire nets, and finally
+connects the nets in such a way that the behaviour of the original circuit is preserved. This is described as
+the "easy part" of TMR - the more complex step is selecting both a valid _and_ optimal placement for majority
+voters. Johnson identifies four main classes of voters:
+
+1. *Reducing voters*: Combines the output from three TMR replicas into a single output, in other words,
+    a single majority voter. Used on circuit outputs.
+2. *Partitioning voters*: Used to increase reliability within a circuit by partitioning it, and applying TMR
+    separately to each partition. Johnson states that if only reducing voters were used in a circuit, errors
+    would be masked from SRAM scrubbing as long as they only occur in one replica at a time. In addition,
+    multiple SEUs in close proximity can prevent the TMR redundancy from working correctly. Partitioning
+    voters have the benefit of dividing the circuit into independent partitions that can tolerate SEUs
+    independently. One important takeaway that Johnson mentions is that there is an optimal balance between
+    the number of partitions, which increases the likelihood of separate SEUs affecting multiple partitions,
+    and having _too many_ partitions which reduces reliability due to the voters being affected. This relates
+    to the early research conducted by Lyons and Vanderkul @Lyons1962.
+3. *Clock domain crossing voters*: These are used due to the special considerations when TMR circuits cross
+    multiple clock domain. In particular, metastability effects are a serious consideration for clock domain
+    crossing voters. Johnson implements this type of voter using a small train of consecutive flip-flops to
+    attempt to reduce the probability of metastable values propagating. However, for TaMaRa, due to the very
+    tight time constraints of an Honours thesis, we will likely not consider multiple clock domains, and thus
+    metastable voters will not be required.
+4. *Synchronisation voters*: These are required when SRAM scrubbing is used with TMR that
+    includes sequential logic (i.e. FFs, so most designs). These are meant to restore correct register state
+    after FPGAs are repaired by SRAM scrubbing. Again due to time constraints and the vendor-specific nature
+    of the process, TaMaRa will leave SRAM scrubbing up to the end user, using the provided error signal from
+    the majority voters. Rather than supporting dynamic SRAM scrubbing (as in Bridford et al. @Bridford2008),
+    we will suggest users simply reset the device when a fault is detected.
+
+// TODO illegal voter locations
+
+The rest of Johnson's voter insertion algorithm is based on Strongly Connected Component (SCC) graph theory
+partitioning on the netlist.
 
 Whilst they provide an excellent design of TMR insertion algorithms, and a very thorough analysis of their
 area and timing trade-offs, Johnson and Wirthlin do not have a rigorous analysis of the
@@ -391,23 +435,9 @@ sharing options in Xilinx ISE to prevent sub-expression elimination", but ideall
 such a critical optimisation step just to implement TMR. TaMaRa aims to address this limitation by working
 with Yosys directly.
 
-Khatri et al. @Khatri2018 propose a similar, albeit much less sophisticated approach. They develop a Matlab
-script that ingests a Verilog RTL module, instantiates it three times (to replicate it), and wraps it in a new
-top-level module. They also propose a new majority voter using a 2:1 multiplexer, which they claim has 50%
-better Fault Mask Ratio (FMR) than the traditional AND-gate based approach. The authors test only one single
-circuit, described as a "simple benchmark design", in a fault-injection RTL simulation. They do not use any
-systematic verification methodology that other authors use, only injecting a limited number of faults into one
-single design. Khatri et al. also make no mention of the limitations that other authors identify for this
-high-level TMR approach. This includes the PPA trade-offs that Benites @Benites2018 and Johnson @Johnson2010
-identify, as well as the logic optimisation and resource utilisation issues that Kulis @Kulis2017 correctly
-pointed out. The decision to develop the tool as a GUI application is highly questionable as it significantly
-interrupts the typical command-line based synthesis flow. This is especially true for ASICs, which have very
-long synthesis pipelines that are typically Tcl scripted. Whilst this approach is not exactly very thorough or
-high quality, the higher reliability voter circuit may possibly be worth investigating.
-
 == TMR verification
 While Benites @Benites2018 @Benites2018a discusses verification of the automated TMR process, and other
-authors @Lee2017 @Khatri2018 @Hindman2011 @Berger2001 also use various different verification/testing
+authors @Lee2017 @Hindman2011 @Berger2001 also use various different verification/testing
 methodologies, there is also some literature that exclusively focuses on the verification aspect. Verification
 is one of the most important parts of this process due to the safety-critical nature of the devices TMR is
 typically deployed to. Additionally, there are interesting trade-offs between different verification
@@ -454,7 +484,7 @@ using other Yosys formal verification tools, particularly SymbiYosys.
 
 // TODO does yosys actually have clock detection code??
 
-#TODO("other verification papers?")
+// TODO("other verification papers?
 
 = Project plan
 == Aims of the project
@@ -674,7 +704,7 @@ disrupt the TMR logic. If these final optimisations need to be disabled entirely
 resulting designs will be slightly less optimal. However, this is still a much better outcome than for example
 Lee @Lee2017, who disables _all_ optimisations that interfere with TMR throughout the entire pipeline.
 
-Some existing approaches @Johnson2010 @Skouson2020 @Lee2017 @Khatri2018 do not have a rigorous verification
+Some existing approaches @Johnson2010 @Skouson2020 @Lee2017 do not have a rigorous verification
 methodology, or a methodology which lacks formal verification. TaMaRa aims to be production grade, so I
 consider verification to be an important step in the process of ensuring reliability. As mentioned in the
 engineering requirements and aims, I propose a rigorous verification methodology based on fault-injection
