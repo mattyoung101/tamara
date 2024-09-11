@@ -9,4 +9,4 @@ version: "1.0.0"
 # This option is used to configure Verilator linting, to resolve `include directives, and to index
 # multi-file projects, so it's very important that this is correct and kept up to date.
 includeDirs:
-  - "tests"
+  - "tests/verilog"

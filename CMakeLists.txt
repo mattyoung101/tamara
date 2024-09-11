@@ -17,28 +17,20 @@ add_library(tamara SHARED
     src/voter_builder.cpp
 )
 target_include_directories(tamara PRIVATE include lib/yosys)
-target_compile_options(tamara PRIVATE "-Wall" "-Wextra" "-Wno-unused-parameter" "-ggdb")
+target_compile_options(tamara PRIVATE "-Wall" "-Wextra" "-Wno-unused-parameter" "-ggdb"
+                                      "-fdiagnostics-color=always")
+# note on diagnostic colour: https://stackoverflow.com/a/73349744/5007892
 
 # these based on `yosys-config` on Arch
 target_compile_definitions(tamara PRIVATE -DYOSYS_ENABLE_READLINE -DYOSYS_ENABLE_PLUGINS
     -DYOSYS_ENABLE_GLOB -DYOSYS_ENABLE_ZLIB -DYOSYS_ENABLE_TCL -DYOSYS_ENABLE_ABC -DYOSYS_ENABLE_COVER
     -D_YOSYS_)
 
-# if ("${CMAKE_BUILD_TYPE}" STREQUAL Release)
-#     message(STATUS "Release build")
-#     target_compile_options(tamara PRIVATE "-O3" "-march=native" "-mtune=native")
-#     target_link_options(tamara PRIVATE "-flto=thin")
-# elseif ("${CMAKE_BUILD_TYPE}" STREQUAL Debug)
-#     message(STATUS "Debug build, adding sanitizers")
-#     target_compile_options(tamara PRIVATE "-fsanitize=address" "-fsanitize=undefined"
-#         "-fno-omit-frame-pointer")
-#     target_link_options(tamara PRIVATE "-fsanitize=address" "-fsanitize=undefined")
-# endif()
-
 # We only have a shared object as an artefact, so we can just do this
 # The rest come from GNUInstallDirs
 # Source: https://decovar.dev/blog/2021/03/08/cmake-cpp-library/#install-instructions
 install(TARGETS tamara)
+# TODO install plugin for Yosys
 
 message(STATUS "Checking if LLD is available")
 execute_process(COMMAND "lld" ERROR_VARIABLE LLD_RESULT)
