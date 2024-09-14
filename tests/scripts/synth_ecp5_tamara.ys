@@ -1,0 +1,76 @@
+# hierarchy -check -top <top>
+
+begin:
+    read_verilog -lib -specify +/ecp5/cells_sim.v +/ecp5/cells_bb.v
+    plugin -i libtamara.so
+    tamara_propagate
+
+coarse:
+    proc
+    flatten
+    tribuf -logic
+    deminout
+    opt_expr
+    opt_clean
+    check
+    opt -nodffe -nosdff
+    fsm
+    opt
+    wreduce
+    peepopt
+    opt_clean
+    share
+    techmap -map +/cmp2lut.v -D LUT_WIDTH=4
+    opt_expr
+    opt_clean
+    techmap -map +/mul2dsp.v -map +/ecp5/dsp_map.v -D DSP_A_MAXWIDTH=18 -D DSP_B_MAXWIDTH=18  -D DSP_A_MINWIDTH=2 -D DSP_B_MINWIDTH=2  -D DSP_NAME=$__MUL18X18
+    chtype -set $mul t:$__soft_mul
+    alumacc
+    opt
+    memory -nomap
+    opt_clean
+
+map_ram:
+    memory_libmap -lib +/ecp5/lutrams.txt -lib +/ecp5/brams.txt
+    techmap -map +/ecp5/lutrams_map.v -map +/ecp5/brams_map.v
+
+map_ffram:
+    opt -fast -mux_undef -undriven -fine
+    memory_map
+    opt -undriven -fine
+
+tamara:
+    tamara_tmr
+
+map_gates:
+    techmap -map +/techmap.v -map +/ecp5/arith_map.v
+    attrmvcp -attr src -attr LOC t:OB %x:+[O] t:OBZ %x:+[O] t:BB %x:+[B]
+    attrmvcp -attr src -attr LOC -driven t:IB %x:+[I]
+    opt -fast
+
+map_ffs:
+    opt_clean
+    dfflegalize -cell $_DFF_?_ 01 -cell $_DFF_?P?_ r -cell $_SDFF_?P?_ r [-cell $_DFFE_??_ 01 -cell $_DFFE_?P??_ r -cell $_SDFFE_?P??_ r] [-cell $_ALDFF_?P_ x -cell $_ALDFFE_?P?_ x] [-cell $_DLATCH_?_ x]    ($_ALDFF_*_ only if -asyncprld, $_DLATCH_* only if not -asyncprld, $_*DFFE_* only if not -nodffe)
+    techmap -D NO_LUT -map +/ecp5/cells_map.v
+    opt_expr -undriven -mux_undef
+    simplemap
+    lattice_gsr
+    attrmvcp -copy -attr syn_useioff
+    opt_clean
+
+map_luts:
+    techmap -map +/ecp5/latches_map.v
+    abc9 -W 300
+    clean
+
+map_cells:
+    techmap -map +/ecp5/cells_map.v
+    opt_lut_ins -tech lattice
+    clean
+
+check:
+    autoname
+    hierarchy -check
+    stat
+    check -noinit
+    blackbox =A:whitebox

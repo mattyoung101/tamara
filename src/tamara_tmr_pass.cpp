@@ -7,15 +7,19 @@
 #include "kernel/log.h"
 #include "kernel/register.h"
 #include "kernel/yosys_common.h"
+#include "tamara/util.hpp"
 
 USING_YOSYS_NAMESPACE
 
 PRIVATE_NAMESPACE_BEGIN
 
+using namespace tamara;
+
 //! This is the main TaMaRa TMR command, which starts the TMR process.
 struct TamaraTmrPass : public Pass {
 
-    TamaraTmrPass() : Pass("tamara_tmr", "Starts TaMaRa automated TMR pipeline") {
+    TamaraTmrPass()
+        : Pass("tamara_tmr", "Starts TaMaRa automated TMR pipeline") {
     }
 
     void help() override {
@@ -44,13 +48,18 @@ struct TamaraTmrPass : public Pass {
 
         // process each selected module from the design
         for (auto *const module : design->selected_modules()) {
-            log_push();
-
             log_header(design, "Applying TMR to module: %s\n", log_id(module->name));
-            log("Has processes: %s\n", module->has_processes() ? "yes" : "no");
 
-            log_pop();
+            // find cells to triplicate
+            for (auto *const cell : module->cells()) {
+                if (cell->has_attribute(TRIPLICATE_ANNOTATION) && !cell->has_attribute(IGNORE_ANNOTATION)) {
+                    log("Found a cell to triplicate: %s\n", log_id(cell->name));
+                }
+            }
         }
+
+        // FIXME we want to flatten all the TMR modules, I'm not sure if this is the way to do it
+        Pass::call(design, "flatten");
 
         log_pop();
     }

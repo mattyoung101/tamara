@@ -8,19 +8,20 @@
 #include "kernel/register.h"
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
+#include "tamara/util.hpp"
 #include <vector>
 
 USING_YOSYS_NAMESPACE
 
 PRIVATE_NAMESPACE_BEGIN
 
-const auto TRIPLICATE_ANNOTATION = ID(tamara_triplicate);
-const auto IGNORE_ANNOTATION = ID(tamara_ignore);
+using namespace tamara;
 
 //! The tamara_propagate command propagates (* tamara_triplicate *) Verilog annotations throughout the design.
 struct TamaraPropagatePass : public Pass {
 
-    TamaraPropagatePass() : Pass("tamara_propagate", "Propagates TaMaRa triplicate annotations") {
+    TamaraPropagatePass()
+        : Pass("tamara_propagate", "Propagates TaMaRa triplicate annotations") {
     }
 
     void help() override {
@@ -47,7 +48,7 @@ struct TamaraPropagatePass : public Pass {
         log_pop();
     }
 
-  private:
+private:
     /// Propagate (* tamara_triplicate *) annotations applied to modules to all the module processes and cells
     static void propagateModules(RTLIL::Design *design) {
         for (const auto &module : design->selected_modules()) {
@@ -59,7 +60,7 @@ struct TamaraPropagatePass : public Pass {
                     auto *const process = processPair.second;
                     if (shouldPropagate(process)) {
                         log("    Propagate process '%s'\n", log_id(process->name));
-                        process->set_bool_attribute(TRIPLICATE_ANNOTATION);
+                        process->set_bool_attribute(tamara::TRIPLICATE_ANNOTATION);
                     } else {
                         log("    Ignore process '%s'\n", log_id(process->name));
                     }

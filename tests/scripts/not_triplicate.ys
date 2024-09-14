@@ -1,0 +1,14 @@
+# run from the build directory
+# ninja && yosys -s ../tests/scripts/not_triplicate.ys
+
+plugin -i libtamara.so
+
+read_verilog -sv ../tests/verilog/not_triplicate.sv
+write_rtlil
+tamara_propagate
+prep
+write_rtlil
+
+tamara_tmr
+write_rtlil
+show

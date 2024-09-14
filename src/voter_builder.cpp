@@ -19,7 +19,6 @@ USING_YOSYS_NAMESPACE
 
 void tamara::VoterBuilder::build(RTLIL::Design *design) {
     // generate voter module with a unique name
-    // TODO we may not want to generate a module?
     auto *module = design->addModule(NEW_ID_SUFFIX("tamara_voter"));
 
     // add inputs
