@@ -11,4 +11,4 @@ write_rtlil
 
 tamara_tmr
 write_rtlil
-show
+#show

@@ -14,5 +14,13 @@ namespace tamara {
 
 const auto TRIPLICATE_ANNOTATION = ID(tamara_triplicate);
 const auto IGNORE_ANNOTATION = ID(tamara_ignore);
+const auto REPLICANT_ANNOTATION = ID(tamara_replicant);
+
+//! Returns true if the cell is a DFF.
+constexpr bool isDff(const RTLIL::Cell *cell) {
+    // this logic is borrowed from Yosys wreduce.cc
+    return cell->type.in(ID($dff), ID($dffe), ID($adff), ID($adffe), ID($sdff), ID($sdffe), ID($sdffce),
+        ID($dlatch), ID($adlatch));
+}
 
 } // namespace tamara
