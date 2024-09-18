@@ -12,7 +12,7 @@
 
 USING_YOSYS_NAMESPACE;
 
-void tamara::LogicCone::startSearch(RTLIL::Design *design, RTLIL::Wire *output) {
+void tamara::LogicCone::search(RTLIL::Module *module, RTLIL::Wire *output) {
     // we can fill in the output directly
     outputNode = std::make_shared<IONode>(output);
 }

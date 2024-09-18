@@ -105,8 +105,11 @@ class LogicCone {
 public:
     LogicCone() = default;
 
-    //! Starts building a logic cone by tracing backwards from an output IO to either a DFF or other IO.
-    void startSearch(RTLIL::Design *design, RTLIL::Wire *output);
+    //! Builds a logic cone by tracing backwards from an output IO to either a DFF or other IO.
+    void search(RTLIL::Module *module, RTLIL::Wire *output);
+
+    //! Replicates the RTLIL components in a logic cone
+    void replicate(RTLIL::Module *module);
 
 private:
     TMRGraphNode::Ptr inputNode;
