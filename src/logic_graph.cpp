@@ -84,6 +84,5 @@ void LogicCone::replicate(RTLIL::Module *module) {
 
 void LogicCone::insertVoter(RTLIL::Module *module) {
     log("Inserting voter into logic cone %u\n", id);
-    // UH OH, we need voterBuilder to either work on the module or pass a design in here?
-    //VoterBuilder::build(RTLIL::Design *design)
+    VoterBuilder::build(module);
 }

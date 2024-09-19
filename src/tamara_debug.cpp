@@ -48,7 +48,9 @@ struct TamaraDebug : public Pass {
             design->scratchpad_set_bool("tamara_propagate.didRun", true);
         } else if (task == "mkvoter") {
             log("Generating one voter\n");
-            tamara::VoterBuilder::build(design);
+            auto *top = design->addModule(NEW_ID);
+            tamara::VoterBuilder::build(top);
+            // TODO add output ports and connect voter to output
         } else if (task == "replicateNot") {
             log("Hack to test replicating a NOT gate\n");
 
@@ -60,6 +62,10 @@ struct TamaraDebug : public Pass {
             auto *notGate = findNot(top);
             auto node = std::make_shared<tamara::ElementNode>(notGate, 0);
             node->replicate(top);
+
+            // fake cone
+            auto cone = tamara::LogicCone(0);
+            cone.insertVoter(top);
         } else {
             log_error("Unhandled debug task: '%s'\n", task.c_str());
         }

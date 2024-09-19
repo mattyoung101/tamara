@@ -17,22 +17,18 @@ USING_YOSYS_NAMESPACE
 #define OR(number, A, B, Y) module->addLogicOr(NEW_ID_SUFFIX("or" #number), A, B, Y)
 // NOLINTEND(bugprone-macro-parentheses)
 
-void tamara::VoterBuilder::build(RTLIL::Design *design) {
-    // generate voter module with a unique name
-    auto *module = design->addModule(NEW_ID_SUFFIX("tamara_voter"));
-
+void tamara::VoterBuilder::build(RTLIL::Module *module) {
     // add inputs
-    // these do NOT have the $, because they are public signals (see Yosys manual § 4.2.1)
-    auto *a = module->addWire(ID(a));
-    auto *b = module->addWire(ID(b));
-    auto *c = module->addWire(ID(c));
+    auto *a = module->addWire(NEW_ID_SUFFIX("A"));
+    auto *b = module->addWire(NEW_ID_SUFFIX("B"));
+    auto *c = module->addWire(NEW_ID_SUFFIX("C"));
     a->port_input = true;
     b->port_input = true;
     c->port_input = true;
 
     // add outputs
-    auto *out = module->addWire(ID(out));
-    auto *err = module->addWire(ID(err));
+    auto *out = module->addWire(NEW_ID_SUFFIX("OUT"));
+    auto *err = module->addWire(NEW_ID_SUFFIX("ERR"));
     out->port_output = true;
     err->port_output = true;
 

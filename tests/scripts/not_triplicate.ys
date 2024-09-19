@@ -11,6 +11,5 @@ write_rtlil
 
 tamara_debug replicateNot
 write_rtlil
-write_verilog
 
 show

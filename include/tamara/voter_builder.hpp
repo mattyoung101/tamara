@@ -16,7 +16,7 @@ namespace tamara {
 class VoterBuilder {
 public:
     //! Insert one voter into the design.
-    static void build(RTLIL::Design *design);
+    static void build(RTLIL::Module *module);
 };
 
 }; // namespace tamara

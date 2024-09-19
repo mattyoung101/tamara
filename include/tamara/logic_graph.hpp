@@ -9,7 +9,6 @@
 #include "kernel/yosys_common.h"
 #include <optional>
 #include <queue>
-#include <stdexcept>
 
 USING_YOSYS_NAMESPACE;
 
