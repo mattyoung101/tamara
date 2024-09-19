@@ -13,7 +13,13 @@
 
 USING_YOSYS_NAMESPACE;
 
-void tamara::LogicCone::search(RTLIL::Module *module, RTLIL::Wire *output) {
+using namespace tamara;
+
+const std::vector<TMRGraphNode::Ptr> & ElementNode::computeNeighbours() {
+
+}
+
+void LogicCone::search(RTLIL::Module *module, RTLIL::Wire *output) {
     log_assert(frontier.empty());
     log_assert(cone.empty());
 

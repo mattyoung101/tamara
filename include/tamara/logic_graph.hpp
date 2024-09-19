@@ -20,6 +20,17 @@ public:
     using Ptr = std::shared_ptr<TMRGraphNode>;
 
     explicit TMRGraphNode() = default;
+
+    TMRGraphNode(const TMRGraphNode &) = default;
+
+    TMRGraphNode(TMRGraphNode &&) = delete;
+
+    TMRGraphNode &operator=(const TMRGraphNode &) = default;
+
+    TMRGraphNode &operator=(TMRGraphNode &&) = delete;
+
+    virtual ~TMRGraphNode() = default;
+
     TMRGraphNode(const TMRGraphNode::Ptr &parent)
         : parent(parent) {
     }
@@ -35,6 +46,9 @@ public:
     void addChild(const TMRGraphNode::Ptr &child) {
         children.push_back(child);
     }
+
+    //! Virtual method that sub-classes should override to compute neighbours of this node for BFS
+    virtual const std::vector<TMRGraphNode::Ptr> &computeNeighbours();
 
 private:
     std::optional<TMRGraphNode::Ptr> parent;
@@ -57,6 +71,8 @@ public:
         return cell;
     }
 
+    const std::vector<TMRGraphNode::Ptr> &computeNeighbours() override;
+
 private:
     RTLIL::Cell *cell;
 };
@@ -77,6 +93,8 @@ public:
         return ff;
     }
 
+    const std::vector<TMRGraphNode::Ptr> &computeNeighbours() override;
+
 private:
     RTLIL::Cell *ff;
 };
@@ -96,6 +114,8 @@ public:
     RTLIL::Wire *getIO() {
         return io;
     }
+
+    const std::vector<TMRGraphNode::Ptr> &computeNeighbours() override;
 
 private:
     RTLIL::Wire *io;
