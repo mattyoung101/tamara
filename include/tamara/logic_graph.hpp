@@ -9,6 +9,7 @@
 #include "kernel/yosys_common.h"
 #include <optional>
 #include <queue>
+#include <stdexcept>
 
 USING_YOSYS_NAMESPACE;
 
@@ -18,8 +19,6 @@ namespace tamara {
 class TMRGraphNode {
 public:
     using Ptr = std::shared_ptr<TMRGraphNode>;
-
-    explicit TMRGraphNode() = default;
 
     TMRGraphNode(const TMRGraphNode &) = default;
 
@@ -31,8 +30,15 @@ public:
 
     virtual ~TMRGraphNode() = default;
 
-    TMRGraphNode(const TMRGraphNode::Ptr &parent)
-        : parent(parent) {
+    //! Constructs a new default TMRGraphNode with the given ID. ID must be monotonically increasing.
+    //! Each cone has a unique ID.
+    explicit TMRGraphNode(uint32_t id)
+        : id(id) {
+    }
+
+    TMRGraphNode(const TMRGraphNode::Ptr &parent, uint32_t id)
+        : parent(parent)
+        , id(id) {
     }
 
     std::optional<TMRGraphNode::Ptr> getParent() {
@@ -47,23 +53,34 @@ public:
         children.push_back(child);
     }
 
+    [[nodiscard]] size_t getConeID() const {
+        return id;
+    }
+
     //! Virtual method that sub-classes should override to compute neighbours of this node for BFS
-    virtual const std::vector<TMRGraphNode::Ptr> &computeNeighbours();
+    virtual std::vector<TMRGraphNode::Ptr> computeNeighbours() = 0;
+
+    //! Replicates the node in the RTLIL netlist
+    virtual void replicate(RTLIL::Module *module) = 0;
 
 private:
     std::optional<TMRGraphNode::Ptr> parent;
     std::vector<TMRGraphNode::Ptr> children;
+    uint32_t id;
 };
 
 //! Logic element in the graph, between an FFNode and/or an IONode
 class ElementNode : public TMRGraphNode {
+    friend class FFNode;
+
 public:
-    explicit ElementNode(RTLIL::Cell *cell)
-        : cell(cell) {
+    explicit ElementNode(RTLIL::Cell *cell, uint32_t id)
+        : TMRGraphNode(id)
+        , cell(cell) {
     }
 
-    ElementNode(RTLIL::Cell *cell, const TMRGraphNode::Ptr &parent)
-        : TMRGraphNode(parent)
+    ElementNode(RTLIL::Cell *cell, const TMRGraphNode::Ptr &parent, uint32_t id)
+        : TMRGraphNode(parent, id)
         , cell(cell) {
     }
 
@@ -71,43 +88,33 @@ public:
         return cell;
     }
 
-    const std::vector<TMRGraphNode::Ptr> &computeNeighbours() override;
+    std::vector<TMRGraphNode::Ptr> computeNeighbours() override;
+
+    void replicate(RTLIL::Module *module) override;
 
 private:
     RTLIL::Cell *cell;
 };
 
 //! Flip flop node in the graph
-class FFNode : public TMRGraphNode {
+class FFNode : public ElementNode {
+    // functionally identical to ElementNode, we just need the class to distinguish from ElementNode
 public:
-    explicit FFNode(RTLIL::Cell *ff)
-        : ff(ff) {
-    }
-
-    FFNode(RTLIL::Cell *ff, const TMRGraphNode::Ptr &parent)
-        : TMRGraphNode(parent)
-        , ff(ff) {
-    }
-
     RTLIL::Cell *getFF() {
-        return ff;
+        return cell;
     }
-
-    const std::vector<TMRGraphNode::Ptr> &computeNeighbours() override;
-
-private:
-    RTLIL::Cell *ff;
 };
 
 //! IO port node in the graph
 class IONode : public TMRGraphNode {
 public:
-    explicit IONode(RTLIL::Wire *io)
-        : io(io) {
+    explicit IONode(RTLIL::Wire *io, uint32_t id)
+        : TMRGraphNode(id)
+        , io(io) {
     }
 
-    IONode(RTLIL::Wire *io, const TMRGraphNode::Ptr &parent)
-        : TMRGraphNode(parent)
+    IONode(RTLIL::Wire *io, const TMRGraphNode::Ptr &parent, uint32_t id)
+        : TMRGraphNode(parent, id)
         , io(io) {
     }
 
@@ -115,7 +122,9 @@ public:
         return io;
     }
 
-    const std::vector<TMRGraphNode::Ptr> &computeNeighbours() override;
+    std::vector<TMRGraphNode::Ptr> computeNeighbours() override;
+
+    void replicate(RTLIL::Module *module) override;
 
 private:
     RTLIL::Wire *io;
@@ -124,7 +133,10 @@ private:
 //! Encapsulates the logic elements between two FFs, or two IO ports, or an IO port and an FF
 class LogicCone {
 public:
-    LogicCone() = default;
+    //! Instantiates a new logic cone with the ID. ID must be unique and monotonically increasing.
+    LogicCone(uint32_t id)
+        : id(id) {
+    }
 
     //! Builds a logic cone by tracing backwards from an output IO to either a DFF or other IO.
     void search(RTLIL::Module *module, RTLIL::Wire *output);
@@ -133,7 +145,7 @@ public:
     void replicate(RTLIL::Module *module);
 
     //! Inserts voters into the module
-    void insertVoters(RTLIL::Module *module);
+    void insertVoter(RTLIL::Module *module);
 
     //! Wires up the replicated components and the module
     void wire(RTLIL::Module *module);
@@ -146,6 +158,7 @@ private:
     TMRGraphNode::Ptr outputNode;
     std::vector<TMRGraphNode::Ptr> cone; // list of logic cone elements, to be replicated
     std::queue<TMRGraphNode::Ptr> frontier; // BFS frontier
+    uint32_t id;
 };
 
 } // namespace tamara

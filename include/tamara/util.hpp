@@ -8,16 +8,18 @@
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
 
-USING_YOSYS_NAMESPACE
+USING_YOSYS_NAMESPACE;
 
 namespace tamara {
 
 const auto TRIPLICATE_ANNOTATION = ID(tamara_triplicate);
 const auto IGNORE_ANNOTATION = ID(tamara_ignore);
-const auto REPLICANT_ANNOTATION = ID(tamara_replicant);
+const auto REPLICA_ANNOTATION = ID(tamara_replica);
+const auto CONE_ANNOTATION = ID(tamara_cone);
+const auto ORIGINAL_ANNOTATION = ID(tamara_original);
 
 //! Returns true if the cell is a DFF.
-constexpr bool isDff(const RTLIL::Cell *cell) {
+constexpr bool isDFF(const RTLIL::Cell *cell) {
     // this logic is borrowed from Yosys wreduce.cc
     return cell->type.in(ID($dff), ID($dffe), ID($adff), ID($adffe), ID($sdff), ID($sdffe), ID($sdffce),
         ID($dlatch), ID($adlatch));

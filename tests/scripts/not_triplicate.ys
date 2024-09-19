@@ -9,6 +9,8 @@ tamara_propagate
 prep
 write_rtlil
 
-tamara_tmr
+tamara_debug replicateNot
 write_rtlil
-#show
+write_verilog
+
+show

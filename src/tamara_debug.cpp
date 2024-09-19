@@ -8,6 +8,7 @@
 #include "kernel/register.h"
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
+#include "tamara/logic_graph.hpp"
 #include "tamara/voter_builder.hpp"
 #include <vector>
 
@@ -18,7 +19,8 @@ PRIVATE_NAMESPACE_BEGIN
 //! The tamara_debug command is used for debugging various TaMaRa features.
 struct TamaraDebug : public Pass {
 
-    TamaraDebug() : Pass("tamara_debug", "Used to debug various TaMaRa features") {
+    TamaraDebug()
+        : Pass("tamara_debug", "Used to debug various TaMaRa features") {
     }
 
     void help() override {
@@ -47,12 +49,33 @@ struct TamaraDebug : public Pass {
         } else if (task == "mkvoter") {
             log("Generating one voter\n");
             tamara::VoterBuilder::build(design);
-            // TODO
+        } else if (task == "replicateNot") {
+            log("Hack to test replicating a NOT gate\n");
+
+            auto *top = design->top_module();
+            if (top == nullptr) {
+                log_error("No top module\n");
+            }
+
+            auto *notGate = findNot(top);
+            auto node = std::make_shared<tamara::ElementNode>(notGate, 0);
+            node->replicate(top);
         } else {
             log_error("Unhandled debug task: '%s'\n", task.c_str());
         }
 
         log_pop();
+    }
+
+    static RTLIL::Cell *findNot(RTLIL::Module *module) {
+        for (const auto &cell : module->cells()) {
+            if (cell->type == ID($logic_not)) {
+                log("Found not gate: %s\n", log_id(cell->name));
+                return cell;
+            }
+        }
+        log_error("Could not find not gate in top module: %s\n", log_id(module->name));
+        return nullptr;
     }
 } const TamaraDebug;
 
