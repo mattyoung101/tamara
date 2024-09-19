@@ -15,7 +15,8 @@ Checks: >
   -readability-identifier-length,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -readability-isolate-declaration,
-  -cppcoreguidelines-macro-usage
+  -cppcoreguidelines-macro-usage,
+  -cppcoreguidelines-avoid-do-while
 
 # NOTES:
 # We would like pro-bounds-pointer-arithmetic but Yosys uses arithmetic in the ID($) macro

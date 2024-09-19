@@ -8,6 +8,7 @@
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
 #include <optional>
+#include <queue>
 
 USING_YOSYS_NAMESPACE;
 
@@ -111,9 +112,20 @@ public:
     //! Replicates the RTLIL components in a logic cone
     void replicate(RTLIL::Module *module);
 
+    //! Inserts voters into the module
+    void insertVoters(RTLIL::Module *module);
+
+    //! Wires up the replicated components and the module
+    void wire(RTLIL::Module *module);
+
+    //! Builds a new logic cone that will continue the search onwards, or none if we're already at the input
+    std::optional<LogicCone> buildSuccessor();
+
 private:
     TMRGraphNode::Ptr inputNode;
     TMRGraphNode::Ptr outputNode;
+    std::vector<TMRGraphNode::Ptr> cone; // list of logic cone elements, to be replicated
+    std::queue<TMRGraphNode::Ptr> frontier; // BFS frontier
 };
 
 } // namespace tamara
