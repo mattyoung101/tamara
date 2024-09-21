@@ -8,15 +8,21 @@
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
 
-USING_YOSYS_NAMESPACE
+USING_YOSYS_NAMESPACE;
 
 namespace tamara {
+
+//! Result from building a voter
+class Voter {
+public:
+    RTLIL::Wire *a, *b, *c, *out, *err;
+};
 
 //! Used to build and insert voters into a Yosys RTLIL design.
 class VoterBuilder {
 public:
     //! Insert one voter into the design.
-    static void build(RTLIL::Module *module);
+    static Voter build(RTLIL::Module *module);
 };
 
 }; // namespace tamara

@@ -11,5 +11,6 @@ write_rtlil
 
 tamara_debug replicateNot
 write_rtlil
+check
 
 show

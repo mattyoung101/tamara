@@ -30,9 +30,11 @@ void ElementNode::replicate(RTLIL::Module *module) {
 
     cell->set_bool_attribute(ORIGINAL_ANNOTATION);
 
+    // TODO we should probs skip these checks in prod to save time
     cell->check();
     replica1->check();
     replica2->check();
+    module->check();
 
     // TODO store replicas somehow?
 }

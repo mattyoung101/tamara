@@ -17,23 +17,17 @@ USING_YOSYS_NAMESPACE
 #define OR(number, A, B, Y) module->addLogicOr(NEW_ID_SUFFIX("or" #number), A, B, Y)
 // NOLINTEND(bugprone-macro-parentheses)
 
-void tamara::VoterBuilder::build(RTLIL::Module *module) {
+using namespace tamara;
+
+Voter VoterBuilder::build(RTLIL::Module *module) {
     // add inputs
     auto *a = module->addWire(NEW_ID_SUFFIX("A"));
     auto *b = module->addWire(NEW_ID_SUFFIX("B"));
     auto *c = module->addWire(NEW_ID_SUFFIX("C"));
-    a->port_input = true;
-    b->port_input = true;
-    c->port_input = true;
 
     // add outputs
     auto *out = module->addWire(NEW_ID_SUFFIX("OUT"));
     auto *err = module->addWire(NEW_ID_SUFFIX("ERR"));
-    out->port_output = true;
-    err->port_output = true;
-
-    // add wires to ports
-    module->fixup_ports();
 
     // N.B. This is all based on the Logisim design (tests/manual_tests/simple_tmr.circ)
 
@@ -92,4 +86,12 @@ void tamara::VoterBuilder::build(RTLIL::Module *module) {
     OR(3, or1_or3_wire, and5_or3_wire, err);
 
     module->check();
+
+    return {
+        .a = a,
+        .b = b,
+        .c = c,
+        .out = out,
+        .err = err
+    };
 }

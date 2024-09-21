@@ -12,9 +12,11 @@
 #include "tamara/voter_builder.hpp"
 #include <vector>
 
-USING_YOSYS_NAMESPACE
+USING_YOSYS_NAMESPACE;
 
 PRIVATE_NAMESPACE_BEGIN
+
+#define WIRE(A, B, num) auto wire##num = top->addWire(NEW_ID);
 
 //! The tamara_debug command is used for debugging various TaMaRa features.
 struct TamaraDebug : public Pass {
@@ -30,6 +32,10 @@ struct TamaraDebug : public Pass {
         log("\n");
 
         log("Executes the debug task specified.\n");
+        log("Current tasks:\n");
+        log("- forcePropagateDone\n");
+        log("- mkvoter\n");
+        log("- replicateNot\n");
     }
 
     void execute(std::vector<std::string> args, RTLIL::Design *design) override {
@@ -49,8 +55,36 @@ struct TamaraDebug : public Pass {
         } else if (task == "mkvoter") {
             log("Generating one voter\n");
             auto *top = design->addModule(NEW_ID);
-            tamara::VoterBuilder::build(top);
-            // TODO add output ports and connect voter to output
+
+            // add inputs
+            // note: these don't have the $ symbol, because they are top-level ports
+            auto *a = top->addWire(ID(a));
+            auto *b = top->addWire(ID(b));
+            auto *c = top->addWire(ID(c));
+            a->port_input = true;
+            b->port_input = true;
+            c->port_input = true;
+
+            // add outputs
+            auto *out = top->addWire(ID(out));
+            auto *err = top->addWire(ID(err));
+            out->port_output = true;
+            err->port_output = true;
+
+            // add wires to ports
+            top->fixup_ports();
+
+            // build voter
+            auto voter = tamara::VoterBuilder::build(top);
+
+            // add output ports and connect voter to output
+            top->connect(voter.a, a);
+            top->connect(voter.b, b);
+            top->connect(voter.c, c);
+            top->connect(err, voter.err);
+            top->connect(out, voter.out);
+
+            top->check();
         } else if (task == "replicateNot") {
             log("Hack to test replicating a NOT gate\n");
 
@@ -63,7 +97,7 @@ struct TamaraDebug : public Pass {
             auto node = std::make_shared<tamara::ElementNode>(notGate, 0);
             node->replicate(top);
 
-            // fake cone
+            // fake cone so we can try inserting a voter
             auto cone = tamara::LogicCone(0);
             cone.insertVoter(top);
         } else {
@@ -76,11 +110,11 @@ struct TamaraDebug : public Pass {
     static RTLIL::Cell *findNot(RTLIL::Module *module) {
         for (const auto &cell : module->cells()) {
             if (cell->type == ID($logic_not)) {
-                log("Found not gate: %s\n", log_id(cell->name));
+                log("Found NOT gate: %s\n", log_id(cell->name));
                 return cell;
             }
         }
-        log_error("Could not find not gate in top module: %s\n", log_id(module->name));
+        log_error("Could not find NOT gate in top module: %s\n", log_id(module->name));
         return nullptr;
     }
 } const TamaraDebug;
