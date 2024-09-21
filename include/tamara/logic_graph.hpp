@@ -7,6 +7,7 @@
 #pragma once
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
+#include "tamara/voter_builder.hpp"
 #include <optional>
 #include <queue>
 
@@ -155,9 +156,11 @@ public:
 private:
     TMRGraphNode::Ptr inputNode;
     TMRGraphNode::Ptr outputNode;
-    std::vector<TMRGraphNode::Ptr> cone; // list of logic cone elements, to be replicated
+    std::vector<TMRGraphNode::Ptr> cone; // list of logic cone elements, to be replicated (does not include
+    // terminals)
     std::queue<TMRGraphNode::Ptr> frontier; // BFS frontier
-    uint32_t id;
+    std::optional<Voter> voter; // logic cone voter, if it's been inserted
+    uint32_t id; // logic cone ID
 };
 
 } // namespace tamara

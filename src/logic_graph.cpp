@@ -86,5 +86,10 @@ void LogicCone::replicate(RTLIL::Module *module) {
 
 void LogicCone::insertVoter(RTLIL::Module *module) {
     log("Inserting voter into logic cone %u\n", id);
-    VoterBuilder::build(module);
+    voter = VoterBuilder::build(module);
+}
+
+void LogicCone::wire(RTLIL::Module *module) {
+    log("Wiring logic cone %u\n", id);
+    log_assert(voter.has_value());
 }
