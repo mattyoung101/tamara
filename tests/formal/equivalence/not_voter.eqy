@@ -1,0 +1,15 @@
+[gold]
+read_verilog -sv ../tests/verilog/not_voter_eqy.sv
+prep -top not_voter_gold
+rename -top design
+
+[gate]
+read_verilog -sv ../tests/verilog/voter.sv
+read_verilog -sv ../tests/verilog/not_voter_eqy.sv
+prep -top not_voter_gate
+rename -top design
+
+[strategy sby]
+use sby
+depth 2
+engine smtbmc yices
