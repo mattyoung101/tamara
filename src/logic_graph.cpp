@@ -10,11 +10,22 @@
 #include "kernel/yosys_common.h"
 #include "tamara/util.hpp"
 #include "tamara/voter_builder.hpp"
+#include <cstdint>
 #include <memory>
 
 USING_YOSYS_NAMESPACE;
 
 using namespace tamara;
+
+uint32_t LogicCone::g_cone_ID = 0;
+
+//! Fast(er) check that wires are equal by names.
+static constexpr bool areWiresEqual(const RTLIL::Wire *a, const RTLIL::Wire *b) {
+    if (a->name.hash() == b->name.hash()) {
+        return a->name == b->name;
+    }
+    return false;
+}
 
 void ElementNode::replicate(RTLIL::Module *module) {
     auto id = std::to_string(getConeID());
@@ -39,37 +50,66 @@ void ElementNode::replicate(RTLIL::Module *module) {
     // TODO store replicas somehow?
 }
 
-void IONode::replicate([[maybe_unused]] RTLIL::Module * module) {
+void IONode::replicate([[maybe_unused]] RTLIL::Module *module) {
     // this shouldn't happen
     log_error("TaMaRa internal error: Cannot replicate IO node!\n");
 }
 
-std::vector<TMRGraphNode::Ptr> ElementNode::computeNeighbours() {
+std::vector<TMRGraphNode::Ptr> ElementNode::computeNeighbours(
+    RTLIL::Module *module, RTLILWireConnections &connections) {
     // TODO
     return {};
 }
 
-std::vector<TMRGraphNode::Ptr> IONode::computeNeighbours() {
-    // TODO
+std::vector<TMRGraphNode::Ptr> IONode::computeNeighbours(
+    RTLIL::Module *module, RTLILWireConnections &connections) {
+    auto neighbours = connections[io];
+    log_assert(!neighbours.empty());
+    log("    IONode has %zu neighbours\n", neighbours.size());
+
+    // now, construct Yosys types into our logic graph types
+
+    // for (const auto &connection : module->connections()) {
+    //     const auto &[lhs, rhs] = connection;
+    //
+    //     // since we're working backwards from output to input, we check that RHS == IO, and LHS is our
+    //     // neighbour
+    //     if (areWiresEqual(rhs.as_wire(), io)) {
+    //         log("    Found neighbour for IO %s in cone %u: %s\n", log_id(io->name), getConeID(),
+    //             log_id(lhs.as_wire()->name));
+    //     } else {
+    //         log("    Connection %s is NOT a neighbour of %s (is wire: %s)\n", log_id(rhs.as_wire()->name),
+    //             log_id(io->name), rhs.is_wire() ? "yes" : "no");
+    //     }
+    // }
     return {};
 }
 
-void LogicCone::search(RTLIL::Module *module, RTLIL::Wire *output) {
+void LogicCone::search(RTLIL::Module *module, RTLILWireConnections &connections) {
     log_assert(frontier.empty());
     log_assert(cone.empty()); // NOLINT(bugprone-unused-return-value)
 
-    // we can fill in the output directly (we're working from output backwards)
-    outputNode = std::make_shared<IONode>(output, id);
     frontier.push(outputNode);
+
+    log("Starting search for cone %u\n", id);
+    while (!frontier.empty()) {
+        auto node = frontier.front();
+        frontier.pop();
+        log("    Consider %s in cone %u (%zu items remain)\n", node->identify().c_str(), id, frontier.size());
+
+        auto neighbours = node->computeNeighbours(module, connections);
+        log("    Node has %zu neighbours\n", neighbours.size());
+    }
+    log("Search complete for cone %u\n", id);
 }
 
-static void replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *module) {
+void LogicCone::replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *module) const {
     if (dynamic_pointer_cast<IONode>(node) != nullptr) {
         // not an IO node, we're safe to replicate
-        log("LogicCone terminal is NOT an IO, replicating it (must be FF)\n");
+        log("Logic cone %u terminal is NOT an IO, replicating it (assuming FF)\n", id);
         node->replicate(module);
     } else {
-        log("LogicCone terminal IS an IO, it will not be replicated\n");
+        log("Logic cone %u terminal is an IO, it will not be replicated\n", id);
     }
 }
 

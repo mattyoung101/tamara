@@ -7,6 +7,9 @@
 #pragma once
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
+#include <unordered_map>
+#include <unordered_set>
+#include <variant>
 
 USING_YOSYS_NAMESPACE;
 
@@ -17,6 +20,12 @@ const auto IGNORE_ANNOTATION = ID(tamara_ignore);
 const auto REPLICA_ANNOTATION = ID(tamara_replica);
 const auto CONE_ANNOTATION = ID(tamara_cone);
 const auto ORIGINAL_ANNOTATION = ID(tamara_original);
+
+//! Pointer to any RTLIL object
+using RTLILAnyPtr = std::variant<RTLIL::Wire*, RTLIL::Cell*>;
+
+//! Mapping of connections between a wire and all RTLIL objects its connected to
+using RTLILWireConnections = std::unordered_map<RTLIL::Wire*, std::unordered_set<RTLILAnyPtr>>;
 
 //! Returns true if the cell is a DFF.
 constexpr bool isDFF(const RTLIL::Cell *cell) {

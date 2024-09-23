@@ -7,6 +7,7 @@
 #pragma once
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
+#include "tamara/util.hpp"
 #include "tamara/voter_builder.hpp"
 #include <optional>
 #include <queue>
@@ -53,15 +54,20 @@ public:
         children.push_back(child);
     }
 
-    [[nodiscard]] size_t getConeID() const {
+    [[nodiscard]] uint32_t getConeID() const {
         return id;
     }
 
     //! Virtual method that sub-classes should override to compute neighbours of this node for BFS
-    virtual std::vector<TMRGraphNode::Ptr> computeNeighbours() = 0;
+    virtual std::vector<TMRGraphNode::Ptr> computeNeighbours(
+        RTLIL::Module *module, RTLILWireConnections &connections)
+        = 0;
 
     //! Replicates the node in the RTLIL netlist
     virtual void replicate(RTLIL::Module *module) = 0;
+
+    //! Identifies this node (for debug)
+    virtual std::string identify() = 0;
 
 private:
     std::optional<TMRGraphNode::Ptr> parent;
@@ -88,9 +94,14 @@ public:
         return cell;
     }
 
-    std::vector<TMRGraphNode::Ptr> computeNeighbours() override;
+    std::vector<TMRGraphNode::Ptr> computeNeighbours(
+        RTLIL::Module *module, RTLILWireConnections &connections) override;
 
     void replicate(RTLIL::Module *module) override;
+
+    std::string identify() override {
+        return "ElementNode";
+    }
 
 private:
     RTLIL::Cell *cell;
@@ -102,6 +113,10 @@ class FFNode : public ElementNode {
 public:
     RTLIL::Cell *getFF() {
         return cell;
+    }
+
+    std::string identify() override {
+        return "FFNode";
     }
 };
 
@@ -122,9 +137,14 @@ public:
         return io;
     }
 
-    std::vector<TMRGraphNode::Ptr> computeNeighbours() override;
+    std::vector<TMRGraphNode::Ptr> computeNeighbours(
+        RTLIL::Module *module, RTLILWireConnections &connections) override;
 
     void replicate(RTLIL::Module *module) override;
+
+    std::string identify() override {
+        return "IONode";
+    }
 
 private:
     RTLIL::Wire *io;
@@ -133,13 +153,16 @@ private:
 //! Encapsulates the logic elements between two FFs, or two IO ports, or an IO port and an FF
 class LogicCone {
 public:
-    //! Instantiates a new logic cone with the ID. ID must be unique and monotonically increasing.
-    LogicCone(uint32_t id)
-        : id(id) {
+    //! Instantiates a new logic cone from the starting output wire.
+    explicit LogicCone(RTLIL::Wire *io)
+        : outputNode(std::make_shared<IONode>(io, id))
+        , id(nextID()) {
     }
 
-    //! Builds a logic cone by tracing backwards from an output IO to either a DFF or other IO.
-    void search(RTLIL::Module *module, RTLIL::Wire *output);
+    //! Instantiates a new logic cone from an output.
+
+    //! Builds a logic cone by tracing backwards from outputNode to either a DFF or other IO.
+    void search(RTLIL::Module *module, RTLILWireConnections &connections);
 
     //! Replicates the RTLIL components in a logic cone
     void replicate(RTLIL::Module *module);
@@ -156,11 +179,27 @@ public:
 private:
     TMRGraphNode::Ptr inputNode;
     TMRGraphNode::Ptr outputNode;
-    std::vector<TMRGraphNode::Ptr> cone; // list of logic cone elements, to be replicated (does not include
-    // terminals)
-    std::queue<TMRGraphNode::Ptr> frontier; // BFS frontier
-    std::optional<Voter> voter; // logic cone voter, if it's been inserted
-    uint32_t id; // logic cone ID
+
+    // list of logic cone elements, to be replicated (does not include terminals)
+    std::vector<TMRGraphNode::Ptr> cone;
+
+    // BFS frontier
+    std::queue<TMRGraphNode::Ptr> frontier;
+
+    // voter for this logic cone, if it's been inserted
+    std::optional<Voter> voter;
+
+    // logic cone ID, mostly used to identify this cone for debug
+    uint32_t id;
+
+    void replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *module) const;
+
+    // Based on this idea: https://stackoverflow.com/a/2978575
+    // We don't thread, so no mutex required
+    static uint32_t g_cone_ID;
+    static uint32_t nextID() {
+        return g_cone_ID++;
+    }
 };
 
 } // namespace tamara

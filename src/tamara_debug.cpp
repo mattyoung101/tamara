@@ -14,7 +14,7 @@
 
 USING_YOSYS_NAMESPACE;
 
-PRIVATE_NAMESPACE_BEGIN
+namespace tamara {
 
 #define WIRE(A, B, num) auto wire##num = top->addWire(NEW_ID);
 
@@ -119,4 +119,4 @@ struct TamaraDebug : public Pass {
     }
 } const TamaraDebug;
 
-PRIVATE_NAMESPACE_END
+} // namespace tamara
