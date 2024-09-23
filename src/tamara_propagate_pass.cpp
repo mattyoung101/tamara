@@ -13,9 +13,7 @@
 
 USING_YOSYS_NAMESPACE
 
-PRIVATE_NAMESPACE_BEGIN
-
-using namespace tamara;
+namespace tamara {
 
 //! The tamara_propagate command propagates (* tamara_triplicate *) Verilog annotations throughout the design.
 struct TamaraPropagatePass : public Pass {
@@ -42,6 +40,9 @@ struct TamaraPropagatePass : public Pass {
         log_header(design, "Propagating TaMaRa triplicate annotations\n\n");
         log_push();
 
+        // TODO if a non-top module has (* tamara_triplicate *) -> complain, this wouldn't make sense
+        // tell the user it should be applied to the instantiation instead
+
         propagateModules(design);
         design->scratchpad_set_bool("tamara_propagate.didRun", true);
 
@@ -53,6 +54,13 @@ private:
     static void propagateModules(RTLIL::Design *design) {
         for (const auto &module : design->selected_modules()) {
             if (module->has_attribute(TRIPLICATE_ANNOTATION) && shouldPropagate(module)) {
+                if (design->top_module() != nullptr && module != design->top_module()) {
+                    log_error("Module '%s' is marked (* tamara_triplicate *), but is not the top "
+                              "module. This doesn't make sense. Instead, mark the instantiation of '%s' with "
+                              "(* tamara_triplicate *). Cannot proceed in this state.",
+                        log_id(module->name), log_id(module->name));
+                }
+
                 log("Propagating module '%s'\n", log_id(module->name));
 
                 // processes
@@ -100,4 +108,4 @@ private:
 
 } const TamaraPropagatePass;
 
-PRIVATE_NAMESPACE_END
+} // namespace tamara
