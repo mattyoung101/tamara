@@ -12,6 +12,7 @@
 #include "tamara/voter_builder.hpp"
 #include <cstdint>
 #include <memory>
+#include <variant>
 
 USING_YOSYS_NAMESPACE;
 
@@ -19,12 +20,30 @@ using namespace tamara;
 
 uint32_t LogicCone::g_cone_ID = 0;
 
-//! Fast(er) check that wires are equal by names.
-static constexpr bool areWiresEqual(const RTLIL::Wire *a, const RTLIL::Wire *b) {
-    if (a->name.hash() == b->name.hash()) {
-        return a->name == b->name;
-    }
-    return false;
+TMRGraphNode::Ptr TMRGraphNode::yosysToLogicGraph(const RTLILAnyPtr &ptr) {
+    // based on example 3 of https://en.cppreference.com/w/cpp/utility/variant/visit
+    //
+    // this is completely insane, holy shit
+    //
+    // why do we have to do this? for some reason we can't just pass the class member `id`??
+    auto localId = id;
+    auto selfPtr = getSelfPtr();
+    return std::visit(
+        [&, localId, selfPtr](auto &&arg) {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
+                // my god this is ugly, we need to check if it's a DFF as well
+                if (isDFF(arg)) {
+                    return static_cast<TMRGraphNode::Ptr>(std::make_shared<FFNode>(arg, selfPtr, localId));
+                }
+                return static_cast<TMRGraphNode::Ptr>(std::make_shared<ElementNode>(arg, selfPtr, localId));
+            }
+            if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
+                // FIXME it may not be an IO - we need to check
+                return static_cast<TMRGraphNode::Ptr>(std::make_shared<IONode>(arg, selfPtr, localId));
+            }
+        },
+        ptr);
 }
 
 void ElementNode::replicate(RTLIL::Module *module) {
@@ -41,13 +60,13 @@ void ElementNode::replicate(RTLIL::Module *module) {
 
     cell->set_bool_attribute(ORIGINAL_ANNOTATION);
 
-    // TODO we should probs skip these checks in prod to save time
     cell->check();
     replica1->check();
     replica2->check();
     module->check();
 
-    // TODO store replicas somehow?
+    replicas.push_back(replica1);
+    replicas.push_back(replica2);
 }
 
 void IONode::replicate([[maybe_unused]] RTLIL::Module *module) {
@@ -57,32 +76,23 @@ void IONode::replicate([[maybe_unused]] RTLIL::Module *module) {
 
 std::vector<TMRGraphNode::Ptr> ElementNode::computeNeighbours(
     RTLIL::Module *module, RTLILWireConnections &connections) {
-    // TODO
+    // FIXME this isn't going to work, we need to update our data structure
+    // auto neighbours = connections[cell];
+    // log("    %s has %zu neighbours\n", identify(), neighbours.size());
     return {};
 }
 
 std::vector<TMRGraphNode::Ptr> IONode::computeNeighbours(
     RTLIL::Module *module, RTLILWireConnections &connections) {
     auto neighbours = connections[io];
-    log_assert(!neighbours.empty());
     log("    IONode has %zu neighbours\n", neighbours.size());
 
     // now, construct Yosys types into our logic graph types
-
-    // for (const auto &connection : module->connections()) {
-    //     const auto &[lhs, rhs] = connection;
-    //
-    //     // since we're working backwards from output to input, we check that RHS == IO, and LHS is our
-    //     // neighbour
-    //     if (areWiresEqual(rhs.as_wire(), io)) {
-    //         log("    Found neighbour for IO %s in cone %u: %s\n", log_id(io->name), getConeID(),
-    //             log_id(lhs.as_wire()->name));
-    //     } else {
-    //         log("    Connection %s is NOT a neighbour of %s (is wire: %s)\n", log_id(rhs.as_wire()->name),
-    //             log_id(io->name), rhs.is_wire() ? "yes" : "no");
-    //     }
-    // }
-    return {};
+    std::vector<TMRGraphNode::Ptr> out{};
+    for (const auto &neighbour : neighbours) {
+        out.push_back(yosysToLogicGraph(neighbour));
+    }
+    return out;
 }
 
 void LogicCone::search(RTLIL::Module *module, RTLILWireConnections &connections) {

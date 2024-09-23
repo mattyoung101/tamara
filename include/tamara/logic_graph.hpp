@@ -17,7 +17,7 @@ USING_YOSYS_NAMESPACE;
 namespace tamara {
 
 //! Base node class in the graph
-class TMRGraphNode {
+class TMRGraphNode : public std::enable_shared_from_this<TMRGraphNode> {
 public:
     using Ptr = std::shared_ptr<TMRGraphNode>;
 
@@ -69,6 +69,18 @@ public:
     //! Identifies this node (for debug)
     virtual std::string identify() = 0;
 
+    //! Converts an RTLILAnyPtr to a TMR graph object. Implementation is cursed, beware. Probably leaks
+    //! memory too, but so does upstream so w/e.
+    [[nodiscard]] TMRGraphNode::Ptr yosysToLogicGraph(const RTLILAnyPtr &ptr);
+
+    //! Returns a shared ptr to self
+    [[nodiscard]] TMRGraphNode::Ptr getSelfPtr() {
+        // reference:
+        // https://en.cppreference.com/w/cpp/memory/enable_shared_from_this
+        // https://stackoverflow.com/questions/11711034/stdshared-ptr-of-this
+        return shared_from_this();
+    }
+
 private:
     std::optional<TMRGraphNode::Ptr> parent;
     std::vector<TMRGraphNode::Ptr> children;
@@ -105,12 +117,21 @@ public:
 
 private:
     RTLIL::Cell *cell;
+    std::vector<RTLIL::Cell*> replicas;
 };
 
 //! Flip flop node in the graph
 class FFNode : public ElementNode {
     // functionally identical to ElementNode, we just need the class to distinguish from ElementNode
 public:
+    explicit FFNode(RTLIL::Cell *cell, uint32_t id)
+        : ElementNode(cell, id) {
+    }
+
+    FFNode(RTLIL::Cell *cell, const TMRGraphNode::Ptr &parent, uint32_t id)
+        : ElementNode(cell, parent, id) {
+    }
+
     RTLIL::Cell *getFF() {
         return cell;
     }
