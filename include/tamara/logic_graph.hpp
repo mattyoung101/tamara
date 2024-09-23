@@ -59,9 +59,10 @@ public:
     }
 
     //! Virtual method that sub-classes should override to compute neighbours of this node for BFS
-    virtual std::vector<TMRGraphNode::Ptr> computeNeighbours(
-        RTLIL::Module *module, RTLILWireConnections &connections)
-        = 0;
+    std::vector<TMRGraphNode::Ptr> computeNeighbours(RTLIL::Module *module, RTLILWireConnections &connections);
+
+    //! Gets a pointer to the underlying RTLIL object
+    virtual RTLILAnyPtr getRTLILObjPtr() = 0;
 
     //! Replicates the node in the RTLIL netlist
     virtual void replicate(RTLIL::Module *module) = 0;
@@ -106,13 +107,14 @@ public:
         return cell;
     }
 
-    std::vector<TMRGraphNode::Ptr> computeNeighbours(
-        RTLIL::Module *module, RTLILWireConnections &connections) override;
-
     void replicate(RTLIL::Module *module) override;
 
     std::string identify() override {
         return "ElementNode";
+    }
+
+    RTLILAnyPtr getRTLILObjPtr() override {
+        return cell;
     }
 
 private:
@@ -158,13 +160,14 @@ public:
         return io;
     }
 
-    std::vector<TMRGraphNode::Ptr> computeNeighbours(
-        RTLIL::Module *module, RTLILWireConnections &connections) override;
-
     void replicate(RTLIL::Module *module) override;
 
     std::string identify() override {
         return "IONode";
+    }
+
+    RTLILAnyPtr getRTLILObjPtr() override {
+        return io;
     }
 
 private:

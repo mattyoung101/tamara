@@ -21,11 +21,11 @@ const auto REPLICA_ANNOTATION = ID(tamara_replica);
 const auto CONE_ANNOTATION = ID(tamara_cone);
 const auto ORIGINAL_ANNOTATION = ID(tamara_original);
 
-//! Pointer to any RTLIL object
+//! Pointer to an RTLIL wire or cell (not strictly "any", but for our use case it suffices)
 using RTLILAnyPtr = std::variant<RTLIL::Wire*, RTLIL::Cell*>;
 
 //! Mapping of connections between a wire and all RTLIL objects its connected to
-using RTLILWireConnections = std::unordered_map<RTLIL::Wire*, std::unordered_set<RTLILAnyPtr>>;
+using RTLILWireConnections = std::unordered_map<RTLILAnyPtr, std::unordered_set<RTLILAnyPtr>>;
 
 //! Returns true if the cell is a DFF.
 constexpr bool isDFF(const RTLIL::Cell *cell) {
@@ -33,12 +33,5 @@ constexpr bool isDFF(const RTLIL::Cell *cell) {
     return cell->type.in(ID($dff), ID($dffe), ID($adff), ID($adffe), ID($sdff), ID($sdffe), ID($sdffce),
         ID($dlatch), ID($adlatch));
 }
-
-// based on: https://en.cppreference.com/w/cpp/utility/variant/visit
-template<class... Ts>
-struct overloaded : Ts... { using Ts::operator()...; };
-// explicit deduction guide (not needed as of C++20)
-template<class... Ts>
-overloaded(Ts...) -> overloaded<Ts...>;
 
 } // namespace tamara

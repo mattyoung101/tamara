@@ -54,6 +54,7 @@ struct TamaraTMRPass : public Pass {
 
         auto *const module = design->top_module();
         log("Applying TMR to top module: %s\n", log_id(module->name));
+        log_push();
 
         // analyse wire connections, this is used later by the logic cone code for neighbour calculations
         // I thought that we might be able to get this through RTLIL directly, but I think we have to compute
@@ -61,16 +62,13 @@ struct TamaraTMRPass : public Pass {
         // the main trouble is we have to compute it in reverse: that is, we want to know which _wires_ have
         // which _cells_ associated with them, but RTLIL will only tell us which _cells_ have which _wires_
         // associated with them.
-        log_push();
         log_header(design, "Analysing wire connections\n");
         auto neighbours = analyseConnections(module);
-        log_pop();
 
         // debug dump
         // nlohmann::json jsonDump(analysis); // TODO needs custom data type
 
         // figure out where our output ports are, these will be the start of the BFS
-        log_push();
         log_header(design, "Computing logic graph\n");
         auto outputs = getOutputPorts(module);
         log("Module has %zu output ports, %zu selected cells\n", outputs.size(),
@@ -82,9 +80,8 @@ struct TamaraTMRPass : public Pass {
             // start at the output port, do a BFS backwards to build up our logic cones
             cone.search(module, neighbours);
         }
-        log_pop();
 
-        // FIXME the numbers for log_push and log_header don't increment for some reason?
+        log_pop();
     }
 
 private:

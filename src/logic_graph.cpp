@@ -74,18 +74,10 @@ void IONode::replicate([[maybe_unused]] RTLIL::Module *module) {
     log_error("TaMaRa internal error: Cannot replicate IO node!\n");
 }
 
-std::vector<TMRGraphNode::Ptr> ElementNode::computeNeighbours(
+std::vector<TMRGraphNode::Ptr> TMRGraphNode::computeNeighbours(
     RTLIL::Module *module, RTLILWireConnections &connections) {
-    // FIXME this isn't going to work, we need to update our data structure
-    // auto neighbours = connections[cell];
-    // log("    %s has %zu neighbours\n", identify(), neighbours.size());
-    return {};
-}
-
-std::vector<TMRGraphNode::Ptr> IONode::computeNeighbours(
-    RTLIL::Module *module, RTLILWireConnections &connections) {
-    auto neighbours = connections[io];
-    log("    IONode has %zu neighbours\n", neighbours.size());
+    auto neighbours = connections[getRTLILObjPtr()];
+    log("    %s has %zu neighbours\n", identify().c_str(), neighbours.size());
 
     // now, construct Yosys types into our logic graph types
     std::vector<TMRGraphNode::Ptr> out{};
@@ -107,8 +99,22 @@ void LogicCone::search(RTLIL::Module *module, RTLILWireConnections &connections)
         frontier.pop();
         log("    Consider %s in cone %u (%zu items remain)\n", node->identify().c_str(), id, frontier.size());
 
+        // add to logic cone (TODO only if not IO)
+        if (dynamic_pointer_cast<IONode>(node) == nullptr) {
+            log("    Add %s to cone\n", node->identify().c_str());
+            cone.push_back(node);
+        } else {
+            log("    Skip adding %s to cone (must be IONode)\n", node->identify().c_str());
+        }
+
+        // locate neighbours
         auto neighbours = node->computeNeighbours(module, connections);
-        log("    Node has %zu neighbours\n", neighbours.size());
+
+        // add to queue
+        for (const auto &neighbour : neighbours) {
+            frontier.push(neighbour);
+        }
+        log("\n");
     }
     log("Search complete for cone %u\n", id);
 }
