@@ -16,8 +16,9 @@ For more information, please see my thesis: TODO
 
 You will need the following tools:
 - CMake 3.20+
-- A C++20 compiler _(Clang is recommended)_
-- Ninja _(technically optional)_
+- A C++20 compiler _(Clang 16 or newer is recommended)_
+- Ninja _(optional, recommended)_
+- The same dependencies Yosys requires to build, see [Yosys README](https://github.com/yosyshq/yosys?tab=readme-ov-file#building-from-source) for more info
 
 First, clone the repo:
 
@@ -28,7 +29,7 @@ git clone --recurse-submodules -j8 git@github.com:mattyoung101/tamara.git
 TaMaRa is compiled against a specific version of Yosys, which is linked as a Git submodule in the `lib`
 directory. It can only be guaranteed that it will compile against the specific version in the `lib` directory.
 
-TODO: tie it to an upstream Yosys release version, not the lib dir
+TODO: tie it to an upstream Yosys release version, not the lib dir?
 
 When a new version of the Yosys submodule is pushed, use this to update it:
 
@@ -41,7 +42,7 @@ git submodule update --init --recursive --remote
 Generate the project (assuming you've installed Ninja, otherwise omit `-G Ninja`):
 
 ```bash
-cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release # or Debug
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release  # or Debug
 ```
 
 Build (in `build` directory):
