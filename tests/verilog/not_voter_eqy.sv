@@ -1,4 +1,5 @@
 // Gold circuit without voter
+(* tamara_triplicate *)
 module not_voter_gold(
     input logic a,
     output logic o

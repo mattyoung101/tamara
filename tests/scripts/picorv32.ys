@@ -1,0 +1,8 @@
+plugin -i libtamara.so
+read_verilog ../tests/verilog/picorv32.v
+hierarchy -top picorv32
+tamara_propagate
+prep
+tamara_tmr
+check
+write_rtlil

@@ -1,12 +1,14 @@
 [gold]
 read_verilog -sv ../tests/verilog/not_voter_eqy.sv
 prep -top not_voter_gold
+flatten
 rename -top design
 
 [gate]
 read_verilog -sv ../tests/verilog/voter.sv
 read_verilog -sv ../tests/verilog/not_voter_eqy.sv
 prep -top not_voter_gate
+flatten
 rename -top design
 
 [strategy sby]
