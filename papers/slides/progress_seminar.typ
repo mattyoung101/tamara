@@ -199,8 +199,8 @@ satisfactory level (still learning as I go).
 
 #pause
 
-C++ development well under way, have 700 lines and growing. Using modern C++20 features like `shared_ptr` and
-`std::variant` meta-programming.
+C++ development well under way. Using modern C++20 features like `shared_ptr` and `std::variant`
+meta-programming.
 
 #pause
 
@@ -208,8 +208,7 @@ Designed majority voters and other simple circuits in Logisim and translated to 
 
 #pause
 
-Started on formal equivalence checking. Proved that TaMaRa generated voter is equivalent to manual SV design,
-and that a simple circuit is identical after manual voter insertion.
+Started on formal equivalence checking for TaMaRa voters and simple manually-designed combinatorial circuits.
 
 #pause
 
@@ -251,7 +250,7 @@ Original circuit:
 )
 
 == Progress: Automatically triplicating a NOT gate and inserting a voter
-After `tamara_debug notTriplicate`:
+After `tamara_debug replicateNot`:
 
 #align(center, [
     #image("diagrams/triplicate_graph.svg", width: 60%)
@@ -266,6 +265,8 @@ Results:
 - Replicated components _not_ yet re-wired
 
 == Progress: Equivalence checking
+Voter circuit:
+
 #grid(
     columns: (auto, auto),
     gutter: 24pt,
@@ -352,8 +353,36 @@ Marked equivalent by eqy in conjunction with Yices!
     #image("diagrams/eqy_voter.png", width: 75%)
 ])
 
+== Progress: Equivalence checking (Voter insertion)
+Original, very simple circuit:
+
+#align(center, [
+    #image("diagrams/not_circuit.svg", width: 60%)
+])
+
+== Progress: Equivalence checking (Voter insertion)
+After manual voter insertion (using SystemVerilog):
+
+#align(center, [
+    #image("diagrams/not_circuit_voter.svg", width: 100%)
+])
+
+== Progress: Equivalence checking (Voter insertion)
+Are they equivalent? Yes! (Thankfully)
+
+#align(center, [
+    #image("diagrams/not_voter_eqy.png", width: 75%)
+])
+
+#pause
+
+*Caveat:* Still need to verify circuits with more complex logic (i.e. DFFs).
+
 == The future
-I'm aiming to produce at least one academic publication from TaMaRa research.
+TODO tasks that remain needing to be done
+
+== The future
+I'm aiming to produce at least one proper academic publication from this thesis, about TaMaRa.
 
 #pause
 
@@ -368,8 +397,6 @@ In short, TaMaRa will be freely available for anyone to use and build on.
 
 I have also spoken with the team at YosysHQ GmbH and Sandia National Laboratories, who are very interested in
 the results of this project and its applications.
-
-// TODO what remains to be done
 
 = Conclusion
 == Summary
