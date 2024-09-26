@@ -179,11 +179,8 @@ class LogicCone {
 public:
     //! Instantiates a new logic cone from the starting output wire.
     explicit LogicCone(RTLIL::Wire *io)
-        : outputNode(std::make_shared<IONode>(io, id))
-        , id(nextID()) {
+        : outputNode(std::make_shared<IONode>(io, nextID())), id(outputNode->getConeID()) {
     }
-
-    //! Instantiates a new logic cone from an output.
 
     //! Builds a logic cone by tracing backwards from outputNode to either a DFF or other IO.
     void search(RTLIL::Module *module, RTLILWireConnections &connections);
