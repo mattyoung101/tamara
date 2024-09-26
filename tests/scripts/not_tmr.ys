@@ -1,3 +1,5 @@
+# Tests applying end to end TMR to a simple NOT gate circuit.
+#
 # run from the build directory
 # ninja && yosys -s ../tests/scripts/not_tmr.ys
 
@@ -6,12 +8,12 @@ plugin -i libtamara.so
 read_verilog -sv ../tests/verilog/not_voter_eqy.sv
 hierarchy -top not_voter_gold
 tamara_propagate
+
 prep
 check
 write_rtlil
+# show
 
 tamara_tmr
 check
 write_rtlil
-
-# show

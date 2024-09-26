@@ -1,6 +1,8 @@
+# Tests manually applying a NOT gate to a circuit.
 read_verilog -sv ../tests/verilog/voter.sv
 read_verilog -sv ../tests/verilog/not_voter_eqy.sv
 prep -top not_voter_gate
+check
 
 flatten
 write_rtlil

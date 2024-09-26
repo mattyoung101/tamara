@@ -71,14 +71,19 @@ struct TamaraTMRPass : public Pass {
         // figure out where our output ports are, these will be the start of the BFS
         log_header(design, "Computing logic graph\n");
         auto outputs = getOutputPorts(module);
-        log("Module has %zu output ports, %zu selected cells\n", outputs.size(),
+        log("Module has %zu output ports, %zu selected cells\n\n", outputs.size(),
             module->selected_cells().size());
 
         for (const auto &output : outputs) {
             // TODO should we skip the cell if it's not labelled tamara_triplicate?
             auto cone = LogicCone(output);
+
             // start at the output port, do a BFS backwards to build up our logic cones
             cone.search(module, neighbours);
+            log("\n");
+
+            // cone is built, replicate items
+            cone.replicate(module);
         }
 
         log_pop();
@@ -93,7 +98,7 @@ private:
     //! Inserts a value into the hashmap, or adds it then inserts if not present
     // TODO make this a templated function in utils.hpp
     static constexpr void addConnection(
-        RTLILWireConnections &connections, RTLIL::Wire *key, const RTLILAnyPtr &value) {
+        RTLILWireConnections &connections, RTLILAnyPtr key, const RTLILAnyPtr &value) {
         if (!connections.contains(key)) {
             connections[key] = std::unordered_set<RTLILAnyPtr>();
         }
@@ -132,17 +137,24 @@ private:
 
                 auto *const wire = signal.as_wire();
 
-                // if (!wire->port_output && !wire->port_input) {
-                //     log_error("Wire %s is neither input nor output?!\n", log_id(wire->name));
-                // }
+                if (!wire->port_output && !wire->port_input) {
+                    // FIXME this is true for a lot of picorv32 it seems
+                    log_error("Wire %s is neither input nor output?!\n", log_id(wire->name));
+                }
 
-                // consider direction, since we're doing BFS backwards: only add outputs
-                //if (wire->port_output) {
+                log("Wire %s is %s\n", log_id(wire->name), wire->port_output ? "output" : "input");
+
+                // this is an output from the cell, so connect wire -> cell (remember we work backwards)
+                if (wire->port_output) {
                     addConnection(connections, wire, cell);
                     log("[neighbour] wire %s --> cell %s\n", log_id(wire->name), log_id(cell->name));
-                //} else {
-                //    log("Skipping input wire %s\n", log_id(wire->name));
-                //}
+                }
+
+                // this is an input to the cell, so connect cell -> wire (remember we work backwards)
+                if (wire->port_input) {
+                    addConnection(connections, cell, wire);
+                    log("[neighbour] cell %s --> wire %s\n", log_id(cell->name), log_id(wire->name));
+                }
             }
             log("\n");
         }
@@ -168,6 +180,7 @@ private:
         }
 
         log("\nDone, located %zu neighbours\n", connections.size());
+        // log_error("dump\n");
 
         return connections;
     }

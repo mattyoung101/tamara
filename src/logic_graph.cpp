@@ -39,8 +39,23 @@ TMRGraphNode::Ptr TMRGraphNode::yosysToLogicGraph(const RTLILAnyPtr &ptr) {
                 return static_cast<TMRGraphNode::Ptr>(std::make_shared<ElementNode>(arg, selfPtr, localId));
             }
             if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
-                // FIXME it may not be an IO - we need to check
+                // FIXME it may not be an IO just because it's a wire - we need to check
                 return static_cast<TMRGraphNode::Ptr>(std::make_shared<IONode>(arg, selfPtr, localId));
+            }
+        },
+        ptr);
+}
+
+//! Returns the RTLIL ID for a RTLILAnyPtr
+RTLIL::IdString getRTLILName(const RTLILAnyPtr &ptr) {
+    return std::visit(
+        [](auto &&arg) {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
+                return arg->name;
+            }
+            if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
+                return arg->name;
             }
         },
         ptr);
@@ -76,11 +91,12 @@ void IONode::replicate([[maybe_unused]] RTLIL::Module *module) {
 
 std::vector<TMRGraphNode::Ptr> TMRGraphNode::computeNeighbours(
     RTLIL::Module *module, RTLILWireConnections &connections) {
-    auto neighbours = connections[getRTLILObjPtr()];
-    log("    %s has %zu neighbours\n", identify().c_str(), neighbours.size());
+    auto obj = getRTLILObjPtr();
+    auto neighbours = connections[obj];
+    log("    %s '%s' has %zu neighbours\n", identify().c_str(), log_id(getRTLILName(obj)), neighbours.size());
 
     // now, construct Yosys types into our logic graph types
-    std::vector<TMRGraphNode::Ptr> out{};
+    std::vector<TMRGraphNode::Ptr> out {};
     for (const auto &neighbour : neighbours) {
         out.push_back(yosysToLogicGraph(neighbour));
     }
@@ -88,6 +104,7 @@ std::vector<TMRGraphNode::Ptr> TMRGraphNode::computeNeighbours(
 }
 
 void LogicCone::search(RTLIL::Module *module, RTLILWireConnections &connections) {
+    TMRGraphNode::Ptr lastNode;
     log_assert(frontier.empty());
     log_assert(cone.empty()); // NOLINT(bugprone-unused-return-value)
 
@@ -97,14 +114,17 @@ void LogicCone::search(RTLIL::Module *module, RTLILWireConnections &connections)
     while (!frontier.empty()) {
         auto node = frontier.front();
         frontier.pop();
-        log("    Consider %s in cone %u (%zu items remain)\n", node->identify().c_str(), id, frontier.size());
+        lastNode = node;
+        log("    Consider %s '%s' in cone %u (%zu items remain)\n", node->identify().c_str(),
+            log_id(getRTLILName(node->getRTLILObjPtr())), id, frontier.size());
 
-        // add to logic cone (TODO only if not IO)
+        // add to logic cone if not IO, this is because we don't want to replicate IOs, but we do replicate
+        // Elements and FFs
         if (dynamic_pointer_cast<IONode>(node) == nullptr) {
-            log("    Add %s to cone\n", node->identify().c_str());
             cone.push_back(node);
+            log("    Add %s to cone (now has %zu items)\n", node->identify().c_str(), cone.size());
         } else {
-            log("    Skip adding %s to cone (must be IONode)\n", node->identify().c_str());
+            log("    Skip adding %s to cone\n", node->identify().c_str());
         }
 
         // locate neighbours
@@ -114,18 +134,29 @@ void LogicCone::search(RTLIL::Module *module, RTLILWireConnections &connections)
         for (const auto &neighbour : neighbours) {
             frontier.push(neighbour);
         }
-        log("\n");
+        if (!frontier.empty()) {
+            log("\n");
+        }
     }
-    log("Search complete for cone %u\n", id);
+
+    // update input node now that search is complete
+    if (dynamic_pointer_cast<IONode>(lastNode) == nullptr) {
+        log_error("TaMaRa internal error: Last node should be IONode, but instead it was %s %s!\n",
+            lastNode->identify().c_str(), log_id(getRTLILName(lastNode->getRTLILObjPtr())));
+    }
+    log("Setting inputNode for cone %u to %s %s\n", id, lastNode->identify().c_str(),
+        log_id(getRTLILName(lastNode->getRTLILObjPtr())));
+    inputNode = lastNode;
+
+    log("Search complete for cone %u, have %zu items\n", id, cone.size());
 }
 
 void LogicCone::replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *module) const {
-    if (dynamic_pointer_cast<IONode>(node) != nullptr) {
-        // not an IO node, we're safe to replicate
-        log("Logic cone %u terminal is NOT an IO, replicating it (assuming FF)\n", id);
+    if (dynamic_pointer_cast<IONode>(node) == nullptr) {
+        log("Logic cone %u terminal is not IONode, replicating it\n", id);
         node->replicate(module);
     } else {
-        log("Logic cone %u terminal is an IO, it will not be replicated\n", id);
+        log("Logic cone %u terminal is IONOde, it will NOT be replicated\n", id);
     }
 }
 
