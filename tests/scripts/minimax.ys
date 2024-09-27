@@ -1,0 +1,15 @@
+# Tests end to end TaMaRa for the minimax RV32 CPU
+
+plugin -i libtamara.so
+
+read_verilog ../tests/verilog/minimax.v
+hierarchy -top minimax
+tamara_propagate
+check
+
+prep
+write_rtlil
+tamara_tmr
+check
+
+write_rtlil
