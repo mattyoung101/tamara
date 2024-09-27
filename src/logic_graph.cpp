@@ -61,6 +61,10 @@ RTLIL::IdString getRTLILName(const RTLILAnyPtr &ptr) {
         ptr);
 }
 
+RTLIL::IdString getRTLILName(const TMRGraphNode::Ptr &ptr) {
+    return getRTLILName(ptr->getRTLILObjPtr());
+}
+
 void ElementNode::replicate(RTLIL::Module *module) {
     auto id = std::to_string(getConeID());
 
@@ -72,6 +76,7 @@ void ElementNode::replicate(RTLIL::Module *module) {
 
     replica1->set_string_attribute(CONE_ANNOTATION, id);
     replica2->set_string_attribute(CONE_ANNOTATION, id);
+    cell->set_string_attribute(CONE_ANNOTATION, id);
 
     cell->set_bool_attribute(ORIGINAL_ANNOTATION);
 
@@ -116,7 +121,9 @@ void LogicCone::search(RTLIL::Module *module, RTLILWireConnections &connections)
         frontier.pop();
         lastNode = node;
         log("    Consider %s '%s' in cone %u (%zu items remain)\n", node->identify().c_str(),
-            log_id(getRTLILName(node->getRTLILObjPtr())), id, frontier.size());
+            log_id(getRTLILName(node)), id, frontier.size());
+
+        // FIXME we should terminate search if it's an FFNode and build a successor
 
         // add to logic cone if not IO, this is because we don't want to replicate IOs, but we do replicate
         // Elements and FFs
@@ -140,12 +147,14 @@ void LogicCone::search(RTLIL::Module *module, RTLILWireConnections &connections)
     }
 
     // update input node now that search is complete
-    if (dynamic_pointer_cast<IONode>(lastNode) == nullptr) {
-        log_error("TaMaRa internal error: Last node should be IONode, but instead it was %s %s!\n",
-            lastNode->identify().c_str(), log_id(getRTLILName(lastNode->getRTLILObjPtr())));
+    if (dynamic_pointer_cast<IONode>(lastNode) == nullptr
+        && dynamic_pointer_cast<FFNode>(lastNode) == nullptr) {
+        log_error(
+            "TaMaRa internal error: Last node should be either IONode or FFNode, but instead it was %s %s!\n",
+            lastNode->identify().c_str(), log_id(getRTLILName(lastNode)));
     }
     log("Setting inputNode for cone %u to %s %s\n", id, lastNode->identify().c_str(),
-        log_id(getRTLILName(lastNode->getRTLILObjPtr())));
+        log_id(getRTLILName(lastNode)));
     inputNode = lastNode;
 
     log("Search complete for cone %u, have %zu items\n", id, cone.size());
@@ -156,7 +165,7 @@ void LogicCone::replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *m
         log("Logic cone %u terminal is not IONode, replicating it\n", id);
         node->replicate(module);
     } else {
-        log("Logic cone %u terminal is IONOde, it will NOT be replicated\n", id);
+        log("Logic cone %u terminal is IONode, it will NOT be replicated\n", id);
     }
 }
 
@@ -167,6 +176,7 @@ void LogicCone::replicate(RTLIL::Module *module) {
     }
 
     // special case for end points (IOs and FFs) -> only replicate FFs, don't replicate IOs
+    log("Checking terminals\n");
     replicateIfNotIO(inputNode, module);
     replicateIfNotIO(outputNode, module);
 }
@@ -179,4 +189,8 @@ void LogicCone::insertVoter(RTLIL::Module *module) {
 void LogicCone::wire(RTLIL::Module *module) {
     log("Wiring logic cone %u\n", id);
     log_assert(voter.has_value());
+}
+
+std::optional<LogicCone> LogicCone::buildSuccessor() {
+    return {};
 }

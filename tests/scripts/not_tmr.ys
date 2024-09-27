@@ -12,8 +12,8 @@ tamara_propagate
 prep
 check
 write_rtlil
-# show
 
 tamara_tmr
 check
 write_rtlil
+show
