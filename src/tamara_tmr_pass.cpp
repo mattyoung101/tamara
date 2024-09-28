@@ -22,7 +22,7 @@ namespace tamara {
 struct TamaraTMRPass : public Pass {
 
     TamaraTMRPass()
-        : Pass("tamara_tmr", "Perform TaMaRa TMR voter insertion") {
+        : Pass("tamara_tmr", "Performs TaMaRa TMR voter insertion and cell replication") {
     }
 
     void help() override {
@@ -66,9 +66,6 @@ struct TamaraTMRPass : public Pass {
         log_header(design, "Analysing wire connections\n");
         auto neighbours = analyseConnections(module, design);
 
-        // debug dump
-        // nlohmann::json jsonDump(analysis); // TODO needs custom data type
-
         // figure out where our output ports are, these will be the start of the BFS
         log_header(design, "Computing logic graph\n");
         auto outputs = getOutputPorts(module);
@@ -100,18 +97,48 @@ struct TamaraTMRPass : public Pass {
             cone.wire(module);
             log("\n");
 
-            // TODO generate successor
-            auto successor = cone.buildSuccessor();
-            if (successor.has_value()) {
-                successors.push(successor.value());
+            // generate successors
+            auto coneSuccessors = cone.buildSuccessors(neighbours);
+            for (const auto &successor : coneSuccessors) {
+                successors.push(successor);
             }
-
             log("\n");
         }
 
-        log("Considering %zu successor logic cones\n", successors.size());
-        // TODO
+        log("==============================================================\n");
+        log("Initial search complete. Considering %zu successor logic cones\n", successors.size());
+        log("==============================================================\n\n");
+        while (!successors.empty()) {
+            auto cone = successors.front();
+            successors.pop();
 
+            // TODO should we skip the cell if it's not labelled tamara_triplicate?
+
+            // start at the output port, do a BFS backwards to build up our logic cones
+            cone.search(module, neighbours);
+            log("\n");
+
+            // cone is built, replicate items
+            cone.replicate(module);
+            log("\n");
+
+            // add voter
+            cone.insertVoter(module);
+            log("\n");
+
+            // wire up the netlist
+            cone.wire(module);
+            log("\n");
+
+            // generate successors
+            auto coneSuccessors = cone.buildSuccessors(neighbours);
+            for (const auto &successor : coneSuccessors) {
+                successors.push(successor);
+            }
+            log("\n");
+        }
+
+        log("TaMaRa TMR pass completed!\n");
         log_pop();
     }
 

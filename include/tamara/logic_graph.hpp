@@ -11,6 +11,7 @@
 #include "tamara/voter_builder.hpp"
 #include <optional>
 #include <queue>
+#include <unordered_set>
 
 USING_YOSYS_NAMESPACE;
 
@@ -118,6 +119,8 @@ public:
     }
 
 private:
+    // FIXME This should actually be RTLILAnyPtr, because ElementNodes could be wires or cells
+    // not_dff_tmr.ys gives a good example of this
     RTLIL::Cell *cell;
     std::vector<RTLIL::Cell*> replicas;
 };
@@ -182,6 +185,11 @@ public:
         : outputNode(std::make_shared<IONode>(io, nextID())), id(outputNode->getConeID()) {
     }
 
+    // FIXME check that cell really is a FF when we instantiate
+    LogicCone(RTLIL::Cell *ff)
+        : outputNode(std::make_shared<FFNode>(ff, nextID())), id(outputNode->getConeID()) {
+    }
+
     //! Builds a logic cone by tracing backwards from outputNode to either a DFF or other IO.
     void search(RTLIL::Module *module, RTLILWireConnections &connections);
 
@@ -195,10 +203,15 @@ public:
     void wire(RTLIL::Module *module);
 
     //! Builds a new logic cone that will continue the search onwards, or none if we're already at the input
-    std::optional<LogicCone> buildSuccessor();
+    std::vector<LogicCone> buildSuccessors(RTLILWireConnections &connections);
 
 private:
-    TMRGraphNode::Ptr inputNode;
+    // this is the list of terminals: the list of IO nodes or FF nodes that we end up on through our backwards
+    // BFS. when we reach a terminal, we try and finalise the search by not adding any more nodes from that
+    // terminal. however, we could still encounter multiple terminals, hence the list.
+    std::vector<TMRGraphNode::Ptr> inputNodes;
+
+    // a cone has only one output (so far)
     TMRGraphNode::Ptr outputNode;
 
     // list of logic cone elements, to be replicated (does not include terminals)
@@ -213,7 +226,7 @@ private:
     // logic cone ID, mostly used to identify this cone for debug
     uint32_t id;
 
-    void replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *module) const;
+    void verifyInputNodes() const;
 
     // Based on this idea: https://stackoverflow.com/a/2978575
     // We don't thread, so no mutex required

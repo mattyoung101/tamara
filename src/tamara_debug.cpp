@@ -98,7 +98,7 @@ struct TamaraDebug : public Pass {
             node->replicate(top);
 
             // fake cone so we can try inserting a voter
-            auto cone = tamara::LogicCone(0);
+            auto cone = tamara::LogicCone(notGate);
             cone.insertVoter(top);
         } else {
             log_error("Unhandled debug task: '%s'\n", task.c_str());
