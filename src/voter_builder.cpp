@@ -6,18 +6,27 @@
 // was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
+#include "tamara/util.hpp"
 #include "tamara/voter_builder.hpp"
 
 USING_YOSYS_NAMESPACE
 
 // NOLINTBEGIN(bugprone-macro-parentheses) These macros do not need parentheses
 #define WIRE(A, B) auto A##_##B##_wire = module->addWire(NEW_ID_SUFFIX(#A "_" #B "_wire"));
-#define NOT(number, A, B) module->addLogicNot(NEW_ID_SUFFIX("not" #number), A, B)
-#define AND(number, A, B, Y) module->addLogicAnd(NEW_ID_SUFFIX("and" #number), A, B, Y)
-#define OR(number, A, B, Y) module->addLogicOr(NEW_ID_SUFFIX("or" #number), A, B, Y)
+#define NOT(number, A, B) makeIgnored(module->addLogicNot(NEW_ID_SUFFIX("not" #number), A, B))
+#define AND(number, A, B, Y) makeIgnored(module->addLogicAnd(NEW_ID_SUFFIX("and" #number), A, B, Y))
+#define OR(number, A, B, Y) makeIgnored(module->addLogicOr(NEW_ID_SUFFIX("or" #number), A, B, Y))
 // NOLINTEND(bugprone-macro-parentheses)
 
 using namespace tamara;
+
+//! Makes sure that the RTLIL object is ignored. We wouldn't want to accidentally triplicate voters.
+template <typename T>
+static constexpr T makeIgnored(T obj) {
+    obj->set_bool_attribute(IGNORE_ANNOTATION);
+    obj->set_bool_attribute(VOTER_ANNOTATION);
+    return obj;
+}
 
 Voter VoterBuilder::build(RTLIL::Module *module) {
     // add inputs
