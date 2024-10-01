@@ -9,9 +9,9 @@
 #include "kernel/yosys_common.h"
 #include "tamara/util.hpp"
 #include "tamara/voter_builder.hpp"
+#include <cstdint>
 #include <optional>
 #include <queue>
-#include <unordered_set>
 
 USING_YOSYS_NAMESPACE;
 
@@ -43,16 +43,8 @@ public:
         , id(id) {
     }
 
-    std::optional<TMRGraphNode::Ptr> getParent() {
+    [[nodiscard]] std::optional<TMRGraphNode::Ptr> getParent() {
         return parent;
-    }
-
-    const std::vector<TMRGraphNode::Ptr> &getChildren() {
-        return children;
-    }
-
-    void addChild(const TMRGraphNode::Ptr &child) {
-        children.push_back(child);
     }
 
     [[nodiscard]] uint32_t getConeID() const {
@@ -60,7 +52,8 @@ public:
     }
 
     //! Virtual method that sub-classes should override to compute neighbours of this node for BFS
-    std::vector<TMRGraphNode::Ptr> computeNeighbours(RTLIL::Module *module, RTLILWireConnections &connections);
+    [[nodiscard]] std::vector<TMRGraphNode::Ptr> computeNeighbours(
+        RTLIL::Module *module, RTLILWireConnections &connections);
 
     //! Gets a pointer to the underlying RTLIL object
     virtual RTLILAnyPtr getRTLILObjPtr() = 0;
@@ -71,9 +64,10 @@ public:
     //! Identifies this node (for debug)
     virtual std::string identify() = 0;
 
-    //! Converts an RTLILAnyPtr to a TMR graph object. Implementation is cursed, beware. Probably leaks
-    //! memory too, but so does upstream so w/e.
-    [[nodiscard]] TMRGraphNode::Ptr yosysToLogicGraph(const RTLILAnyPtr &ptr);
+    //! During LogicCone::computeNeighbours, this call turns an RTLIL neighbour (ptr) into a new logic graph
+    //! node, with the parent correctly set to this TMRGraphNode using getSelfPtr().
+    [[nodiscard]] TMRGraphNode::Ptr newLogicGraphNeighbour(
+        const RTLILAnyPtr &ptr, RTLILWireConnections &connections);
 
     //! Returns a shared ptr to self
     [[nodiscard]] TMRGraphNode::Ptr getSelfPtr() {
@@ -85,33 +79,32 @@ public:
 
 private:
     std::optional<TMRGraphNode::Ptr> parent;
-    std::vector<TMRGraphNode::Ptr> children;
     uint32_t id;
 };
 
 //! Logic element in the graph, between an FFNode and/or an IONode
-class ElementNode : public TMRGraphNode {
+class ElementCellNode : public TMRGraphNode {
     friend class FFNode;
 
 public:
-    explicit ElementNode(RTLIL::Cell *cell, uint32_t id)
+    explicit ElementCellNode(RTLIL::Cell *cell, uint32_t id)
         : TMRGraphNode(id)
         , cell(cell) {
     }
 
-    ElementNode(RTLIL::Cell *cell, const TMRGraphNode::Ptr &parent, uint32_t id)
+    ElementCellNode(RTLIL::Cell *cell, const TMRGraphNode::Ptr &parent, uint32_t id)
         : TMRGraphNode(parent, id)
         , cell(cell) {
     }
 
-    RTLIL::Cell *getElement() {
+    RTLIL::Cell *getElement() const {
         return cell;
     }
 
     void replicate(RTLIL::Module *module) override;
 
     std::string identify() override {
-        return "ElementNode";
+        return "ElementCellNode";
     }
 
     RTLILAnyPtr getRTLILObjPtr() override {
@@ -119,22 +112,52 @@ public:
     }
 
 private:
-    // FIXME This should actually be RTLILAnyPtr, because ElementNodes could be wires or cells
-    // not_dff_tmr.ys gives a good example of this
     RTLIL::Cell *cell;
-    std::vector<RTLIL::Cell*> replicas;
+    std::vector<RTLIL::Cell *> replicas;
+};
+
+//! Also a logic element in the graph, but a wire not a cell. See ElementNode.
+class ElementWireNode : public TMRGraphNode {
+public:
+    explicit ElementWireNode(RTLIL::Wire *wire, uint32_t id)
+        : TMRGraphNode(id)
+        , wire(wire) {
+    }
+
+    ElementWireNode(RTLIL::Wire *wire, const TMRGraphNode::Ptr &parent, uint32_t id)
+        : TMRGraphNode(parent, id)
+        , wire(wire) {
+    }
+
+    RTLIL::Wire *getWire() const {
+        return wire;
+    }
+
+    void replicate(RTLIL::Module *module) override;
+
+    std::string identify() override {
+        return "ElementWireNode";
+    }
+
+    RTLILAnyPtr getRTLILObjPtr() override {
+        return wire;
+    }
+
+private:
+    RTLIL::Wire *wire;
+    std::vector<RTLIL::Wire *> replicas;
 };
 
 //! Flip flop node in the graph
-class FFNode : public ElementNode {
+class FFNode : public ElementCellNode {
     // functionally identical to ElementNode, we just need the class to distinguish from ElementNode
 public:
     explicit FFNode(RTLIL::Cell *cell, uint32_t id)
-        : ElementNode(cell, id) {
+        : ElementCellNode(cell, id) {
     }
 
     FFNode(RTLIL::Cell *cell, const TMRGraphNode::Ptr &parent, uint32_t id)
-        : ElementNode(cell, parent, id) {
+        : ElementCellNode(cell, parent, id) {
     }
 
     RTLIL::Cell *getFF() {
@@ -146,7 +169,8 @@ public:
     }
 };
 
-//! IO port node in the graph
+//! IO port node in the graph. An IONode must be at the end, so it has no neighbours, it's a direct IO to the
+//! FPGA/ASIC output.
 class IONode : public TMRGraphNode {
 public:
     explicit IONode(RTLIL::Wire *io, uint32_t id)
@@ -182,12 +206,14 @@ class LogicCone {
 public:
     //! Instantiates a new logic cone from the starting output wire.
     explicit LogicCone(RTLIL::Wire *io)
-        : outputNode(std::make_shared<IONode>(io, nextID())), id(outputNode->getConeID()) {
+        : outputNode(std::make_shared<IONode>(io, nextID()))
+        , id(outputNode->getConeID()) {
     }
 
     // FIXME check that cell really is a FF when we instantiate
     LogicCone(RTLIL::Cell *ff)
-        : outputNode(std::make_shared<FFNode>(ff, nextID())), id(outputNode->getConeID()) {
+        : outputNode(std::make_shared<FFNode>(ff, nextID()))
+        , id(outputNode->getConeID()) {
     }
 
     //! Builds a logic cone by tracing backwards from outputNode to either a DFF or other IO.

@@ -20,7 +20,13 @@ using namespace tamara;
 
 uint32_t LogicCone::g_cone_ID = 0;
 
-TMRGraphNode::Ptr TMRGraphNode::yosysToLogicGraph(const RTLILAnyPtr &ptr) {
+//! An IO is simply a wire with no neighbours (since it should be at the edge of the circuit)
+static constexpr bool isWireIO(RTLIL::Wire *wire, RTLILWireConnections &connections) {
+    return connections[wire].empty();
+}
+
+TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(
+    const RTLILAnyPtr &ptr, RTLILWireConnections &connections) {
     // based on example 3 of https://en.cppreference.com/w/cpp/utility/variant/visit
     //
     // this is completely insane, holy shit
@@ -36,12 +42,17 @@ TMRGraphNode::Ptr TMRGraphNode::yosysToLogicGraph(const RTLILAnyPtr &ptr) {
                 if (isDFF(arg)) {
                     return static_cast<TMRGraphNode::Ptr>(std::make_shared<FFNode>(arg, selfPtr, localId));
                 }
-                return static_cast<TMRGraphNode::Ptr>(std::make_shared<ElementNode>(arg, selfPtr, localId));
+                return static_cast<TMRGraphNode::Ptr>(
+                    std::make_shared<ElementCellNode>(arg, selfPtr, localId));
             }
             if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
-                // FIXME it may not be an IO just because it's a wire - we need to check
-                // I think this is the main problem fucking it up right now so we need to fix this asap
-                return static_cast<TMRGraphNode::Ptr>(std::make_shared<IONode>(arg, selfPtr, localId));
+                if (isWireIO(arg, connections)) {
+                    // this is actually an IO
+                    return static_cast<TMRGraphNode::Ptr>(std::make_shared<IONode>(arg, selfPtr, localId));
+                }
+                // it's a wire, but just a regular element node -> not an IO
+                return static_cast<TMRGraphNode::Ptr>(
+                    std::make_shared<ElementWireNode>(arg, selfPtr, localId));
             }
         },
         ptr);
@@ -85,15 +96,13 @@ static RTLIL::IdString getRTLILName(const TMRGraphNode::Ptr &ptr) {
 }
 
 //! Determines if neighbours should be added to a node during backwards BFS.
-//! Currently we only add neighbours for ElementNodes.
+//! Currently we only add neighbours if it's NOT a IONode or FFNode (which are considered terminals).
 inline static bool shouldAddNeighbours(const TMRGraphNode::Ptr &node) {
-    // FIXME this can be changed to the old logic of "dynamic_pointer_cast ElementNode != null" to temporarily
-    // unfuck it for demos
-    // currently it's fucked b.c. it duplicates elements that are already duplicated
     return dynamic_pointer_cast<IONode>(node) == nullptr && dynamic_pointer_cast<FFNode>(node) == nullptr;
 }
 
-//! Replicates the node if it's not an IONode.
+//! Replicates the node if it's not an IONode. We can't replicate IONodes as they are inputs to the entire
+//! circuit.
 static void replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *module) {
     if (dynamic_pointer_cast<IONode>(node) == nullptr) {
         log("Input node %s is not IONode, replicating it\n", log_id(getRTLILName(node)));
@@ -103,7 +112,8 @@ static void replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *modul
     }
 }
 
-void ElementNode::replicate(RTLIL::Module *module) {
+void ElementCellNode::replicate(RTLIL::Module *module) {
+    log("    Replicating %s %s\n", identify().c_str(), log_id(cell->name));
     if (cell->has_attribute(CONE_ANNOTATION)) {
         log_warning("When replicating %s %s in cone %u: Already replicated in logic cone %s\n",
             identify().c_str(), log_id(cell->name), getConeID(),
@@ -130,8 +140,32 @@ void ElementNode::replicate(RTLIL::Module *module) {
     replicas.push_back(replica2);
 }
 
+void ElementWireNode::replicate(RTLIL::Module *module) {
+    log("    Replicating ElementWireNode %s\n", log_id(wire->name));
+    if (wire->has_attribute(CONE_ANNOTATION)) {
+        log_warning("When replicating ElementWireNode %s in cone %u: Already replicated in logic cone %s\n",
+            log_id(wire->name), getConeID(), wire->get_string_attribute(CONE_ANNOTATION).c_str());
+    }
+
+    auto id = std::to_string(getConeID());
+
+    auto *replica1 = module->addWire(NEW_ID_SUFFIX(wire->name.str() + "__replica1_cone" + id + "__"), wire);
+    auto *replica2 = module->addWire(NEW_ID_SUFFIX(wire->name.str() + "__replica2_cone" + id + "__"), wire);
+
+    replica1->set_string_attribute(CONE_ANNOTATION, id);
+    replica2->set_string_attribute(CONE_ANNOTATION, id);
+    wire->set_string_attribute(CONE_ANNOTATION, id);
+
+    wire->set_bool_attribute(ORIGINAL_ANNOTATION);
+
+    module->check();
+
+    replicas.push_back(replica1);
+    replicas.push_back(replica2);
+}
+
 void IONode::replicate([[maybe_unused]] RTLIL::Module *module) {
-    // this shouldn't happen
+    // this shouldn't happen since we call replicateIfNotIO
     log_error("TaMaRa internal error: Cannot replicate IO node!\n");
 }
 
@@ -144,7 +178,7 @@ std::vector<TMRGraphNode::Ptr> TMRGraphNode::computeNeighbours(
     // now, construct Yosys types into our logic graph types
     std::vector<TMRGraphNode::Ptr> out {};
     for (const auto &neighbour : neighbours) {
-        out.push_back(yosysToLogicGraph(neighbour));
+        out.push_back(newLogicGraphNeighbour(neighbour, connections));
     }
     return out;
 }
@@ -153,8 +187,8 @@ std::vector<TMRGraphNode::Ptr> TMRGraphNode::computeNeighbours(
 void LogicCone::verifyInputNodes() const {
     for (const auto &node : inputNodes) {
         if (dynamic_pointer_cast<IONode>(node) == nullptr && dynamic_pointer_cast<FFNode>(node) == nullptr) {
-            log_error("TaMaRa internal error: Input node should be either IONode or FFNode, but instead it "
-                      "was %s %s!\n",
+            log_error("TaMaRa internal error: Logic cone input node should be either IONode or FFNode, but "
+                      "instead it was %s %s!\n",
                 node->identify().c_str(), log_id(getRTLILName(node)));
         }
     }
@@ -179,12 +213,14 @@ void LogicCone::search(RTLIL::Module *module, RTLILWireConnections &connections)
             log_id(getRTLILName(node)), id, frontier.size());
 
         // add to logic cone if not IO, this is because we don't want to replicate IOs, but we do replicate
-        // Elements and FFs. we can't replicate IOs because they're outputs/inputs of course
-        if (dynamic_pointer_cast<IONode>(node) == nullptr) {
+        // Elements and FFs. we can't replicate IOs because they're outputs/inputs of course.
+        // also don't add the first element to the cone, as it'll cause duplicates elsewhere.
+        if (dynamic_pointer_cast<IONode>(node) == nullptr && !first) {
             cone.push_back(node);
             log("    Add %s to cone (now has %zu items)\n", node->identify().c_str(), cone.size());
         } else {
-            log("    Skip adding %s to cone\n", node->identify().c_str());
+            log("    Skip adding %s to cone (first: %s)\n", node->identify().c_str(),
+                first ? "true" : "false");
         }
 
         if (shouldAddNeighbours(node) || first) {
@@ -214,12 +250,19 @@ void LogicCone::search(RTLIL::Module *module, RTLILWireConnections &connections)
 }
 
 void LogicCone::replicate(RTLIL::Module *module) {
+    // FIXME if a logic cone contains zero elements in the cone, only terminals, we may want to not replicate
+    // it?
+    // this might fix our current bug with replicating too many times
+
+    if (cone.empty()) { }
+
     log("Replicating %zu collected items for logic cone %u\n", cone.size(), id);
     for (const auto &item : cone) {
         item->replicate(module);
     }
 
     // special case for end points (IOs and FFs) -> only replicate FFs, don't replicate IOs
+    // FIXME we may not want to replicate input terminals, because it produces duplicates?
     log("Checking terminals\n");
     for (const auto &node : inputNodes) {
         replicateIfNotIO(node, module);

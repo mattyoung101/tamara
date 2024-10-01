@@ -94,7 +94,7 @@ struct TamaraDebug : public Pass {
             }
 
             auto *notGate = findNot(top);
-            auto node = std::make_shared<tamara::ElementNode>(notGate, 0);
+            auto node = std::make_shared<tamara::ElementCellNode>(notGate, 0);
             node->replicate(top);
 
             // fake cone so we can try inserting a voter
