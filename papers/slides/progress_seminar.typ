@@ -34,18 +34,31 @@
 #show: slides
 
 = Background
+== Single Event Upsets
+#grid(
+    columns: (17em, auto),
+    gutter: 1pt,
+    [
+        Fault tolerant computing is important for safety critical sectors (aerospace, defence, medicine, etc.)
+
+        For space-based applications, Single Event Upsets (SEUs) are very common
+        - Bit flips caused by ionising radiation
+        - Must be mitigated to prevent catastrophic failures
+
+        Even in terrestrial applications, SEUs can still occur
+        - Must be mitigated for high reliability applications
+    ],
+    [
+        #align(center)[
+            #image("diagrams/see_mechan.gif")
+            #text(size: 12pt)[
+                Source: https://www.cogenda.com/article/SEE
+            ]
+        ]
+    ]
+)
+
 == Motivation
-Fault tolerant computing is important for safety critical sectors (aerospace, defence, medicine, etc.)
-
-#pause
-For space-based applications, Single Event Upsets (SEUs) are very common
-- Must be mitigated to prevent catastrophic failure
-- Caused by ionising radiation //striking transistors on a digital circuit
-
-Even in terrestrial applications, SEUs can still occur
-- Must be mitigated for high reliability applications
-
-#pause
 Application Specific Integrated Circuits (ASICs) and Field Programmable Gate Arrays (FPGAs) commonly deployed
 in space (and on Earth)...
 #pause
@@ -93,29 +106,37 @@ Two main paradigms:
     - Johnson @Johnson2010, Benites @Benites2018, Skouson @Skouson2020
 
 == The TaMaRa algorithm
+#grid(
+    columns: (14em, auto),
+    gutter: 1pt,
+    [
+        TaMaRa is mainly netlist-driven. Voter insertion is inspired by Benites @Benites2018 "logic cones"
+        concept, and parts of Johnson @Johnson2010.
 
-TaMaRa is mainly netlist-driven. Voter insertion is inspired by Benites @Benites2018 "logic cones"
-concept, and parts of Johnson @Johnson2010.
+        Also propagate a Verilog annotation to select TMR granularity (like
+        Kulis @Kulis2017).
 
-Also aim to propagate a `(* triplicate *)` HDL annotation to select TMR granularity (similar to Kulis
-@Kulis2017).
+        Runs after techmapping (i.e. after `abc` in Yosys)
+    ],
+    [
+        #align(center)[
+            #image("diagrams/tamara_synthesis_flow.svg", width: 115%)
+        ]
+    ]
+)
 
-Runs after techmapping (i.e. after `abc` in Yosys)
+// TODO describe the algorithm in more details (replace usage overview with this description)
 
-#align(center)[
-    #image("diagrams/tamara_synthesis_flow.svg", width: 55%)
-]
-
-== The TaMaRa algorithm
-
-Why netlist driven with the `(* triplicate *)` annotation?
-
-#pause
-
-- Removes the possibility of Yosys optimisation eliminating redundant TMR logic
-- Removes the necessity of complex blackboxing logic and trickery to bypass the normal design flow
-- Cell type shouldn't matter, TaMaRa targets FPGAs and ASICs
-- Still allows selecting TMR granularity - *best of both worlds*
+// == The TaMaRa algorithm
+//
+// Why netlist driven with the `(* triplicate *)` annotation?
+//
+// #pause
+//
+// - Removes the possibility of Yosys optimisation eliminating redundant TMR logic
+// - Removes the necessity of complex blackboxing logic and trickery to bypass the normal design flow
+// - Cell type shouldn't matter, TaMaRa targets FPGAs and ASICs
+// - Still allows selecting TMR granularity - *best of both worlds*
 
 == Verification
 Comprehensive verification procedure using formal methods, simulation and fuzzing.
@@ -126,19 +147,17 @@ Driven by SymbiYosys tools _eqy_ and _mcy_
 == Formal verification
 Equivalence checking: Formally verify that the circuit is functionally equivalent before and after the TaMaRa
 pass.
-#pause
 - Ensures TaMaRa does not change the underlying behaviour of the circuit.
 
 #pause
 
 Mutation: Formally verify that TaMaRa-processed circuits correct SEUs (single bit only)
-#pause
 - Ensures TaMaRa does its job!
 
 #pause
 
-Also considering Beltrame's verification tool @Beltrame2015, and other literature on TMR formal
-verification.
+Beltrame's verification tool @Beltrame2015 was considered, but is not complete and does not compile under
+modern Clang/GCC.
 
 == Fuzzing
 TaMaRa must work for _all_ input circuits, so we need to test at scale.
@@ -146,7 +165,6 @@ TaMaRa must work for _all_ input circuits, so we need to test at scale.
 #pause
 
 Idea:
-
 1. Use Verismith @Herklotz2020 to generate random Verilog RTL.
 2. Run TaMaRa synthesis end-to-end.
 3. Use formal equivalence checking to verify the random circuits behave the same before/after TMR.
@@ -154,16 +172,14 @@ Idea:
 #pause
 
 Problem: Mutation
-
-#pause
-
-- We need valid testbenches for these random circuits, how would we generate that?
-- Under active research in academia (may not be possible at the moment)
+- We need valid testbenches for these random circuits
+- Requires automatic test pattern generation (ATPG), highly non-trivial
+- Future topic of further research
 
 == Simulation
 We want to simulate an SEU environment.
 - UQ doesn't have the capability to expose FPGAs to real radiation
-- Physical verification is challenging (how do you measure it?)
+- Physical verification is challenging (particularly measurement)
 
 #pause
 
@@ -175,32 +191,33 @@ Use one of Verilator or Yosys' own cxxrtl to simulate a full design.
 
 Concept:
 - Iterate over the netlist, randomly consider flipping a bit every cycle
+    - May be non-trivial depending on simulator
 - Write a self-checking testbench and ensure that the DUT responds correctly (e.g. RISC-V CoreMark)
 
-== Technical implementation
-Implemented in C++20, using CMake.
-
-Load into Yosys: `plugin -i libtamara.so`
-
-TMR is implemented as two separate commands: `tamara_propagate` and `tamara_tmr`
-
-#pause
-
-Run `tamara_propagate` after `read_verilog` to propagate the `(* tamara_triplicate *)` annotations.
-
-#pause
-
-Run `tamara_tmr` after techmapping to perform triplication and voter insertion (add TMR).
-
 = Current status & future
+// == Usage overview
+// Implemented as a C++20 Yosys plugin, using CMake.
+//
+// Load TaMaRa plugin into Yosys: `plugin -i libtamara.so`
+//
+// TMR is implemented as two separate commands: `tamara_propagate` and `tamara_tmr`
+//
+// #pause
+//
+// Run `tamara_propagate` after `read_verilog` to propagate the `(* tamara_triplicate *)` annotations.
+//
+// #pause
+//
+// Run `tamara_tmr` after techmapping to perform triplication and voter insertion (add TMR).
+
 == Current status
 Algorithm design and planning essentially complete. Yosys internals (particularly RTLIL) understood to a
 satisfactory level (still learning as I go).
 
 #pause
 
-C++ development well under way. Using modern C++20 features like `shared_ptr` and `std::variant`
-meta-programming.
+C++ development well under way, approaching 1000 lines across 8 files. Using modern C++20 features like
+`shared_ptr` and `std::variant` meta-programming.
 
 #pause
 
@@ -379,7 +396,17 @@ Are they equivalent? Yes! (Thankfully)
 *Caveat:* Still need to verify circuits with more complex logic (i.e. DFFs).
 
 == The future
-TODO tasks that remain needing to be done
+Tasks that remain (more or less):
+
+- Fixing duplicate logic elements when replicating RTLIL primitives
+- Wiring voter to logic elements, and wiring replicated logic elements to the rest of the circuit
+- Considering wiring for feedback circuits _(expected to be complex/massive time sink!)_
+- Global routing of error signal to a net
+- Processing complex circuits like picorv32
+- Writing a cycle-accurate fault-injection simulator, and associated testbenches
+- Formal equivalence checking for complex circuits
+- Formal mutation coverage
+- Fuzzing _(if time permits)_
 
 == The future
 I'm aiming to produce at least one proper academic publication from this thesis, about TaMaRa.
