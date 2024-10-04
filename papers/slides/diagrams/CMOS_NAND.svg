@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generator: Adobe Illustrator 12.0.1, SVG Export Plug-In  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/" width="310" height="505" viewBox="2.333 0 310 505" enable-background="new 2.333 0 310 505" xml:space="preserve">
+<defs>
+</defs>
+<rect x="2.333" fill="#FFFFFF" width="310" height="505"/>
+<rect x="70.667" y="4.672" fill="none" width="43.333" height="16"/>
+<text transform="matrix(1 0 0 1 73.6504 19.708)" font-family="'ArialMT'" font-size="21">Vdd</text>
+<rect x="184.334" y="4.006" fill="none" width="43.333" height="16"/>
+<text transform="matrix(1 0 0 1 187.3174 19.0415)" font-family="'ArialMT'" font-size="21">Vdd</text>
+<rect y="99.672" fill="none" width="26" height="24"/>
+<text transform="matrix(1 0 0 1 5.9966 114.708)" font-family="'ArialMT'" font-size="21">A</text>
+<rect x="115.001" y="102.672" fill="none" width="23.333" height="18"/>
+<text transform="matrix(1 0 0 1 119.6641 117.708)" font-family="'ArialMT'" font-size="21">B</text>
+<rect x="72" y="270.34" fill="none" width="21.333" height="19.333"/>
+<text transform="matrix(1 0 0 1 75.6631 285.376)" font-family="'ArialMT'" font-size="21">A</text>
+<rect x="73.333" y="384.339" fill="none" width="21.333" height="20.667"/>
+<text transform="matrix(1 0 0 1 76.9966 399.375)" font-family="'ArialMT'" font-size="21">B</text>
+<rect x="126.666" y="481.672" fill="none" width="44" height="17.333"/>
+<text transform="matrix(1 0 0 1 131.1631 496.708)" font-family="'ArialMT'" font-size="21">Vss</text>
+<rect x="268.667" y="185.672" fill="none" width="40.667" height="24"/>
+<text transform="matrix(1 0 0 1 272.0762 200.708)" font-family="'ArialMT'" font-size="21">Out</text>
+<line fill="none" stroke="#000000" stroke-width="4" x1="71" y1="23.333" x2="112.333" y2="23.333"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="185" y1="23.333" x2="226.333" y2="23.333"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="205.667" y1="22.667" x2="205.667" y2="82.672"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="205.667" y1="80.667" x2="174.333" y2="80.667"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="176.333" y1="80" x2="176.333" y2="138"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="177" y1="136" x2="207.661" y2="136"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="205.667" y1="136" x2="205.667" y2="193.333"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="243" y1="193.333" x2="92.333" y2="193.333"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="92.333" y1="195.32" x2="92.333" y2="137.333"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="94.314" y1="137.333" x2="63.667" y2="137.333"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="63.667" y1="139.334" x2="63.667" y2="79.333"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="61.708" y1="79.333" x2="93" y2="79.333"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="93" y1="81.319" x2="93" y2="23.333"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="148.333" y1="193.333" x2="148.333" y2="252.672"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="148.333" y1="250.667" x2="119" y2="250.667"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="121" y1="250.667" x2="121" y2="309.328"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="121" y1="307.334" x2="149.677" y2="307.334"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="147.667" y1="307.334" x2="147.667" y2="365.328"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="147.667" y1="363.334" x2="119" y2="363.334"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="119" y1="361.334" x2="119" y2="422"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="119" y1="420" x2="151.005" y2="420"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="149" y1="420" x2="149" y2="476.667"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="127.667" y1="476.667" x2="169.667" y2="476.667"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="111.667" y1="422.084" x2="111.667" y2="361.25"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="111" y1="390.667" x2="91.667" y2="390.667"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="113" y1="248.5" x2="113" y2="309.25"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="113" y1="278" x2="92.333" y2="278"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="56.333" y1="77.313" x2="56.333" y2="139.375"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="169.667" y1="78.583" x2="169.667" y2="138"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="155.667" y1="108" x2="135" y2="108"/>
+<line fill="none" stroke="#000000" stroke-width="4" x1="42.333" y1="108" x2="21.667" y2="108"/>
+<circle fill="none" stroke="#000000" stroke-width="4" cx="255" cy="194" r="11.333"/>
+<circle fill="none" stroke="#000000" stroke-width="4" cx="163" cy="108.667" r="6.667"/>
+<circle fill="none" stroke="#000000" stroke-width="4" cx="49" cy="109.333" r="6.667"/>
+</svg>
