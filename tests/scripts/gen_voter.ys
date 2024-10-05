@@ -1,5 +1,4 @@
-# run from the build directory
-# ninja && yosys -s ../tests/scripts/gen_voter.ys
+# Test inserting one voter into a blank circuit
 
 plugin -i libtamara.so
 tamara_debug mkvoter

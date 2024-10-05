@@ -1,6 +1,9 @@
+# Test that checks that a simple circuit is equivalent when manually replicating elements and inserting a
+# voter.
+
 [gold]
 read_verilog -sv ../tests/verilog/not_voter_eqy.sv
-prep -top not_voter_gold
+prep -top inverter
 flatten
 rename -top design
 

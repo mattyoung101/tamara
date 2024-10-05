@@ -7,4 +7,4 @@ check
 flatten
 write_rtlil
 write_verilog
-show
+show -colors 420

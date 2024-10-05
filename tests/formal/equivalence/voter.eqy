@@ -1,3 +1,5 @@
+# Tests that the C++ voter is equivalent to the Verilog voter (which is based on the truth table)
+
 [gold]
 read_verilog -sv ../tests/verilog/voter.sv
 prep -top voter

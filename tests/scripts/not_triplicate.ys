@@ -1,7 +1,4 @@
 # Tests a hack to triplicate a NOT gate.
-#
-# run from the build directory
-# ninja && yosys -s ../tests/scripts/not_triplicate.ys
 
 plugin -i libtamara.so
 

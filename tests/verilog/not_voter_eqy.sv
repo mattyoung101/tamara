@@ -1,6 +1,9 @@
+// Test that checks that a simple circuit is equivalent when manually replicating elements and inserting a
+// voter.
+
 // Gold circuit without voter
 (* tamara_triplicate *)
-module not_voter_gold(
+module inverter(
     input logic a,
     output logic o
 );
@@ -8,6 +11,7 @@ module not_voter_gold(
 assign o = !a;
 
 endmodule
+
 
 ////////////////////////////////////////////
 
@@ -22,9 +26,9 @@ logic o2;
 logic o3;
 logic err;
 
-assign o1 = !a;
-assign o2 = !a;
-assign o3 = !a;
+inverter not1(.a(a), .o(o1));
+inverter not2(.a(a), .o(o2));
+inverter not3(.a(a), .o(o3));
 
 voter voter(
     .a(o1),
@@ -36,30 +40,3 @@ voter voter(
 
 endmodule
 
-
-// module not_voter(
-//     input logic a,
-//     input logic clk,
-//     output logic o
-// );
-//
-// logic ff1;
-// logic ff2;
-// logic ff3;
-// logic err;
-//
-// always_ff @(posedge clk) begin
-//     ff1 <= a;
-//     ff2 <= a;
-//     ff3 <= a;
-// end
-//
-// voter voter(
-//     .a(ff1),
-//     .b(ff2),
-//     .c(ff3),
-//     .out(o),
-//     .err(err)
-// );
-//
-// endmodule
