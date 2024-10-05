@@ -125,7 +125,25 @@ Two main paradigms:
     ]
 )
 
-// TODO describe the algorithm in more details (replace usage overview with this description)
+== TaMaRa algorithm: Logic cones
+#align(center, [
+    #text(size: 12pt)[Source: @Beltrame2015]
+    #image("diagrams/logic_cone.png", width: 90%)
+])
+
+== TaMaRa algorithm: In depth
+- Construct TaMaRa logic graph and logic cones
+    - Analyse Yosys RTLIL netlist
+    - Perform backwards BFS from IOs to FFs (or other IOs) to collect combinatorial RTLIL primitives
+    - Convert RTLIL primitives into TaMaRa primitives
+    - Bundle into logic cone
+- Replicate RTLIL primitives inside logic cones
+- Insert voters into logic cones
+- Wiring
+    - Wire voter up to replicated primitives
+    - Wire replicated primitive IOs to the rest of the circuit
+- Build successor logic cones
+- Repeat until no more successors
 
 // == The TaMaRa algorithm
 //
@@ -144,20 +162,16 @@ Comprehensive verification procedure using formal methods, simulation and fuzzin
 Driven by SymbiYosys tools _eqy_ and _mcy_
 - In turn driven by Satisfiability Modulo Theorem (SMT) solvers (Yices @Dutertre2014, Boolector @Niemetz2014, etc)
 
-== Formal verification
+#pause
+
 Equivalence checking: Formally verify that the circuit is functionally equivalent before and after the TaMaRa
 pass.
 - Ensures TaMaRa does not change the underlying behaviour of the circuit.
 
 #pause
 
-Mutation: Formally verify that TaMaRa-processed circuits correct SEUs (single bit only)
+Mutation: Formally verify that TaMaRa-processed circuits correct injected faults in a testbench
 - Ensures TaMaRa does its job!
-
-#pause
-
-Beltrame's verification tool @Beltrame2015 was considered, but is not complete and does not compile under
-modern Clang/GCC.
 
 == Fuzzing
 TaMaRa must work for _all_ input circuits, so we need to test at scale.
@@ -185,14 +199,15 @@ We want to simulate an SEU environment.
 
 Use one of Verilator or Yosys' own cxxrtl to simulate a full design.
 - Each simulator has different trade-offs
-- Currently considering picorv32 or Hazard3 RISC-V CPUs as the Device Under Test (DUT)
+- Currently considering picorv32 RISC-V CPU as the Device Under Test (DUT)
+- Simpler DUTs will be tested as well
 
 #pause
 
 Concept:
 - Iterate over the netlist, randomly consider flipping a bit every cycle
     - May be non-trivial depending on simulator
-- Write a self-checking testbench and ensure that the DUT responds correctly (e.g. RISC-V CoreMark)
+- Self-checking testbench that ensures the DUT responds correctly (e.g. RISC-V CoreMark)
 
 = Current status & future
 // == Usage overview
@@ -272,14 +287,6 @@ After `tamara_debug replicateNot`:
 #align(center, [
     #image("diagrams/triplicate_graph.svg", width: 60%)
 ])
-
-== Progress: Automatically triplicating a NOT gate and inserting a voter
-Results:
-- NOT circuit identified in `tamara::LogicGraph`
-- RTLIL primitives replicated correctly
-- Voter inserted using `tamara::VoterBuilder`
-- Voter _not_ yet wired up to main design
-- Replicated components _not_ yet re-wired
 
 == Progress: Equivalence checking
 Voter circuit:
@@ -395,6 +402,40 @@ Are they equivalent? Yes! (Thankfully)
 
 *Caveat:* Still need to verify circuits with more complex logic (i.e. DFFs).
 
+== Current problem: Duplicate DFFs
+#grid(
+    columns: (16em, auto),
+    gutter: 0pt,
+    [
+        #image("diagrams/duplicate_dffs.svg")
+    ],
+    [
+        #set text(size: 14pt)
+        ```
+        7.2. Computing logic graph
+        Module has 1 output ports, 2 selected cells
+
+        Searching from output port o
+        Starting search for cone 0
+            ... [snip] ...
+        Search complete for cone 0, have 3 items
+
+        Replicating 3 collected items for logic cone 0
+            Replicating ElementCellNode $logic_not$../tests/verilog/not_triplicate.sv:16$2
+            Replicating ElementWireNode ff
+            Replicating FFNode $procdff$3
+        Checking terminals
+        Input node $procdff$3 is not IONode, replicating it
+            Replicating FFNode $procdff$3
+        Warning: When replicating FFNode $procdff$3 in cone 0: Already replicated in logic cone 0
+        Input node o is IONode, it will NOT be replicated
+
+        Inserting voter into logic cone 0
+
+        ... [snip] ...
+        ```
+    ]
+)
 == The future
 Tasks that remain (more or less):
 
@@ -409,7 +450,7 @@ Tasks that remain (more or less):
 - Fuzzing _(if time permits)_
 
 == The future
-I'm aiming to produce at least one proper academic publication from this thesis, about TaMaRa.
+I'm aiming to produce at least one proper academic publication from this thesis.
 
 #pause
 
@@ -430,7 +471,7 @@ the results of this project and its applications.
 - TaMaRa: Automated triple modular redundancy EDA flow for Yosys
 - Fully integrated into Yosys suite
 - Takes any circuit, helps to prevent it from experiencing SEUs by adding TMR
-- Netlist-driven algorithm based on Johnson's work @Johnson2010 (TODO NOT TRUE)
+- Synthesises netlist-driven approaches @Beltrame2015 @Johnson2010 with design-level approaches @Kulis2017
 - *Key goal:* "Click a button" and have any circuit run in space/in high reliability environments!
 
 _I'd like to extend my gratitude to N. Engelhardt of YosysHQ, the team at Sandia National Laboratories, and my
@@ -441,8 +482,5 @@ supervisor Assoc. Prof. John Williams for their support and interest during this
 #set text(size: 10pt)
 #bibliography("slides.bib", style: "institute-of-electrical-and-electronics-engineers", title: none)
 ]
-
-// == Thank you!
-// *Any questions?*
 
 #focus-slide[Thank you! Any questions?]
