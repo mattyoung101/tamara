@@ -34,38 +34,51 @@
 #show: slides
 
 = Background
-== Single Event Upsets
-#grid(
-    columns: (17em, auto),
-    gutter: 1pt,
-    [
-        Fault tolerant computing is important for safety critical sectors (aerospace, defence, medicine, etc.)
-
-        For space-based applications, Single Event Upsets (SEUs) are very common
-        - Bit flips caused by ionising radiation
-        - Must be mitigated to prevent catastrophic failures
-
-        Even in terrestrial applications, SEUs can still occur
-        - Must be mitigated for high reliability applications
-    ],
-    [
-        #align(center)[
-            #image("diagrams/see_mechan.gif")
-            #text(size: 12pt)[
-                Source: https://www.cogenda.com/article/SEE
-            ]
-        ]
-    ]
-)
-
 == Motivation
 Application Specific Integrated Circuits (ASICs) and Field Programmable Gate Arrays (FPGAs) commonly deployed
 in space (and on Earth)...
-#pause
-but protection from SEUs remains expensive!
+
+#grid(
+    columns: (auto, auto),
+    gutter: 8pt,
+    [
+        #align(center, [
+            #image("diagrams/tinytapeout.jpg", width: 80%)
+
+            #text(size: 11pt)[Source: https://zeptobars.com/en/read/tt04-tinytapeout-silicon-inside-gds-sky130]
+        ])
+    ],
+    [
+        #align(center, [
+            #image("diagrams/ice40_fpga.png", width: 85%)
+
+            #text(size: 11pt)[Source: Lattice iCE40 UltraPlus Family Data Sheet. #sym.copyright 2021 Lattice Semiconductor
+            Corp.]
+        ])
+    ]
+)
+
+
+== Single Event Upsets
+#align(center)[
+    #image("diagrams/see_mechan.gif", width: 70%)
+    #text(size: 12pt)[
+        Source: https://www.cogenda.com/article/SEE
+    ]
+]
+
+== SEU protection
+Protection from SEUs remains expensive!
 
 RAD750 CPU @Berger2001 (James Webb Space Telescope, Curiosity rover, + many more) is commonly used, but costs
 *>\$200,000 USD* @Hagedoorn2021!
+
+#align(center, [
+    #image("diagrams/jimbo_webb.png", width: 38%)
+
+    #text(size: 10pt)[Source: https://commons.wikimedia.org/wiki/File:JWST_spacecraft_model_3.png]
+])
+
 
 == Triple Modular Redundancy
 #align(center)[
@@ -210,29 +223,13 @@ Concept:
 - Self-checking testbench that ensures the DUT responds correctly (e.g. RISC-V CoreMark)
 
 = Current status & future
-// == Usage overview
-// Implemented as a C++20 Yosys plugin, using CMake.
-//
-// Load TaMaRa plugin into Yosys: `plugin -i libtamara.so`
-//
-// TMR is implemented as two separate commands: `tamara_propagate` and `tamara_tmr`
-//
-// #pause
-//
-// Run `tamara_propagate` after `read_verilog` to propagate the `(* tamara_triplicate *)` annotations.
-//
-// #pause
-//
-// Run `tamara_tmr` after techmapping to perform triplication and voter insertion (add TMR).
-
 == Current status
 Algorithm design and planning essentially complete. Yosys internals (particularly RTLIL) understood to a
 satisfactory level (still learning as I go).
 
 #pause
 
-C++ development well under way, approaching 1000 lines across 8 files. Using modern C++20 features like
-`shared_ptr` and `std::variant` meta-programming.
+C++ development well under way, approaching 1000 lines across 8 files. Using C++20.
 
 #pause
 
@@ -246,6 +243,7 @@ Started on formal equivalence checking for TaMaRa voters and simple manually-des
 
 Programming hopefully finished _around_ February 2025, verification by April 2025.
 
+// TODO make this based on not_tmr.ys instead (it's currently based on not_triplicate.ys)
 == Progress: Automatically triplicating a NOT gate and inserting a voter
 Original circuit:
 
@@ -388,7 +386,7 @@ Original, very simple circuit:
 After manual voter insertion (using SystemVerilog):
 
 #align(center, [
-    #image("diagrams/not_circuit_voter.svg", width: 100%)
+    #image("diagrams/not_circuit_voter.svg", width: 105%)
 ])
 
 == Progress: Equivalence checking (Voter insertion)
