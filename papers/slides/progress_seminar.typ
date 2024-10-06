@@ -158,17 +158,6 @@ Two main paradigms:
 - Build successor logic cones
 - Repeat until no more successors
 
-// == The TaMaRa algorithm
-//
-// Why netlist driven with the `(* triplicate *)` annotation?
-//
-// #pause
-//
-// - Removes the possibility of Yosys optimisation eliminating redundant TMR logic
-// - Removes the necessity of complex blackboxing logic and trickery to bypass the normal design flow
-// - Cell type shouldn't matter, TaMaRa targets FPGAs and ASICs
-// - Still allows selecting TMR granularity - *best of both worlds*
-
 == Verification
 Comprehensive verification procedure using formal methods, simulation and fuzzing.
 
