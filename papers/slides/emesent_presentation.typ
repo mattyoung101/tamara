@@ -169,25 +169,25 @@ Earth.
     ]
 )
 
-// == Die shot break time!
-// Too much info... die shot break time!
-//
-// A _die_ is a production-ready block of a silicon wafer ready to packaged into a chip.
-//
-// You can't see them with the naked eye (too small, need a good microscope/electron microscope)
-//
-// I love die shots. Most of these come from the amazing: https://zeptobars.com/en
-//
-// == Die shot break time!
-// #align(center, [
-//     #image("diagrams/Ti-CD4011BE-HD.jpg", width: 60%)
-//
-//     #text(size: 11pt)[
-//         TI TTL logic chip: 4x 2-input NAND gates. Simple as it gets.
-//
-//         Source: https://zeptobars.com/en/read/Ti-CD4011BE-quad-2-NAND-gate-CMOS
-//     ]
-// ])
+== Die shot break time!
+Too much info... die shot break time!
+
+A _die_ is a production-ready block of a silicon wafer ready to packaged into a chip.
+
+You can't see them with the naked eye (too small, need a good microscope/electron microscope)
+
+I love die shots. Most of these come from the amazing: https://zeptobars.com/en
+
+== Die shot break time!
+#align(center, [
+    #image("diagrams/Ti-CD4011BE-HD.jpg", width: 60%)
+
+    #text(size: 11pt)[
+        TI TTL logic chip: 4x 2-input NAND gates. Simple as it gets.
+
+        Source: https://zeptobars.com/en/read/Ti-CD4011BE-quad-2-NAND-gate-CMOS
+    ]
+])
 
 == What even is an FPGA???
 Manufacturing silicon ICs is _extraordinarily_ expensive, and totally uneconomic for low-volume runs.
@@ -278,6 +278,17 @@ Rule of thumb: You'll be surprised how often an FPGA shows up when you pull apar
     #text(size: 12pt)[Source: https://twitter.com/timonsku/status/1497725434888437762]
 
     #image("diagrams/saleae.jpg", width: 52%)
+])
+
+== Die shot break time!
+#align(center, [
+    #image("diagrams/mpu6050.jpg", width: 53%)
+
+    #text(size: 11pt)[
+        MPU6050 6-axis MEMS IMU
+
+        Source: https://zeptobars.com/en/read/Invensense-MPU6050-6d-MEMS-IMU-gyroscope-accelerometer
+    ]
 ])
 
 == Electronic Design Automation (EDA)
@@ -803,15 +814,16 @@ Tasks that remain (more or less):
 
 == The future
 I'm aiming to produce at least one proper academic publication from this thesis.
+- If TaMaRa works, its hybrid algorithm addresses a number of limitations in previous literature
+- May be useful for research labs (CubeSats) and industry
 
 #pause
 
-TaMaRa plugin code and tests will be released open-source under the Mozilla Public Licence 2.0 (used by
-Firefox, Eigen, etc).
+TaMaRa plugin code and tests will be released open-source under the MPL 2.0 (used by Firefox, Eigen, etc).
+Papers will hopefully be available under CC-BY.
 
-Papers, including thesis and hopefully any future academic publications, will be available under CC-BY.
-
-In short, TaMaRa will be freely available for anyone to use and build on.
+TaMaRa will be freely available for anyone to use and build on. Combination of academic publication + open
+source for widest possible reach.
 
 #pause
 

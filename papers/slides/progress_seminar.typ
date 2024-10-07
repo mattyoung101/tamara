@@ -6,6 +6,9 @@
   font: "Inria Sans",
 )
 
+// Set the speaker notes configuration, you can show it by pympress
+#let s = (s.methods.show-notes-on-second-screen)(self: s, right)
+
 // Global information configuration
 #let s = (s.methods.info)(
   self: s,
@@ -58,6 +61,10 @@ in space (and on Earth)...
     ]
 )
 
+#speaker-note[
+    - ASICs and FPGAs deployed in space/Earth for high reliability applications
+]
+
 
 == Single Event Upsets
 #align(center)[
@@ -65,6 +72,14 @@ in space (and on Earth)...
     #text(size: 12pt)[
         Source: https://www.cogenda.com/article/SEE
     ]
+]
+
+#speaker-note[
+    - Suffer from SEUs caused by ionising radiation striking transistors and causing bit flips
+    - Particularly common for space-based applications
+    - Must be mitigated to prevent catastrophic failures
+    - Even terrestrial applications, where the Earth's magnetosphere protects chips from the majority of
+        ionising radiation, mitigating SEUs still important for high reliability applications
 ]
 
 == SEU protection
@@ -438,15 +453,16 @@ Tasks that remain (more or less):
 
 == The future
 I'm aiming to produce at least one proper academic publication from this thesis.
+- If TaMaRa works, its hybrid algorithm addresses a number of limitations in previous literature
+- May be useful for research labs (CubeSats) and industry
 
 #pause
 
-TaMaRa plugin code and tests will be released open-source under the Mozilla Public Licence 2.0 (used by
-Firefox, Eigen, etc).
+TaMaRa plugin code and tests will be released open-source under the MPL 2.0 (used by Firefox, Eigen, etc).
+Papers will hopefully be available under CC-BY.
 
-Papers, including thesis and hopefully any future academic publications, will be available under CC-BY.
-
-In short, TaMaRa will be freely available for anyone to use and build on.
+TaMaRa will be freely available for anyone to use and build on. Combination of academic publication + open
+source for widest possible reach.
 
 #pause
 
