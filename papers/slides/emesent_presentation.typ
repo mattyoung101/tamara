@@ -830,6 +830,15 @@ source for widest possible reach.
 I have also spoken with the team at YosysHQ GmbH and Sandia National Laboratories, who are very interested in
 the results of this project and its applications.
 
+== The future
+Planning to do a PhD after this, possibly Australia or overseas.
+
+- Placement driven, physically-based optimal TMR
+- Design a rad-hardened RISC-V SoC using Skywater's 90 nm FDSOI process node
+- Novel vector VLIW DSP architecture using dynamic binary translation
+
+In general: Design and tape-out Australia's first RISC-V SoC on Sky130!
+
 = Conclusion
 == Summary
 - TaMaRa: Automated triple modular redundancy EDA flow for Yosys
