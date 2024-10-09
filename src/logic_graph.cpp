@@ -20,10 +20,67 @@ using namespace tamara;
 
 uint32_t LogicCone::g_cone_ID = 0;
 
+namespace {
+
 //! An IO is simply a wire with no neighbours (since it should be at the edge of the circuit)
-static constexpr bool isWireIO(RTLIL::Wire *wire, RTLILWireConnections &connections) {
+constexpr bool isWireIO(RTLIL::Wire *wire, RTLILWireConnections &connections) {
     return connections[wire].empty();
 }
+
+//! Returns the RTLIL ID for a RTLILAnyPtr
+RTLIL::IdString getRTLILName(const RTLILAnyPtr &ptr) {
+    return std::visit(
+        [](auto &&arg) {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
+                return arg->name;
+            }
+            if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
+                return arg->name;
+            }
+        },
+        ptr);
+}
+
+//! Instantiates a new logic cone from the RTLILAnyPtr.
+LogicCone newLogicCone(const RTLILAnyPtr &ptr) {
+    return std::visit(
+        [](auto &&arg) {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
+                // make sure we have a DFF if it's an RTLIL::Cell
+                log_assert(isDFF(arg));
+                return LogicCone(arg);
+            }
+            if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
+                return LogicCone(arg);
+            }
+        },
+        ptr);
+}
+
+//! Returns the RTLIL ID for a TMRGraphNode::Ptr
+RTLIL::IdString getRTLILName(const TMRGraphNode::Ptr &ptr) {
+    return getRTLILName(ptr->getRTLILObjPtr());
+}
+
+//! Determines if neighbours should be added to a node during backwards BFS.
+//! Currently we only add neighbours if it's NOT a IONode or FFNode (which are considered terminals).
+inline bool shouldAddNeighbours(const TMRGraphNode::Ptr &node) {
+    return dynamic_pointer_cast<IONode>(node) == nullptr && dynamic_pointer_cast<FFNode>(node) == nullptr;
+}
+
+//! Replicates the node if it's not an IONode. We can't replicate IONodes as they are inputs to the entire
+//! circuit.
+void replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *module) {
+    if (dynamic_pointer_cast<IONode>(node) == nullptr) {
+        log("Input node %s is not IONode, replicating it\n", log_id(getRTLILName(node)));
+        node->replicate(module);
+    } else {
+        log("Input node %s is IONode, it will NOT be replicated\n", log_id(getRTLILName(node)));
+    }
+}
+} // namespace
 
 TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(
     const RTLILAnyPtr &ptr, RTLILWireConnections &connections) {
@@ -56,60 +113,6 @@ TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(
             }
         },
         ptr);
-}
-
-//! Returns the RTLIL ID for a RTLILAnyPtr
-static RTLIL::IdString getRTLILName(const RTLILAnyPtr &ptr) {
-    return std::visit(
-        [](auto &&arg) {
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
-                return arg->name;
-            }
-            if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
-                return arg->name;
-            }
-        },
-        ptr);
-}
-
-//! Instantiates a new logic cone from the RTLILAnyPtr.
-static LogicCone newLogicCone(const RTLILAnyPtr &ptr) {
-    return std::visit(
-        [](auto &&arg) {
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
-                // make sure we have a DFF if it's an RTLIL::Cell
-                log_assert(isDFF(arg));
-                return LogicCone(arg);
-            }
-            if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
-                return LogicCone(arg);
-            }
-        },
-        ptr);
-}
-
-//! Returns the RTLIL ID for a TMRGraphNode::Ptr
-static RTLIL::IdString getRTLILName(const TMRGraphNode::Ptr &ptr) {
-    return getRTLILName(ptr->getRTLILObjPtr());
-}
-
-//! Determines if neighbours should be added to a node during backwards BFS.
-//! Currently we only add neighbours if it's NOT a IONode or FFNode (which are considered terminals).
-inline static bool shouldAddNeighbours(const TMRGraphNode::Ptr &node) {
-    return dynamic_pointer_cast<IONode>(node) == nullptr && dynamic_pointer_cast<FFNode>(node) == nullptr;
-}
-
-//! Replicates the node if it's not an IONode. We can't replicate IONodes as they are inputs to the entire
-//! circuit.
-static void replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *module) {
-    if (dynamic_pointer_cast<IONode>(node) == nullptr) {
-        log("Input node %s is not IONode, replicating it\n", log_id(getRTLILName(node)));
-        node->replicate(module);
-    } else {
-        log("Input node %s is IONode, it will NOT be replicated\n", log_id(getRTLILName(node)));
-    }
 }
 
 void ElementCellNode::replicate(RTLIL::Module *module) {

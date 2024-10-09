@@ -4,10 +4,10 @@
 //
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL
 // was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#include "tamara/voter_builder.hpp"
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
 #include "tamara/util.hpp"
-#include "tamara/voter_builder.hpp"
 
 USING_YOSYS_NAMESPACE
 
@@ -20,13 +20,17 @@ USING_YOSYS_NAMESPACE
 
 using namespace tamara;
 
+namespace {
+
 //! Makes sure that the RTLIL object is ignored. We wouldn't want to accidentally triplicate voters.
 template <typename T>
-static constexpr T makeIgnored(T obj) {
+constexpr T makeIgnored(T obj) {
     obj->set_bool_attribute(IGNORE_ANNOTATION);
     obj->set_bool_attribute(VOTER_ANNOTATION);
     return obj;
 }
+
+}; // namespace
 
 Voter VoterBuilder::build(RTLIL::Module *module) {
     // add inputs
@@ -78,7 +82,6 @@ Voter VoterBuilder::build(RTLIL::Module *module) {
     WIRE(and5, or3);
     AND(5, not2_and5_wire, b, and5_or3_wire);
 
-
     // OR
     // and0, and1 -> or0 -> or2
     WIRE(or0, or2);
@@ -96,11 +99,5 @@ Voter VoterBuilder::build(RTLIL::Module *module) {
 
     module->check();
 
-    return {
-        .a = a,
-        .b = b,
-        .c = c,
-        .out = out,
-        .err = err
-    };
+    return { .a = a, .b = b, .c = c, .out = out, .err = err };
 }

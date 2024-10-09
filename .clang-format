@@ -11,5 +11,6 @@ BreakBeforeBraces: Attach
 PointerAlignment: Right
 IndentCaseLabels: 'true'
 SortIncludes: true
+BreakTemplateDeclarations: Yes
 
 ...
