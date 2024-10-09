@@ -7,7 +7,7 @@
 )
 
 // Set the speaker notes configuration, you can show it by pympress
-#let s = (s.methods.show-notes-on-second-screen)(self: s, right)
+// #let s = (s.methods.show-notes-on-second-screen)(self: s, right)
 
 // Global information configuration
 #let s = (s.methods.info)(
@@ -79,7 +79,7 @@ in space (and on Earth)...
     - Particularly common for space-based applications
     - Must be mitigated to prevent catastrophic failures
     - Even terrestrial applications, where the Earth's magnetosphere protects chips from the majority of
-        ionising radiation, mitigating SEUs still important for high reliability applications
+        ionising radiation, mitigati0g SEUs still important for high reliability applications
 ]
 
 == SEU protection
@@ -160,6 +160,11 @@ Two main paradigms:
 ])
 
 == TaMaRa algorithm: In depth
+#align(center, [
+    #image("diagrams/algorithm.svg", width: 75%)
+])
+
+#speaker-note[
 - Construct TaMaRa logic graph and logic cones
     - Analyse Yosys RTLIL netlist
     - Perform backwards BFS from IOs to FFs (or other IOs) to collect combinatorial RTLIL primitives
@@ -170,8 +175,10 @@ Two main paradigms:
 - Wiring
     - Wire voter up to replicated primitives
     - Wire replicated primitive IOs to the rest of the circuit
+    - Factor in feedback loop circuits
 - Build successor logic cones
 - Repeat until no more successors
+]
 
 == Verification
 Comprehensive verification procedure using formal methods, simulation and fuzzing.
@@ -203,12 +210,12 @@ Idea:
 #pause
 
 Problem: Mutation
-- We need valid testbenches for these random circuits
+- Need valid testbenches for these random circuits
 - Requires automatic test pattern generation (ATPG), highly non-trivial
 - Future topic of further research
 
 == Simulation
-We want to simulate an SEU environment.
+I want to simulate an SEU environment.
 - UQ doesn't have the capability to expose FPGAs to real radiation
 - Physical verification is challenging (particularly measurement)
 
@@ -334,7 +341,7 @@ Voter circuit:
 Manual design in Logisim:
 
 #align(center, [
-    #image("diagrams/logisim.png", width: 80%)
+    #image("diagrams/logisim.png", width: 65%)
 ])
 
 == Progress: Equivalence checking
@@ -405,6 +412,16 @@ Are they equivalent? Yes! (Thankfully)
 *Caveat:* Still need to verify circuits with more complex logic (i.e. DFFs).
 
 == Current problem: Duplicate DFFs
+#place(
+    bottom + right,
+    dy: -4.5em,
+    dx: -0em,
+    rect(
+        stroke: 2pt + red,
+        width: 60%
+    )
+)
+
 #grid(
     columns: (16em, auto),
     gutter: 0pt,
@@ -452,7 +469,7 @@ Tasks that remain (more or less):
 - Fuzzing _(if time permits)_
 
 == The future
-I'm aiming to produce at least one proper academic publication from this thesis.
+I'm aiming to produce at least one academic publication from this thesis.
 - If TaMaRa works, its hybrid algorithm addresses a number of limitations in previous literature
 - May be useful for research labs (CubeSats) and industry
 
