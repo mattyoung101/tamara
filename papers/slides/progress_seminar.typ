@@ -7,6 +7,7 @@
 )
 
 // Set the speaker notes configuration, you can show it by pympress
+// NOTE Comment this in/out to show/hide speaker notes in PDF
 #let s = (s.methods.show-notes-on-second-screen)(self: s, right)
 
 // Global information configuration
@@ -14,7 +15,7 @@
   self: s,
   title: [*Progress Seminar* \ An automated triple modular redundancy EDA flow for Yosys],
   author: [Matt Young],
-  date: datetime.today().display("[day] [month repr:long] [year]"),
+  date: [11 October 2024],
   institution: [University of Queensland \ School of Electrical Engineering and Computer Science \ Supervisor:
     Assoc. Prof. John Williams],
 )
@@ -36,8 +37,13 @@
 #let (slide, empty-slide, focus-slide) = utils.slides(s)
 #show: slides
 
+// HACK ALERT but this thing is due tomorrow and I can't figure out how to set the figure caption text size
+// so idgaf!!!
+#let fig = counter("fig")
+
 = Background
 == Motivation
+#fig.step()
 Application Specific Integrated Circuits (ASICs) and Field Programmable Gate Arrays (FPGAs) commonly deployed
 in space (and on Earth)...
 
@@ -48,14 +54,15 @@ in space (and on Earth)...
         #align(center, [
             #image("diagrams/tinytapeout.jpg", width: 80%)
 
-            #text(size: 11pt)[Source: https://zeptobars.com/en/read/tt04-tinytapeout-silicon-inside-gds-sky130]
+            #text(size: 14pt)[TinyTapeout 130 nm silicon IC die shot. #sym.copyright 2024 Mikhail
+            Svarichevsky, zeptobars.com (CC-BY).]
         ])
     ],
     [
         #align(center, [
             #image("diagrams/ice40_fpga.png", width: 85%)
 
-            #text(size: 11pt)[Source: Lattice iCE40 UltraPlus Family Data Sheet. #sym.copyright 2021 Lattice Semiconductor
+            #text(size: 14pt)[Lattice iCE40 UltraPlus FPGA block diagram. #sym.copyright 2021 Lattice Semiconductor
             Corp.]
         ])
     ]
@@ -69,8 +76,9 @@ in space (and on Earth)...
 == Single Event Upsets
 #align(center)[
     #image("diagrams/see_mechan.gif", width: 70%)
-    #text(size: 12pt)[
-        Source: https://www.cogenda.com/article/SEE
+    #text(size: 14pt)[
+        Figure #fig.display(): SEU striking a CMOS transistor. Source: https://www.cogenda.com/article/SEE
+        #fig.step()
     ]
 ]
 
@@ -79,7 +87,7 @@ in space (and on Earth)...
     - Particularly common for space-based applications
     - Must be mitigated to prevent catastrophic failures
     - Even terrestrial applications, where the Earth's magnetosphere protects chips from the majority of
-        ionising radiation, mitigati0g SEUs still important for high reliability applications
+        ionising radiation, mitigating SEUs still important for high reliability applications
 ]
 
 == SEU protection
@@ -89,15 +97,36 @@ RAD750 CPU @Berger2001 (James Webb Space Telescope, Curiosity rover, + many more
 *>\$200,000 USD* @Hagedoorn2021!
 
 #align(center, [
-    #image("diagrams/jimbo_webb.png", width: 38%)
+    #image("diagrams/jimbo_webb.png", width: 30%)
 
-    #text(size: 10pt)[Source: https://commons.wikimedia.org/wiki/File:JWST_spacecraft_model_3.png]
+    #text(size: 12pt)[
+        Figure #fig.display(): James Webb Space Telescope.
+
+        Source: https://commons.wikimedia.org/wiki/File:JWST_spacecraft_model_3.png
+        #fig.step()
+    ]
 ])
 
 
 == Triple Modular Redundancy
 #align(center)[
-    #image("diagrams/tmr_diagram.svg", width: 65%)
+    #image("diagrams/tmr_diagram.svg", width: 60%)
+
+    #text(size: 14pt)[
+        Figure #fig.display(): Diagram of TMR applied to FPGA/ASIC abstract elements (logic blocks/standard
+        cells).
+    ]
+]
+
+== Triple Modular Redundancy
+#align(center)[
+    #image("diagrams/tmr_diagram_lightning.svg", width: 60%)
+
+    #text(size: 14pt)[
+        Figure #fig.display(): Diagram of TMR applied to FPGA/ASIC abstract elements (logic blocks/standard
+        cells).
+        #fig.step()
+    ]
 ]
 
 == Triple Modular Redundancy
@@ -152,19 +181,28 @@ Two main paradigms:
     [
         #align(center)[
             #image("diagrams/tamara_synthesis_flow.svg", width: 115%)
+
+            #text(size: 14pt)[
+                Figure #fig.display(): Location of TaMaRa plugin in Yosys EDA flow
+                #fig.step()
+            ]
         ]
     ]
 )
 
 == TaMaRa algorithm: Logic cones
 #align(center, [
-    #text(size: 12pt)[Source: @Beltrame2015]
     #image("diagrams/logic_cone.png", width: 90%)
+    #text(size: 12pt)[Source: @Beltrame2015]
 ])
 
 == TaMaRa algorithm: In depth
 #align(center, [
-    #image("diagrams/algorithm.svg", width: 75%)
+    #image("diagrams/algorithm.svg", width: 65%)
+
+    #text(size: 14pt)[
+        Figure #fig.display(): Description of TaMaRa plugin algorithm, as applied to Yosys RTLIL circuits.
+    ]
 ])
 
 #speaker-note[
@@ -270,6 +308,12 @@ Original circuit:
     gutter: 8pt,
     [
         #image("diagrams/triplicate_before_graph.svg")
+
+        #text(size: 14pt)[
+            Figure #fig.display(): Yosys netlist diagram showing the result of synthesising the attached
+            SystemVerilog RTL to logic primitives.
+            #fig.step()
+        ]
     ],
     [
         #set text(size: 16pt)
@@ -298,7 +342,13 @@ Original circuit:
 After `tamara_debug replicateNot`:
 
 #align(center, [
-    #image("diagrams/triplicate_graph.svg", width: 60%)
+    #image("diagrams/triplicate_graph.svg", width: 50%)
+
+    #text(size: 14pt)[
+        Figure #fig.display(): Netlist result of partially running TaMaRa EDA flow to
+        identify and replicate the AND gate, and insert a voter.
+        #fig.step()
+    ]
 ])
 
 == Progress: Equivalence checking
@@ -345,7 +395,12 @@ Voter circuit:
 Manual design in Logisim:
 
 #align(center, [
-    #image("diagrams/logisim.png", width: 65%)
+    #image("diagrams/logisim.png", width: 60%)
+
+    #text(size: 14pt)[
+        Figure #fig.display(): Manual design of previous truth table in Logisim
+        #fig.step()
+    ]
 ])
 
 == Progress: Equivalence checking
@@ -380,6 +435,10 @@ Manual design in Logisim:
     ],
     [
         #image("diagrams/voter.svg", width: 100%)
+        #text(size: 14pt)[
+            Figure #fig.display(): Yosys RTLIL netlist of voter generated by attached C++ TaMaRa plugin code.
+            #fig.step()
+        ]
     ]
 )
 
@@ -387,7 +446,12 @@ Manual design in Logisim:
 Marked equivalent by eqy in conjunction with Yices!
 
 #align(center, [
-    #image("diagrams/eqy_voter.png", width: 75%)
+    #image("diagrams/eqy_voter.png", width: 65%)
+
+    #text(size: 14pt)[
+        Figure #fig.display(): Proof of equivalence between original voter truth table and C++ plugin generated voter.
+        #fig.step()
+    ]
 ])
 
 == Progress: Equivalence checking (Voter insertion)
@@ -402,6 +466,12 @@ After manual voter insertion (using SystemVerilog):
 
 #align(center, [
     #image("diagrams/not_circuit_voter.svg", width: 105%)
+
+    #text(size: 14pt)[
+        Figure #fig.display(): Netlist result of manually simulating what the TaMaRa plugin would achieve
+        (replication + voter insertion).
+        #fig.step()
+    ]
 ])
 
 == Progress: Equivalence checking (Voter insertion)
@@ -409,6 +479,10 @@ Are they equivalent? Yes! (Thankfully)
 
 #align(center, [
     #image("diagrams/not_voter_eqy.png", width: 75%)
+    #text(size: 14pt)[
+        Figure #fig.display(): Proof of equivalence between original circuit and circuit with voter.
+        #fig.step()
+    ]
 ])
 
 #pause

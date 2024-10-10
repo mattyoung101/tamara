@@ -5,9 +5,9 @@
 <!-- Title: not_voter_gate Pages: 1 -->
 
 <svg
-   width="2131pt"
-   height="597pt"
-   viewBox="0.00 0.00 2130.67 596.75"
+   width="2084.897pt"
+   height="520.1944pt"
+   viewBox="0 0 2084.5741 519.97656"
    version="1.1"
    id="svg155"
    sodipodi:docname="not_circuit_voter.svg"
@@ -28,2570 +28,2354 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="pt"
-     inkscape:zoom="0.3346699"
-     inkscape:cx="1181.7615"
-     inkscape:cy="564.73558"
-     inkscape:window-width="1536"
-     inkscape:window-height="798"
+     inkscape:zoom="0.47329471"
+     inkscape:cx="1735.705"
+     inkscape:cy="418.34399"
+     inkscape:window-width="1920"
+     inkscape:window-height="1010"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg155" />
+  <text
+     text-anchor="middle"
+     x="1022.09"
+     y="516.98309"
+     font-family="Times, serif"
+     font-size="14px"
+     id="text1">not_voter_gate</text>
   <g
-     id="graph0"
-     class="graph"
-     transform="scale(1 1) rotate(0) translate(4 592.75)">
+     id="node1"
+     class="node"
+     transform="translate(-39.25,524.93311)">
     <title
-       id="title1">not_voter_gate</title>
+       id="title2">n12</title>
     <polygon
-       fill="white"
-       stroke="none"
-       points="-4,4 -4,-592.75 2126.67,-592.75 2126.67,4 -4,4"
-       id="polygon1" />
+       fill="none"
+       stroke="#000000"
+       points="39.75,-330.46 39.75,-315.54 55.57,-305 77.93,-305 93.75,-315.54 93.75,-330.46 77.93,-341 55.57,-341 "
+       id="polygon2" />
     <text
        text-anchor="middle"
-       x="1061.34"
-       y="-7.95"
-       font-family="Times,serif"
-       font-size="14.00"
-       id="text1">not_voter_gate</text>
-    <!-- n12 -->
-    <g
-       id="node1"
-       class="node">
-      <title
-         id="title2">n12</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="93.75,-315.54 93.75,-330.46 77.93,-341 55.57,-341 39.75,-330.46 39.75,-315.54 55.57,-305 77.93,-305 93.75,-315.54"
-         id="polygon2" />
-      <text
-         text-anchor="middle"
-         x="66.75"
-         y="-318.32"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text2">a</text>
-    </g>
-    <!-- x5 -->
-    <g
-       id="node43"
-       class="node">
-      <title
-         id="title3">x5</title>
-      <ellipse
-         fill="black"
-         stroke="black"
-         cx="171.3"
-         cy="-285"
-         rx="1.8"
-         ry="1.8"
-         id="ellipse3" />
-    </g>
-    <!-- n12&#45;&gt;x5 -->
-    <g
-       id="edge4"
-       class="edge">
-      <title
-         id="title4">n12:e-&gt;x5:w</title>
-      <path
-         fill="none"
-         stroke="#a6761d"
-         d="M95,-323C127.96,-323 131.82,-293.12 158.19,-286.35"
-         id="path4" />
-      <polygon
-         fill="#a6761d"
-         stroke="#a6761d"
-         points="158.48,-289.84 168,-285.18 157.65,-282.89 158.48,-289.84"
-         id="polygon4" />
-    </g>
-    <!-- x7 -->
-    <g
-       id="node45"
-       class="node">
-      <title
-         id="title5">x7</title>
-      <ellipse
-         fill="black"
-         stroke="black"
-         cx="171.3"
-         cy="-323"
-         rx="1.8"
-         ry="1.8"
-         id="ellipse5" />
-    </g>
-    <!-- n12&#45;&gt;x7 -->
-    <g
-       id="edge5"
-       class="edge">
-      <title
-         id="title6">n12:e-&gt;x7:w</title>
-      <path
-         fill="none"
-         stroke="#a6761d"
-         d="M95,-323C123.97,-323 133.93,-323 158.15,-323"
-         id="path6" />
-      <polygon
-         fill="#a6761d"
-         stroke="#a6761d"
-         points="157.99,-326.5 167.99,-323 157.99,-319.5 157.99,-326.5"
-         id="polygon6" />
-    </g>
-    <!-- x9 -->
-    <g
-       id="node47"
-       class="node">
-      <title
-         id="title7">x9</title>
-      <ellipse
-         fill="black"
-         stroke="black"
-         cx="171.3"
-         cy="-361"
-         rx="1.8"
-         ry="1.8"
-         id="ellipse7" />
-    </g>
-    <!-- n12&#45;&gt;x9 -->
-    <g
-       id="edge6"
-       class="edge">
-      <title
-         id="title8">n12:e-&gt;x9:w</title>
-      <path
-         fill="none"
-         stroke="#a6761d"
-         d="M95,-323C127.96,-323 131.82,-352.88 158.19,-359.65"
-         id="path8" />
-      <polygon
-         fill="#a6761d"
-         stroke="#a6761d"
-         points="157.65,-363.11 168,-360.82 158.48,-356.16 157.65,-363.11"
-         id="polygon8" />
-    </g>
-    <!-- n13 -->
-    <g
-       id="node2"
-       class="node">
-      <title
-         id="title9">n13</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="2085.22,-241 2047.77,-223 2085.22,-205 2122.67,-223 2085.22,-241"
-         id="polygon9" />
-      <text
-         text-anchor="middle"
-         x="2085.22"
-         y="-218.32"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text9">err</text>
-    </g>
-    <!-- n14 -->
-    <g
-       id="node3"
-       class="node">
-      <title
-         id="title10">n14</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="269.61,-407 209.1,-389 269.61,-371 330.13,-389 269.61,-407"
-         id="polygon10" />
-      <text
-         text-anchor="middle"
-         x="269.61"
-         y="-384.32"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text10">not1.a</text>
-    </g>
-    <!-- c31 -->
-    <g
-       id="node18"
-       class="node">
-      <title
-         id="title11">c31</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="366.13,-368.75 366.13,-411.25 505.63,-411.25 505.63,-368.75 366.13,-368.75"
-         id="polygon11" />
-      <text
-         text-anchor="middle"
-         x="379"
-         y="-385.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text11">A</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="391.88,-368.75 391.88,-411.25"
-         id="polyline11" />
-      <text
-         text-anchor="middle"
-         x="436.25"
-         y="-393.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text12">$14</text>
-      <text
-         text-anchor="middle"
-         x="436.25"
-         y="-376.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text13">$logic_not</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="480.63,-368.75 480.63,-411.25"
-         id="polyline13" />
-      <text
-         text-anchor="middle"
-         x="493.13"
-         y="-385.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text14">Y</text>
-    </g>
-    <!-- n14&#45;&gt;c31 -->
-    <g
-       id="edge9"
-       class="edge">
-      <title
-         id="title14">n14:e-&gt;c31:w</title>
-      <path
-         fill="none"
-         stroke="#e6ab02"
-         d="M330.13,-389C341.51,-389 346.81,-389.57 354.68,-389.9"
-         id="path14" />
-      <polygon
-         fill="#e6ab02"
-         stroke="#e6ab02"
-         points="354.55,-393.4 364.62,-390.09 354.69,-386.4 354.55,-393.4"
-         id="polygon14" />
-    </g>
-    <!-- n15 -->
-    <g
-       id="node4"
-       class="node">
-      <title
-         id="title15">n15</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="602.14,-409 541.63,-391 602.14,-373 662.66,-391 602.14,-409"
-         id="polygon15" />
-      <text
-         text-anchor="middle"
-         x="602.14"
-         y="-386.32"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text15">not1.o</text>
-    </g>
-    <!-- x10 -->
-    <g
-       id="node48"
-       class="node">
-      <title
-         id="title16">x10</title>
-      <ellipse
-         fill="black"
-         stroke="black"
-         cx="700.46"
-         cy="-392"
-         rx="1.8"
-         ry="1.8"
-         id="ellipse16" />
-    </g>
-    <!-- n15&#45;&gt;x10 -->
-    <g
-       id="edge11"
-       class="edge">
-      <title
-         id="title17">n15:e-&gt;x10:w</title>
-      <path
-         fill="none"
-         stroke="#e6ab02"
-         d="M662.66,-391C674.04,-391 679.34,-391.51 687.21,-391.8"
-         id="path17" />
-      <polygon
-         fill="#e6ab02"
-         stroke="#e6ab02"
-         points="687.08,-395.3 697.15,-391.97 687.21,-388.3 687.08,-395.3"
-         id="polygon17" />
-    </g>
-    <!-- n16 -->
-    <g
-       id="node5"
-       class="node">
-      <title
-         id="title18">n16</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="269.61,-341 209.1,-323 269.61,-305 330.13,-323 269.61,-341"
-         id="polygon18" />
-      <text
-         text-anchor="middle"
-         x="269.61"
-         y="-318.32"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text18">not2.a</text>
-    </g>
-    <!-- c32 -->
-    <g
-       id="node19"
-       class="node">
-      <title
-         id="title19">c32</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="366.13,-301.75 366.13,-344.25 505.63,-344.25 505.63,-301.75 366.13,-301.75"
-         id="polygon19" />
-      <text
-         text-anchor="middle"
-         x="379"
-         y="-318.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text19">A</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="391.88,-301.75 391.88,-344.25"
-         id="polyline19" />
-      <text
-         text-anchor="middle"
-         x="436.25"
-         y="-326.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text20">$14</text>
-      <text
-         text-anchor="middle"
-         x="436.25"
-         y="-309.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text21">$logic_not</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="480.63,-301.75 480.63,-344.25"
-         id="polyline21" />
-      <text
-         text-anchor="middle"
-         x="493.13"
-         y="-318.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text22">Y</text>
-    </g>
-    <!-- n16&#45;&gt;c32 -->
-    <g
-       id="edge13"
-       class="edge">
-      <title
-         id="title22">n16:e-&gt;c32:w</title>
-      <path
-         fill="none"
-         stroke="#d95f02"
-         d="M330.13,-323C341.5,-323 346.81,-323.06 354.68,-323.1"
-         id="path22" />
-      <polygon
-         fill="#d95f02"
-         stroke="#d95f02"
-         points="354.61,-326.6 364.62,-323.12 354.62,-319.6 354.61,-326.6"
-         id="polygon22" />
-    </g>
-    <!-- n17 -->
-    <g
-       id="node6"
-       class="node">
-      <title
-         id="title23">n17</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="602.14,-341 541.63,-323 602.14,-305 662.66,-323 602.14,-341"
-         id="polygon23" />
-      <text
-         text-anchor="middle"
-         x="602.14"
-         y="-318.32"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text23">not2.o</text>
-    </g>
-    <!-- x8 -->
-    <g
-       id="node46"
-       class="node">
-      <title
-         id="title24">x8</title>
-      <ellipse
-         fill="black"
-         stroke="black"
-         cx="700.46"
-         cy="-323"
-         rx="1.8"
-         ry="1.8"
-         id="ellipse24" />
-    </g>
-    <!-- n17&#45;&gt;x8 -->
-    <g
-       id="edge15"
-       class="edge">
-      <title
-         id="title25">n17:e-&gt;x8:w</title>
-      <path
-         fill="none"
-         stroke="#1b9e77"
-         d="M662.66,-323C674.03,-323 679.34,-323 687.21,-323"
-         id="path25" />
-      <polygon
-         fill="#1b9e77"
-         stroke="#1b9e77"
-         points="687.14,-326.5 697.14,-323 687.14,-319.5 687.14,-326.5"
-         id="polygon25" />
-    </g>
-    <!-- n18 -->
-    <g
-       id="node7"
-       class="node">
-      <title
-         id="title26">n18</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="269.61,-283 209.1,-265 269.61,-247 330.13,-265 269.61,-283"
-         id="polygon26" />
-      <text
-         text-anchor="middle"
-         x="269.61"
-         y="-260.32"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text26">not3.a</text>
-    </g>
-    <!-- c33 -->
-    <g
-       id="node20"
-       class="node">
-      <title
-         id="title27">c33</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="366.13,-235.75 366.13,-278.25 505.63,-278.25 505.63,-235.75 366.13,-235.75"
-         id="polygon27" />
-      <text
-         text-anchor="middle"
-         x="379"
-         y="-252.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text27">A</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="391.88,-235.75 391.88,-278.25"
-         id="polyline27" />
-      <text
-         text-anchor="middle"
-         x="436.25"
-         y="-260.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text28">$14</text>
-      <text
-         text-anchor="middle"
-         x="436.25"
-         y="-243.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text29">$logic_not</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="480.63,-235.75 480.63,-278.25"
-         id="polyline29" />
-      <text
-         text-anchor="middle"
-         x="493.13"
-         y="-252.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text30">Y</text>
-    </g>
-    <!-- n18&#45;&gt;c33 -->
-    <g
-       id="edge17"
-       class="edge">
-      <title
-         id="title30">n18:e-&gt;c33:w</title>
-      <path
-         fill="none"
-         stroke="#d95f02"
-         d="M330.13,-265C341.9,-265 346.89,-260.93 354.84,-258.64"
-         id="path30" />
-      <polygon
-         fill="#d95f02"
-         stroke="#d95f02"
-         points="355.19,-262.13 364.63,-257.33 354.25,-255.19 355.19,-262.13"
-         id="polygon30" />
-    </g>
-    <!-- n19 -->
-    <g
-       id="node8"
-       class="node">
-      <title
-         id="title31">n19</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="602.14,-267 541.63,-249 602.14,-231 662.66,-249 602.14,-267"
-         id="polygon31" />
-      <text
-         text-anchor="middle"
-         x="602.14"
-         y="-244.32"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text31">not3.o</text>
-    </g>
-    <!-- x6 -->
-    <g
-       id="node44"
-       class="node">
-      <title
-         id="title32">x6</title>
-      <ellipse
-         fill="black"
-         stroke="black"
-         cx="700.46"
-         cy="-234"
-         rx="1.8"
-         ry="1.8"
-         id="ellipse32" />
-    </g>
-    <!-- n19&#45;&gt;x6 -->
-    <g
-       id="edge19"
-       class="edge">
-      <title
-         id="title33">n19:e-&gt;x6:w</title>
-      <path
-         fill="none"
-         stroke="#a6761d"
-         d="M662.66,-249C675.39,-249 679.49,-240.91 687.63,-236.61"
-         id="path33" />
-      <polygon
-         fill="#a6761d"
-         stroke="#a6761d"
-         points="688.26,-240.06 697.19,-234.35 686.65,-233.25 688.26,-240.06"
-         id="polygon33" />
-    </g>
-    <!-- n20 -->
-    <g
-       id="node9"
-       class="node">
-      <title
-         id="title34">n20</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="2011.77,-284.54 2011.77,-299.46 1995.96,-310 1973.59,-310 1957.77,-299.46 1957.77,-284.54 1973.59,-274 1995.96,-274 2011.77,-284.54"
-         id="polygon34" />
-      <text
-         text-anchor="middle"
-         x="1984.77"
-         y="-287.32"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text34">o</text>
-    </g>
-    <!-- n21 -->
-    <g
-       id="node10"
-       class="node">
-      <title
-         id="title35">n21</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="771.24,-416 738.26,-398 771.24,-380 804.23,-398 771.24,-416"
-         id="polygon35" />
-      <text
-         text-anchor="middle"
-         x="771.24"
-         y="-393.32"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text35">o1</text>
-    </g>
-    <!-- x0 -->
-    <g
-       id="node38"
-       class="node">
-      <title
-         id="title36">x0</title>
-      <ellipse
-         fill="black"
-         stroke="black"
-         cx="842.03"
-         cy="-400"
-         rx="1.8"
-         ry="1.8"
-         id="ellipse36" />
-    </g>
-    <!-- n21&#45;&gt;x0 -->
-    <g
-       id="edge23"
-       class="edge">
-      <title
-         id="title37">n21:e-&gt;x0:w</title>
-      <path
-         fill="none"
-         stroke="#66a61e"
-         d="M804.23,-398C815.62,-398 820.91,-399.01 828.78,-399.6"
-         id="path37" />
-      <polygon
-         fill="#66a61e"
-         stroke="#66a61e"
-         points="828.6,-403.09 838.72,-399.95 828.85,-396.1 828.6,-403.09"
-         id="polygon37" />
-    </g>
-    <!-- n22 -->
-    <g
-       id="node11"
-       class="node">
-      <title
-         id="title38">n22</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="771.24,-341 738.26,-323 771.24,-305 804.23,-323 771.24,-341"
-         id="polygon38" />
-      <text
-         text-anchor="middle"
-         x="771.24"
-         y="-318.32"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text38">o2</text>
-    </g>
-    <!-- x1 -->
-    <g
-       id="node39"
-       class="node">
-      <title
-         id="title39">x1</title>
-      <ellipse
-         fill="black"
-         stroke="black"
-         cx="842.03"
-         cy="-323"
-         rx="1.8"
-         ry="1.8"
-         id="ellipse39" />
-    </g>
-    <!-- n22&#45;&gt;x1 -->
-    <g
-       id="edge25"
-       class="edge">
-      <title
-         id="title40">n22:e-&gt;x1:w</title>
-      <path
-         fill="none"
-         stroke="#d95f02"
-         d="M804.23,-323C815.6,-323 820.91,-323 828.78,-323"
-         id="path40" />
-      <polygon
-         fill="#d95f02"
-         stroke="#d95f02"
-         points="828.72,-326.5 838.72,-323 828.72,-319.5 828.72,-326.5"
-         id="polygon40" />
-    </g>
-    <!-- n23 -->
-    <g
-       id="node12"
-       class="node">
-      <title
-         id="title41">n23</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="771.24,-221 738.26,-203 771.24,-185 804.23,-203 771.24,-221"
-         id="polygon41" />
-      <text
-         text-anchor="middle"
-         x="771.24"
-         y="-198.32"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text41">o3</text>
-    </g>
-    <!-- x2 -->
-    <g
-       id="node40"
-       class="node">
-      <title
-         id="title42">x2</title>
-      <ellipse
-         fill="black"
-         stroke="black"
-         cx="842.03"
-         cy="-141"
-         rx="1.8"
-         ry="1.8"
-         id="ellipse42" />
-    </g>
-    <!-- n23&#45;&gt;x2 -->
-    <g
-       id="edge27"
-       class="edge">
-      <title
-         id="title43">n23:e-&gt;x2:w</title>
-      <path
-         fill="none"
-         stroke="#666666"
-         d="M804.23,-203C831.36,-203 815.28,-158.04 829.59,-144.69"
-         id="path43" />
-      <polygon
-         fill="#666666"
-         stroke="#666666"
-         points="830.5,-148.08 838.8,-141.5 828.2,-141.47 830.5,-148.08"
-         id="polygon43" />
-    </g>
-    <!-- n24 -->
-    <g
-       id="node13"
-       class="node">
-      <title
-         id="title44">n24</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="944.81,-421 880.57,-403 944.81,-385 1009.04,-403 944.81,-421"
-         id="polygon44" />
-      <text
-         text-anchor="middle"
-         x="944.81"
-         y="-398.32"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text44">voter.a</text>
-    </g>
-    <!-- c37 -->
-    <g
-       id="node23"
-       class="node">
-      <title
-         id="title45">c37</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="1225.04,-421.75 1225.04,-472.25 1368.29,-472.25 1368.29,-421.75 1225.04,-421.75"
-         id="polygon45" />
-      <text
-         text-anchor="middle"
-         x="1238.29"
-         y="-454.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text45">A</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1225.04,-447 1251.54,-447"
-         id="polyline45" />
-      <text
-         text-anchor="middle"
-         x="1238.29"
-         y="-429.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text46">B</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1251.54,-421.75 1251.54,-472.25"
-         id="polyline46" />
-      <text
-         text-anchor="middle"
-         x="1297.41"
-         y="-450.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text47">$9</text>
-      <text
-         text-anchor="middle"
-         x="1297.41"
-         y="-433.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text48">$logic_and</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1343.29,-421.75 1343.29,-472.25"
-         id="polyline48" />
-      <text
-         text-anchor="middle"
-         x="1355.79"
-         y="-442.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text49">Y</text>
-    </g>
-    <!-- n24&#45;&gt;c37 -->
-    <g
-       id="edge29"
-       class="edge">
-      <title
-         id="title49">n24:e-&gt;c37:w</title>
-      <path
-         fill="none"
-         stroke="#7570b3"
-         d="M1009.79,-403C1050.81,-403 1011.58,-465.34 1045.79,-488 1098.86,-523.16 1128.88,-508.86 1189.04,-488 1203.77,-482.89 1205.11,-468.97 1214.06,-462.73"
-         id="path49" />
-      <polygon
-         fill="#7570b3"
-         stroke="#7570b3"
-         points="1214.91,-466.13 1223.58,-460.04 1213.01,-459.39 1214.91,-466.13"
-         id="polygon49" />
-    </g>
-    <!-- c38 -->
-    <g
-       id="node24"
-       class="node">
-      <title
-         id="title50">c38</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="1045.79,-365.75 1045.79,-416.25 1189.04,-416.25 1189.04,-365.75 1045.79,-365.75"
-         id="polygon50" />
-      <text
-         text-anchor="middle"
-         x="1059.04"
-         y="-398.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text50">A</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1045.79,-391 1072.29,-391"
-         id="polyline50" />
-      <text
-         text-anchor="middle"
-         x="1059.04"
-         y="-373.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text51">B</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1072.29,-365.75 1072.29,-416.25"
-         id="polyline51" />
-      <text
-         text-anchor="middle"
-         x="1118.16"
-         y="-394.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text52">$1</text>
-      <text
-         text-anchor="middle"
-         x="1118.16"
-         y="-377.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text53">$logic_and</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1164.04,-365.75 1164.04,-416.25"
-         id="polyline53" />
-      <text
-         text-anchor="middle"
-         x="1176.54"
-         y="-386.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text54">Y</text>
-    </g>
-    <!-- n24&#45;&gt;c38 -->
-    <g
-       id="edge30"
-       class="edge">
-      <title
-         id="title54">n24:e-&gt;c38:w</title>
-      <path
-         fill="none"
-         stroke="#7570b3"
-         d="M1009.79,-403C1021.16,-403 1026.47,-403.32 1034.34,-403.5"
-         id="path54" />
-      <polygon
-         fill="#7570b3"
-         stroke="#7570b3"
-         points="1034.24,-407 1044.27,-403.61 1034.31,-400 1034.24,-407"
-         id="polygon54" />
-    </g>
-    <!-- c40 -->
-    <g
-       id="node26"
-       class="node">
-      <title
-         id="title55">c40</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="1045.79,-233.75 1045.79,-284.25 1189.04,-284.25 1189.04,-233.75 1045.79,-233.75"
-         id="polygon55" />
-      <text
-         text-anchor="middle"
-         x="1059.04"
-         y="-266.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text55">A</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1045.79,-259 1072.29,-259"
-         id="polyline55" />
-      <text
-         text-anchor="middle"
-         x="1059.04"
-         y="-241.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text56">B</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1072.29,-233.75 1072.29,-284.25"
-         id="polyline56" />
-      <text
-         text-anchor="middle"
-         x="1118.16"
-         y="-262.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text57">$4</text>
-      <text
-         text-anchor="middle"
-         x="1118.16"
-         y="-245.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text58">$logic_and</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1164.04,-233.75 1164.04,-284.25"
-         id="polyline58" />
-      <text
-         text-anchor="middle"
-         x="1176.54"
-         y="-254.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text59">Y</text>
-    </g>
-    <!-- n24&#45;&gt;c40 -->
-    <g
-       id="edge31"
-       class="edge">
-      <title
-         id="title59">n24:e-&gt;c40:w</title>
-      <path
-         fill="none"
-         stroke="#7570b3"
-         d="M1009.79,-403C1065.83,-403 997.07,-290.4 1034.59,-273.69"
-         id="path59" />
-      <polygon
-         fill="#7570b3"
-         stroke="#7570b3"
-         points="1035.1,-277.15 1044.3,-271.9 1033.83,-270.27 1035.1,-277.15"
-         id="polygon59" />
-    </g>
-    <!-- c42 -->
-    <g
-       id="node28"
-       class="node">
-      <title
-         id="title60">c42</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="1047.66,-435.75 1047.66,-478.25 1187.16,-478.25 1187.16,-435.75 1047.66,-435.75"
-         id="polygon60" />
-      <text
-         text-anchor="middle"
-         x="1060.54"
-         y="-452.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text60">A</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1073.41,-435.75 1073.41,-478.25"
-         id="polyline60" />
-      <text
-         text-anchor="middle"
-         x="1117.79"
-         y="-460.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text61">$6</text>
-      <text
-         text-anchor="middle"
-         x="1117.79"
-         y="-443.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text62">$logic_not</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1162.16,-435.75 1162.16,-478.25"
-         id="polyline62" />
-      <text
-         text-anchor="middle"
-         x="1174.66"
-         y="-452.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text63">Y</text>
-    </g>
-    <!-- n24&#45;&gt;c42 -->
-    <g
-       id="edge32"
-       class="edge">
-      <title
-         id="title63">n24:e-&gt;c42:w</title>
-      <path
-         fill="none"
-         stroke="#7570b3"
-         d="M1009.79,-403C1034.12,-403 1023.2,-440.82 1035.96,-453.23"
-         id="path63" />
-      <polygon
-         fill="#7570b3"
-         stroke="#7570b3"
-         points="1034.65,-456.48 1045.24,-456.61 1037.04,-449.9 1034.65,-456.48"
-         id="polygon63" />
-    </g>
-    <!-- n25 -->
-    <g
-       id="node14"
-       class="node">
-      <title
-         id="title64">n25</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="944.81,-341 879.83,-323 944.81,-305 1009.79,-323 944.81,-341"
-         id="polygon64" />
-      <text
-         text-anchor="middle"
-         x="944.81"
-         y="-318.32"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text64">voter.b</text>
-    </g>
-    <!-- c35 -->
-    <g
-       id="node21"
-       class="node">
-      <title
-         id="title65">c35</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="1225.04,-167.75 1225.04,-218.25 1368.29,-218.25 1368.29,-167.75 1225.04,-167.75"
-         id="polygon65" />
-      <text
-         text-anchor="middle"
-         x="1238.29"
-         y="-200.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text65">A</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1225.04,-193 1251.54,-193"
-         id="polyline65" />
-      <text
-         text-anchor="middle"
-         x="1238.29"
-         y="-175.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text66">B</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1251.54,-167.75 1251.54,-218.25"
-         id="polyline66" />
-      <text
-         text-anchor="middle"
-         x="1297.41"
-         y="-196.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text67">$12</text>
-      <text
-         text-anchor="middle"
-         x="1297.41"
-         y="-179.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text68">$logic_and</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1343.29,-167.75 1343.29,-218.25"
-         id="polyline68" />
-      <text
-         text-anchor="middle"
-         x="1355.79"
-         y="-188.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text69">Y</text>
-    </g>
-    <!-- n25&#45;&gt;c35 -->
-    <g
-       id="edge34"
-       class="edge">
-      <title
-         id="title69">n25:e-&gt;c35:w</title>
-      <path
-         fill="none"
-         stroke="#e6ab02"
-         d="M1009.79,-323C1056.61,-323 1008.86,-252.78 1045.79,-224 1105.87,-177.17 1141.37,-202.8 1213.61,-205.42"
-         id="path69" />
-      <polygon
-         fill="#e6ab02"
-         stroke="#e6ab02"
-         points="1213.46,-208.91 1223.52,-205.6 1213.59,-201.92 1213.46,-208.91"
-         id="polygon69" />
-    </g>
-    <!-- n25&#45;&gt;c38 -->
-    <g
-       id="edge35"
-       class="edge">
-      <title
-         id="title70">n25:e-&gt;c38:w</title>
-      <path
-         fill="none"
-         stroke="#e6ab02"
-         d="M1009.79,-323C1034.33,-323 1022.48,-361.7 1035.08,-374.39"
-         id="path70" />
-      <polygon
-         fill="#e6ab02"
-         stroke="#e6ab02"
-         points="1033.78,-377.64 1044.37,-377.85 1036.22,-371.08 1033.78,-377.64"
-         id="polygon70" />
-    </g>
-    <!-- c39 -->
-    <g
-       id="node25"
-       class="node">
-      <title
-         id="title71">c39</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="1045.79,-125.75 1045.79,-176.25 1189.04,-176.25 1189.04,-125.75 1045.79,-125.75"
-         id="polygon71" />
-      <text
-         text-anchor="middle"
-         x="1059.04"
-         y="-158.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text71">A</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1045.79,-151 1072.29,-151"
-         id="polyline71" />
-      <text
-         text-anchor="middle"
-         x="1059.04"
-         y="-133.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text72">B</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1072.29,-125.75 1072.29,-176.25"
-         id="polyline72" />
-      <text
-         text-anchor="middle"
-         x="1118.16"
-         y="-154.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text73">$2</text>
-      <text
-         text-anchor="middle"
-         x="1118.16"
-         y="-137.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text74">$logic_and</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1164.04,-125.75 1164.04,-176.25"
-         id="polyline74" />
-      <text
-         text-anchor="middle"
-         x="1176.54"
-         y="-146.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text75">Y</text>
-    </g>
-    <!-- n25&#45;&gt;c39 -->
-    <g
-       id="edge36"
-       class="edge">
-      <title
-         id="title75">n25:e-&gt;c39:w</title>
-      <path
-         fill="none"
-         stroke="#e6ab02"
-         d="M1009.79,-323C1078.01,-323 985.73,-182.34 1034.52,-165.31"
-         id="path75" />
-      <polygon
-         fill="#e6ab02"
-         stroke="#e6ab02"
-         points="1034.92,-168.79 1044.29,-163.85 1033.88,-161.86 1034.92,-168.79"
-         id="polygon75" />
-    </g>
-    <!-- c43 -->
-    <g
-       id="node29"
-       class="node">
-      <title
-         id="title76">c43</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="1047.66,-303.75 1047.66,-346.25 1187.16,-346.25 1187.16,-303.75 1047.66,-303.75"
-         id="polygon76" />
-      <text
-         text-anchor="middle"
-         x="1060.54"
-         y="-320.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text76">A</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1073.41,-303.75 1073.41,-346.25"
-         id="polyline76" />
-      <text
-         text-anchor="middle"
-         x="1117.79"
-         y="-328.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text77">$8</text>
-      <text
-         text-anchor="middle"
-         x="1117.79"
-         y="-311.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text78">$logic_not</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1162.16,-303.75 1162.16,-346.25"
-         id="polyline78" />
-      <text
-         text-anchor="middle"
-         x="1174.66"
-         y="-320.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text79">Y</text>
-    </g>
-    <!-- n25&#45;&gt;c43 -->
-    <g
-       id="edge37"
-       class="edge">
-      <title
-         id="title79">n25:e-&gt;c43:w</title>
-      <path
-         fill="none"
-         stroke="#e6ab02"
-         d="M1009.79,-323C1021.59,-323 1026.99,-324.1 1035.2,-324.72"
-         id="path79" />
-      <polygon
-         fill="#e6ab02"
-         stroke="#e6ab02"
-         points="1035.03,-328.21 1045.15,-325.07 1035.28,-321.22 1035.03,-328.21"
-         id="polygon79" />
-    </g>
-    <!-- n26 -->
-    <g
-       id="node15"
-       class="node">
-      <title
-         id="title80">n26</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="944.81,-157 881.32,-139 944.81,-121 1008.3,-139 944.81,-157"
-         id="polygon80" />
-      <text
-         text-anchor="middle"
-         x="944.81"
-         y="-134.32"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text80">voter.c</text>
-    </g>
-    <!-- c36 -->
-    <g
-       id="node22"
-       class="node">
-      <title
-         id="title81">c36</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="1225.04,-351.75 1225.04,-402.25 1368.29,-402.25 1368.29,-351.75 1225.04,-351.75"
-         id="polygon81" />
-      <text
-         text-anchor="middle"
-         x="1238.29"
-         y="-384.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text81">A</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1225.04,-377 1251.54,-377"
-         id="polyline81" />
-      <text
-         text-anchor="middle"
-         x="1238.29"
-         y="-359.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text82">B</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1251.54,-351.75 1251.54,-402.25"
-         id="polyline82" />
-      <text
-         text-anchor="middle"
-         x="1297.41"
-         y="-380.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text83">$7</text>
-      <text
-         text-anchor="middle"
-         x="1297.41"
-         y="-363.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text84">$logic_and</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1343.29,-351.75 1343.29,-402.25"
-         id="polyline84" />
-      <text
-         text-anchor="middle"
-         x="1355.79"
-         y="-372.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text85">Y</text>
-    </g>
-    <!-- n26&#45;&gt;c36 -->
-    <g
-       id="edge39"
-       class="edge">
-      <title
-         id="title85">n26:e-&gt;c36:w</title>
-      <path
-         fill="none"
-         stroke="#7570b3"
-         d="M1009.79,-139C1028.77,-139 1027.56,-121.32 1045.79,-116 1106.9,-98.14 1140.9,-74.33 1189.04,-116 1228.08,-149.79 1177.89,-333.89 1214.47,-361.03"
-         id="path85" />
-      <polygon
-         fill="#7570b3"
-         stroke="#7570b3"
-         points="1213,-364.24 1223.59,-363.92 1215.12,-357.56 1213,-364.24"
-         id="polygon85" />
-    </g>
-    <!-- n26&#45;&gt;c39 -->
-    <g
-       id="edge40"
-       class="edge">
-      <title
-         id="title86">n26:e-&gt;c39:w</title>
-      <path
-         fill="none"
-         stroke="#7570b3"
-         d="M1009.79,-139C1021.16,-139 1026.47,-138.68 1034.34,-138.5"
-         id="path86" />
-      <polygon
-         fill="#7570b3"
-         stroke="#7570b3"
-         points="1034.31,-142 1044.27,-138.39 1034.24,-135 1034.31,-142"
-         id="polygon86" />
-    </g>
-    <!-- n26&#45;&gt;c40 -->
-    <g
-       id="edge41"
-       class="edge">
-      <title
-         id="title87">n26:e-&gt;c40:w</title>
-      <path
-         fill="none"
-         stroke="#7570b3"
-         d="M1009.79,-139C1055.6,-139 1006.15,-227.95 1034.84,-243.93"
-         id="path87" />
-      <polygon
-         fill="#7570b3"
-         stroke="#7570b3"
-         points="1033.79,-247.28 1044.31,-246.05 1035.31,-240.45 1033.79,-247.28"
-         id="polygon87" />
-    </g>
-    <!-- c41 -->
-    <g
-       id="node27"
-       class="node">
-      <title
-         id="title88">c41</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="1047.66,-25.75 1047.66,-68.25 1187.16,-68.25 1187.16,-25.75 1047.66,-25.75"
-         id="polygon88" />
-      <text
-         text-anchor="middle"
-         x="1060.54"
-         y="-42.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text88">A</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1073.41,-25.75 1073.41,-68.25"
-         id="polyline88" />
-      <text
-         text-anchor="middle"
-         x="1117.79"
-         y="-50.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text89">$11</text>
-      <text
-         text-anchor="middle"
-         x="1117.79"
-         y="-33.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text90">$logic_not</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1162.16,-25.75 1162.16,-68.25"
-         id="polyline90" />
-      <text
-         text-anchor="middle"
-         x="1174.66"
-         y="-42.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text91">Y</text>
-    </g>
-    <!-- n26&#45;&gt;c41 -->
-    <g
-       id="edge42"
-       class="edge">
-      <title
-         id="title91">n26:e-&gt;c41:w</title>
-      <path
-         fill="none"
-         stroke="#7570b3"
-         d="M1009.79,-139C1049.15,-139 1012.39,-65.48 1035.69,-49.98"
-         id="path91" />
-      <polygon
-         fill="#7570b3"
-         stroke="#7570b3"
-         points="1036.4,-53.41 1045.2,-47.51 1034.64,-46.63 1036.4,-53.41"
-         id="polygon91" />
-    </g>
-    <!-- n27 -->
-    <g
-       id="node16"
-       class="node">
-      <title
-         id="title92">n27</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="1844.14,-241 1766.52,-223 1844.14,-205 1921.77,-223 1844.14,-241"
-         id="polygon92" />
-      <text
-         text-anchor="middle"
-         x="1844.14"
-         y="-218.32"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text92">voter.err</text>
-    </g>
-    <!-- x3 -->
-    <g
-       id="node41"
-       class="node">
-      <title
-         id="title93">x3</title>
-      <ellipse
-         fill="black"
-         stroke="black"
-         cx="1984.77"
-         cy="-223"
-         rx="1.8"
-         ry="1.8"
-         id="ellipse93" />
-    </g>
-    <!-- n27&#45;&gt;x3 -->
-    <g
-       id="edge44"
-       class="edge">
-      <title
-         id="title94">n27:e-&gt;x3:w</title>
-      <path
-         fill="none"
-         stroke="#e6ab02"
-         d="M1921.77,-223C1944.17,-223 1952.39,-223 1970.36,-223"
-         id="path94" />
-      <polygon
-         fill="#e6ab02"
-         stroke="#e6ab02"
-         points="1969.98,-226.5 1979.98,-223 1969.98,-219.5 1969.98,-226.5"
-         id="polygon94" />
-    </g>
-    <!-- n28 -->
-    <g
-       id="node17"
-       class="node">
-      <title
-         id="title95">n28</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="1651.4,-310 1572.29,-292 1651.4,-274 1730.52,-292 1651.4,-310"
-         id="polygon95" />
-      <text
-         text-anchor="middle"
-         x="1651.4"
-         y="-287.32"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text95">voter.out</text>
-    </g>
-    <!-- x4 -->
-    <g
-       id="node42"
-       class="node">
-      <title
-         id="title96">x4</title>
-      <ellipse
-         fill="black"
-         stroke="black"
-         cx="1844.14"
-         cy="-292"
-         rx="1.8"
-         ry="1.8"
-         id="ellipse96" />
-    </g>
-    <!-- n28&#45;&gt;x4 -->
-    <g
-       id="edge46"
-       class="edge">
-      <title
-         id="title97">n28:e-&gt;x4:w</title>
-      <path
-         fill="none"
-         stroke="#a6761d"
-         d="M1730.52,-292C1775.54,-292 1789.56,-292 1829.5,-292"
-         id="path97" />
-      <polygon
-         fill="#a6761d"
-         stroke="#a6761d"
-         points="1829.35,-295.5 1839.35,-292 1829.35,-288.5 1829.35,-295.5"
-         id="polygon97" />
-    </g>
-    <!-- c31&#45;&gt;n15 -->
-    <g
-       id="edge10"
-       class="edge">
-      <title
-         id="title98">c31:e-&gt;n15:w</title>
-      <path
-         fill="none"
-         stroke="#e6ab02"
-         d="M505.63,-390.12C517.01,-390.12 522.31,-390.57 530.18,-390.82"
-         id="path98" />
-      <polygon
-         fill="#e6ab02"
-         stroke="#e6ab02"
-         points="530.06,-394.32 540.12,-390.98 530.17,-387.32 530.06,-394.32"
-         id="polygon98" />
-    </g>
-    <!-- c32&#45;&gt;n17 -->
-    <g
-       id="edge14"
-       class="edge">
-      <title
-         id="title99">c32:e-&gt;n17:w</title>
-      <path
-         fill="none"
-         stroke="#1b9e77"
-         d="M505.63,-323.12C517,-323.12 522.31,-323.06 530.18,-323.03"
-         id="path99" />
-      <polygon
-         fill="#1b9e77"
-         stroke="#1b9e77"
-         points="530.12,-326.53 540.12,-323 530.11,-319.53 530.12,-326.53"
-         id="polygon99" />
-    </g>
-    <!-- c33&#45;&gt;n19 -->
-    <g
-       id="edge18"
-       class="edge">
-      <title
-         id="title100">c33:e-&gt;n19:w</title>
-      <path
-         fill="none"
-         stroke="#a6761d"
-         d="M505.63,-257.12C517.42,-257.12 522.38,-252.93 530.34,-250.57"
-         id="path100" />
-      <polygon
-         fill="#a6761d"
-         stroke="#a6761d"
-         points="530.71,-254.05 540.13,-249.21 529.74,-247.12 530.71,-254.05"
-         id="polygon100" />
-    </g>
-    <!-- c45 -->
-    <g
-       id="node31"
-       class="node">
-      <title
-         id="title101">c45</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="1585.4,-197.75 1585.4,-248.25 1717.4,-248.25 1717.4,-197.75 1585.4,-197.75"
-         id="polygon101" />
-      <text
-         text-anchor="middle"
-         x="1598.65"
-         y="-230.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text101">A</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1585.4,-223 1611.9,-223"
-         id="polyline101" />
-      <text
-         text-anchor="middle"
-         x="1598.65"
-         y="-205.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text102">B</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1611.9,-197.75 1611.9,-248.25"
-         id="polyline102" />
-      <text
-         text-anchor="middle"
-         x="1652.15"
-         y="-226.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text103">$13</text>
-      <text
-         text-anchor="middle"
-         x="1652.15"
-         y="-209.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text104">$logic_or</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1692.4,-197.75 1692.4,-248.25"
-         id="polyline104" />
-      <text
-         text-anchor="middle"
-         x="1704.9"
-         y="-218.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text105">Y</text>
-    </g>
-    <!-- c35&#45;&gt;c45 -->
-    <g
-       id="edge1"
-       class="edge">
-      <title
-         id="title105">c35:e-&gt;c45:w</title>
-      <path
-         fill="none"
-         stroke="#e7298a"
-         d="M1368.29,-193.12C1460.69,-193.12 1486,-208.99 1572.9,-210.29"
-         id="path105" />
-      <polygon
-         fill="#e7298a"
-         stroke="#e7298a"
-         points="1572.86,-213.79 1582.89,-210.36 1572.91,-206.79 1572.86,-213.79"
-         id="polygon105" />
-    </g>
-    <!-- c44 -->
-    <g
-       id="node30"
-       class="node">
-      <title
-         id="title106">c44</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="1404.29,-339.75 1404.29,-390.25 1536.29,-390.25 1536.29,-339.75 1404.29,-339.75"
-         id="polygon106" />
-      <text
-         text-anchor="middle"
-         x="1417.54"
-         y="-372.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text106">A</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1404.29,-365 1430.79,-365"
-         id="polyline106" />
-      <text
-         text-anchor="middle"
-         x="1417.54"
-         y="-347.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text107">B</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1430.79,-339.75 1430.79,-390.25"
-         id="polyline107" />
-      <text
-         text-anchor="middle"
-         x="1471.04"
-         y="-368.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text108">$10</text>
-      <text
-         text-anchor="middle"
-         x="1471.04"
-         y="-351.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text109">$logic_or</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1511.29,-339.75 1511.29,-390.25"
-         id="polyline109" />
-      <text
-         text-anchor="middle"
-         x="1523.79"
-         y="-360.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text110">Y</text>
-    </g>
-    <!-- c36&#45;&gt;c44 -->
-    <g
-       id="edge20"
-       class="edge">
-      <title
-         id="title110">c36:e-&gt;c44:w</title>
-      <path
-         fill="none"
-         stroke="#66a61e"
-         d="M1368.29,-377.12C1379.66,-377.12 1384.97,-377.38 1392.84,-377.52"
-         id="path110" />
-      <polygon
-         fill="#66a61e"
-         stroke="#66a61e"
-         points="1392.74,-381.02 1402.77,-377.61 1392.8,-374.02 1392.74,-381.02"
-         id="polygon110" />
-    </g>
-    <!-- c37&#45;&gt;c44 -->
-    <g
-       id="edge47"
-       class="edge">
-      <title
-         id="title111">c37:e-&gt;c44:w</title>
-      <path
-         fill="none"
-         stroke="#a6761d"
-         d="M1368.29,-447.12C1408.76,-447.12 1369.2,-370.64 1393.42,-355.11"
-         id="path111" />
-      <polygon
-         fill="#a6761d"
-         stroke="#a6761d"
-         points="1393.98,-358.58 1402.82,-352.74 1392.27,-351.79 1393.98,-358.58"
-         id="polygon111" />
-    </g>
-    <!-- c46 -->
-    <g
-       id="node32"
-       class="node">
-      <title
-         id="title112">c46</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="1230.66,-281.75 1230.66,-332.25 1362.66,-332.25 1362.66,-281.75 1230.66,-281.75"
-         id="polygon112" />
-      <text
-         text-anchor="middle"
-         x="1243.91"
-         y="-314.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text112">A</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1230.66,-307 1257.16,-307"
-         id="polyline112" />
-      <text
-         text-anchor="middle"
-         x="1243.91"
-         y="-289.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text113">B</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1257.16,-281.75 1257.16,-332.25"
-         id="polyline113" />
-      <text
-         text-anchor="middle"
-         x="1297.41"
-         y="-310.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text114">$3</text>
-      <text
-         text-anchor="middle"
-         x="1297.41"
-         y="-293.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text115">$logic_or</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1337.66,-281.75 1337.66,-332.25"
-         id="polyline115" />
-      <text
-         text-anchor="middle"
-         x="1350.16"
-         y="-302.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text116">Y</text>
-    </g>
-    <!-- c38&#45;&gt;c46 -->
-    <g
-       id="edge48"
-       class="edge">
-      <title
-         id="title116">c38:e-&gt;c46:w</title>
-      <path
-         fill="none"
-         stroke="#7570b3"
-         d="M1189.04,-391.12C1221.02,-391.12 1200.15,-336.38 1218.92,-322.7"
-         id="path116" />
-      <polygon
-         fill="#7570b3"
-         stroke="#7570b3"
-         points="1219.55,-326.16 1228.21,-320.04 1217.63,-319.43 1219.55,-326.16"
-         id="polygon116" />
-    </g>
-    <!-- c39&#45;&gt;c46 -->
-    <g
-       id="edge49"
-       class="edge">
-      <title
-         id="title117">c39:e-&gt;c46:w</title>
-      <path
-         fill="none"
-         stroke="#666666"
-         d="M1189.04,-151.12C1250.82,-151.12 1174.97,-275.98 1218.47,-292.56"
-         id="path117" />
-      <polygon
-         fill="#666666"
-         stroke="#666666"
-         points="1217.74,-295.99 1228.17,-294.13 1218.86,-289.08 1217.74,-295.99"
-         id="polygon117" />
-    </g>
-    <!-- c47 -->
-    <g
-       id="node33"
-       class="node">
-      <title
-         id="title118">c47</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="1404.29,-266.75 1404.29,-317.25 1536.29,-317.25 1536.29,-266.75 1404.29,-266.75"
-         id="polygon118" />
-      <text
-         text-anchor="middle"
-         x="1417.54"
-         y="-299.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text118">A</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1404.29,-292 1430.79,-292"
-         id="polyline118" />
-      <text
-         text-anchor="middle"
-         x="1417.54"
-         y="-274.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text119">B</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1430.79,-266.75 1430.79,-317.25"
-         id="polyline119" />
-      <text
-         text-anchor="middle"
-         x="1471.04"
-         y="-295.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text120">$5</text>
-      <text
-         text-anchor="middle"
-         x="1471.04"
-         y="-278.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text121">$logic_or</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="1511.29,-266.75 1511.29,-317.25"
-         id="polyline121" />
-      <text
-         text-anchor="middle"
-         x="1523.79"
-         y="-287.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text122">Y</text>
-    </g>
-    <!-- c40&#45;&gt;c47 -->
-    <g
-       id="edge50"
-       class="edge">
-      <title
-         id="title122">c40:e-&gt;c47:w</title>
-      <path
-         fill="none"
-         stroke="#e7298a"
-         d="M1189.04,-259.12C1268.91,-259.12 1289.16,-261.1 1368.29,-272 1379.92,-273.6 1384.99,-276.71 1392.99,-278.33"
-         id="path122" />
-      <polygon
-         fill="#e7298a"
-         stroke="#e7298a"
-         points="1392.5,-281.8 1402.78,-279.24 1393.14,-274.83 1392.5,-281.8"
-         id="polygon122" />
-    </g>
-    <!-- c41&#45;&gt;c35 -->
-    <g
-       id="edge51"
-       class="edge">
-      <title
-         id="title123">c41:e-&gt;c35:w</title>
-      <path
-         fill="none"
-         stroke="#66a61e"
-         d="M1188.16,-47.12C1245.29,-47.12 1174.96,-162.3 1214.16,-178.49"
-         id="path123" />
-      <polygon
-         fill="#66a61e"
-         stroke="#66a61e"
-         points="1213.09,-181.86 1223.55,-180.12 1214.29,-174.96 1213.09,-181.86"
-         id="polygon123" />
-    </g>
-    <!-- c42&#45;&gt;c36 -->
-    <g
-       id="edge52"
-       class="edge">
-      <title
-         id="title124">c42:e-&gt;c36:w</title>
-      <path
-         fill="none"
-         stroke="#e7298a"
-         d="M1188.16,-457.12C1217.54,-457.12 1198.41,-407.27 1214.15,-393.25"
-         id="path124" />
-      <polygon
-         fill="#e7298a"
-         stroke="#e7298a"
-         points="1215.22,-396.59 1223.6,-390.1 1213.01,-389.94 1215.22,-396.59"
-         id="polygon124" />
-    </g>
-    <!-- c43&#45;&gt;c37 -->
-    <g
-       id="edge53"
-       class="edge">
-      <title
-         id="title125">c43:e-&gt;c37:w</title>
-      <path
-         fill="none"
-         stroke="#d95f02"
-         d="M1188.16,-325.12C1234.8,-325.12 1184.64,-415.63 1213.88,-431.89"
-         id="path125" />
-      <polygon
-         fill="#d95f02"
-         stroke="#d95f02"
-         points="1213.04,-435.28 1223.56,-434.05 1214.56,-428.45 1213.04,-435.28"
-         id="polygon125" />
-    </g>
-    <!-- c44&#45;&gt;c45 -->
-    <g
-       id="edge2"
-       class="edge">
-      <title
-         id="title126">c44:e-&gt;c45:w</title>
-      <path
-         fill="none"
-         stroke="#7570b3"
-         d="M1536.29,-365.12C1593.25,-365.12 1533.09,-253.67 1573.12,-237.56"
-         id="path126" />
-      <polygon
-         fill="#7570b3"
-         stroke="#7570b3"
-         points="1573.64,-241.02 1582.91,-235.88 1572.46,-234.12 1573.64,-241.02"
-         id="polygon126" />
-    </g>
-    <!-- c45&#45;&gt;n27 -->
-    <g
-       id="edge43"
-       class="edge">
-      <title
-         id="title127">c45:e-&gt;n27:w</title>
-      <path
-         fill="none"
-         stroke="#e6ab02"
-         d="M1718.4,-223.12C1735.44,-223.12 1742.3,-223.05 1755.2,-223.01"
-         id="path127" />
-      <polygon
-         fill="#e6ab02"
-         stroke="#e6ab02"
-         points="1755.01,-226.51 1765,-223 1755,-219.51 1755.01,-226.51"
-         id="polygon127" />
-    </g>
-    <!-- c46&#45;&gt;c47 -->
-    <g
-       id="edge3"
-       class="edge">
-      <title
-         id="title128">c46:e-&gt;c47:w</title>
-      <path
-         fill="none"
-         stroke="#7570b3"
-         d="M1363.66,-307.12C1377.23,-307.12 1383.12,-305.72 1392.85,-305.02"
-         id="path128" />
-      <polygon
-         fill="#7570b3"
-         stroke="#7570b3"
-         points="1392.9,-308.52 1402.77,-304.68 1392.66,-301.52 1392.9,-308.52"
-         id="polygon128" />
-    </g>
-    <!-- c47&#45;&gt;n28 -->
-    <g
-       id="edge45"
-       class="edge">
-      <title
-         id="title129">c47:e-&gt;n28:w</title>
-      <path
-         fill="none"
-         stroke="#a6761d"
-         d="M1536.29,-292.12C1547.66,-292.12 1552.97,-292.06 1560.84,-292.03"
-         id="path129" />
-      <polygon
-         fill="#a6761d"
-         stroke="#a6761d"
-         points="1560.78,-295.53 1570.77,-292 1560.77,-288.53 1560.78,-295.53"
-         id="polygon129" />
-    </g>
-    <!-- c48 -->
-    <g
-       id="node34"
-       class="node">
-      <title
-         id="title130">c48</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="0,-359.75 0,-402.25 133.5,-402.25 133.5,-359.75 0,-359.75"
-         id="polygon130" />
-      <text
-         text-anchor="middle"
-         x="10.25"
-         y="-376.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text130" />
-      <polyline
-         fill="none"
-         stroke="black"
-         points="20.5,-359.75 20.5,-402.25"
-         id="polyline130" />
-      <text
-         text-anchor="middle"
-         x="66.75"
-         y="-384.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text131">not1</text>
-      <text
-         text-anchor="middle"
-         x="66.75"
-         y="-367.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text132">$scopeinfo</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="113,-359.75 113,-402.25"
-         id="polyline132" />
-      <text
-         text-anchor="middle"
-         x="123.25"
-         y="-376.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text133" />
-    </g>
-    <!-- c49 -->
-    <g
-       id="node35"
-       class="node">
-      <title
-         id="title133">c49</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="0,-421.75 0,-464.25 133.5,-464.25 133.5,-421.75 0,-421.75"
-         id="polygon133" />
-      <text
-         text-anchor="middle"
-         x="10.25"
-         y="-438.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text134" />
-      <polyline
-         fill="none"
-         stroke="black"
-         points="20.5,-421.75 20.5,-464.25"
-         id="polyline134" />
-      <text
-         text-anchor="middle"
-         x="66.75"
-         y="-446.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text135">not2</text>
-      <text
-         text-anchor="middle"
-         x="66.75"
-         y="-429.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text136">$scopeinfo</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="113,-421.75 113,-464.25"
-         id="polyline136" />
-      <text
-         text-anchor="middle"
-         x="123.25"
-         y="-438.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text137" />
-    </g>
-    <!-- c50 -->
-    <g
-       id="node36"
-       class="node">
-      <title
-         id="title137">c50</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="0,-483.75 0,-526.25 133.5,-526.25 133.5,-483.75 0,-483.75"
-         id="polygon137" />
-      <text
-         text-anchor="middle"
-         x="10.25"
-         y="-500.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text138" />
-      <polyline
-         fill="none"
-         stroke="black"
-         points="20.5,-483.75 20.5,-526.25"
-         id="polyline138" />
-      <text
-         text-anchor="middle"
-         x="66.75"
-         y="-508.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text139">not3</text>
-      <text
-         text-anchor="middle"
-         x="66.75"
-         y="-491.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text140">$scopeinfo</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="113,-483.75 113,-526.25"
-         id="polyline140" />
-      <text
-         text-anchor="middle"
-         x="123.25"
-         y="-500.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text141" />
-    </g>
-    <!-- c51 -->
-    <g
-       id="node37"
-       class="node">
-      <title
-         id="title141">c51</title>
-      <polygon
-         fill="none"
-         stroke="black"
-         points="0,-545.75 0,-588.25 133.5,-588.25 133.5,-545.75 0,-545.75"
-         id="polygon141" />
-      <text
-         text-anchor="middle"
-         x="10.25"
-         y="-562.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text142" />
-      <polyline
-         fill="none"
-         stroke="black"
-         points="20.5,-545.75 20.5,-588.25"
-         id="polyline142" />
-      <text
-         text-anchor="middle"
-         x="66.75"
-         y="-570.95"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text143">voter</text>
-      <text
-         text-anchor="middle"
-         x="66.75"
-         y="-553.7"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text144">$scopeinfo</text>
-      <polyline
-         fill="none"
-         stroke="black"
-         points="113,-545.75 113,-588.25"
-         id="polyline144" />
-      <text
-         text-anchor="middle"
-         x="123.25"
-         y="-562.45"
-         font-family="Times,serif"
-         font-size="14.00"
-         id="text145" />
-    </g>
-    <!-- x0&#45;&gt;n24 -->
-    <g
-       id="edge28"
-       class="edge">
-      <title
-         id="title145">x0:e-&gt;n24:w</title>
-      <path
-         fill="none"
-         stroke="#7570b3"
-         d="M843.83,-400C855.24,-400 860.51,-401.52 868.37,-402.39"
-         id="path145" />
-      <polygon
-         fill="#7570b3"
-         stroke="#7570b3"
-         points="868.15,-405.89 878.32,-402.92 868.52,-398.9 868.15,-405.89"
-         id="polygon145" />
-    </g>
-    <!-- x1&#45;&gt;n25 -->
-    <g
-       id="edge33"
-       class="edge">
-      <title
-         id="title146">x1:e-&gt;n25:w</title>
-      <path
-         fill="none"
-         stroke="#e6ab02"
-         d="M843.83,-323C855.2,-323 860.51,-323 868.38,-323"
-         id="path146" />
-      <polygon
-         fill="#e6ab02"
-         stroke="#e6ab02"
-         points="868.32,-326.5 878.32,-323 868.32,-319.5 868.32,-326.5"
-         id="polygon146" />
-    </g>
-    <!-- x2&#45;&gt;n26 -->
-    <g
-       id="edge38"
-       class="edge">
-      <title
-         id="title147">x2:e-&gt;n26:w</title>
-      <path
-         fill="none"
-         stroke="#7570b3"
-         d="M843.83,-141C855.22,-141 860.51,-139.99 868.38,-139.4"
-         id="path147" />
-      <polygon
-         fill="#7570b3"
-         stroke="#7570b3"
-         points="868.45,-142.9 878.32,-139.05 868.2,-135.91 868.45,-142.9"
-         id="polygon147" />
-    </g>
-    <!-- x3&#45;&gt;n13 -->
-    <g
-       id="edge7"
-       class="edge">
-      <title
-         id="title148">x3:e-&gt;n13:w</title>
-      <path
-         fill="none"
-         stroke="#d95f02"
-         d="M1988.05,-223C2010.45,-223 2018.67,-223 2036.64,-223"
-         id="path148" />
-      <polygon
-         fill="#d95f02"
-         stroke="#d95f02"
-         points="2036.26,-226.5 2046.26,-223 2036.26,-219.5 2036.26,-226.5"
-         id="polygon148" />
-    </g>
-    <!-- x4&#45;&gt;n20 -->
-    <g
-       id="edge21"
-       class="edge">
-      <title
-         id="title149">x4:e-&gt;n20:w</title>
-      <path
-         fill="none"
-         stroke="#a6761d"
-         d="M1847.42,-292C1892.44,-292 1906.47,-292 1946.4,-292"
-         id="path149" />
-      <polygon
-         fill="#a6761d"
-         stroke="#a6761d"
-         points="1946.26,-295.5 1956.26,-292 1946.26,-288.5 1946.26,-295.5"
-         id="polygon149" />
-    </g>
-    <!-- x5&#45;&gt;n18 -->
-    <g
-       id="edge16"
-       class="edge">
-      <title
-         id="title150">x5:e-&gt;n18:w</title>
-      <path
-         fill="none"
-         stroke="#d95f02"
-         d="M173.1,-285C186.83,-285 189.92,-273.75 198.33,-268.12"
-         id="path150" />
-      <polygon
-         fill="#d95f02"
-         stroke="#d95f02"
-         points="199.02,-271.57 207.65,-265.42 197.07,-264.85 199.02,-271.57"
-         id="polygon150" />
-    </g>
-    <!-- x6&#45;&gt;n23 -->
-    <g
-       id="edge26"
-       class="edge">
-      <title
-         id="title151">x6:e-&gt;n23:w</title>
-      <path
-         fill="none"
-         stroke="#666666"
-         d="M702.26,-234C718.59,-234 718.56,-215.46 727.48,-207.05"
-         id="path151" />
-      <polygon
-         fill="#666666"
-         stroke="#666666"
-         points="728.71,-210.33 736.84,-203.53 726.25,-203.78 728.71,-210.33"
-         id="polygon151" />
-    </g>
-    <!-- x7&#45;&gt;n16 -->
-    <g
-       id="edge12"
-       class="edge">
-      <title
-         id="title152">x7:e-&gt;n16:w</title>
-      <path
-         fill="none"
-         stroke="#d95f02"
-         d="M173.1,-323C184.48,-323 189.78,-323 197.65,-323"
-         id="path152" />
-      <polygon
-         fill="#d95f02"
-         stroke="#d95f02"
-         points="197.59,-326.5 207.59,-323 197.59,-319.5 197.59,-326.5"
-         id="polygon152" />
-    </g>
-    <!-- x8&#45;&gt;n22 -->
-    <g
-       id="edge24"
-       class="edge">
-      <title
-         id="title153">x8:e-&gt;n22:w</title>
-      <path
-         fill="none"
-         stroke="#d95f02"
-         d="M702.26,-323C713.63,-323 718.94,-323 726.81,-323"
-         id="path153" />
-      <polygon
-         fill="#d95f02"
-         stroke="#d95f02"
-         points="726.74,-326.5 736.74,-323 726.74,-319.5 726.74,-326.5"
-         id="polygon153" />
-    </g>
-    <!-- x9&#45;&gt;n14 -->
-    <g
-       id="edge8"
-       class="edge">
-      <title
-         id="title154">x9:e-&gt;n14:w</title>
-      <path
-         fill="none"
-         stroke="#e6ab02"
-         d="M173.1,-361C188.62,-361 189.6,-377.41 198.3,-385.11"
-         id="path154" />
-      <polygon
-         fill="#e6ab02"
-         stroke="#e6ab02"
-         points="197.08,-388.39 207.68,-388.49 199.46,-381.8 197.08,-388.39"
-         id="polygon154" />
-    </g>
-    <!-- x10&#45;&gt;n21 -->
-    <g
-       id="edge22"
-       class="edge">
-      <title
-         id="title155">x10:e-&gt;n21:w</title>
-      <path
-         fill="none"
-         stroke="#66a61e"
-         d="M702.26,-392C713.92,-392 719.03,-395.1 727.01,-396.84"
-         id="path155" />
-      <polygon
-         fill="#66a61e"
-         stroke="#66a61e"
-         points="726.45,-400.3 736.75,-397.85 727.16,-393.34 726.45,-400.3"
-         id="polygon155" />
-    </g>
+       x="66.75"
+       y="-318.32001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text2">a</text>
+  </g>
+  <g
+     id="node43"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title3">x5</title>
+    <circle
+       fill="#000000"
+       stroke="#000000"
+       cx="171.3"
+       cy="-285"
+       id="ellipse3"
+       r="1.8" />
+  </g>
+  <g
+     id="edge4"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title4">n12:e-&gt;x5:w</title>
+    <path
+       fill="none"
+       stroke="#a6761d"
+       d="m 95,-323 c 32.96,0 36.82,29.88 63.19,36.65"
+       id="path4" />
+    <polygon
+       fill="#a6761d"
+       stroke="#a6761d"
+       points="168,-285.18 157.65,-282.89 158.48,-289.84 "
+       id="polygon4" />
+  </g>
+  <g
+     id="node45"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title5">x7</title>
+    <circle
+       fill="#000000"
+       stroke="#000000"
+       cx="171.3"
+       cy="-323"
+       id="ellipse5"
+       r="1.8" />
+  </g>
+  <g
+     id="edge5"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title6">n12:e-&gt;x7:w</title>
+    <path
+       fill="none"
+       stroke="#a6761d"
+       d="m 95,-323 c 28.97,0 38.93,0 63.15,0"
+       id="path6" />
+    <polygon
+       fill="#a6761d"
+       stroke="#a6761d"
+       points="167.99,-323 157.99,-319.5 157.99,-326.5 "
+       id="polygon6" />
+  </g>
+  <g
+     id="node47"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title7">x9</title>
+    <circle
+       fill="#000000"
+       stroke="#000000"
+       cx="171.3"
+       cy="-361"
+       id="ellipse7"
+       r="1.8" />
+  </g>
+  <g
+     id="edge6"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title8">n12:e-&gt;x9:w</title>
+    <path
+       fill="none"
+       stroke="#a6761d"
+       d="m 95,-323 c 32.96,0 36.82,-29.88 63.19,-36.65"
+       id="path8" />
+    <polygon
+       fill="#a6761d"
+       stroke="#a6761d"
+       points="168,-360.82 158.48,-356.16 157.65,-363.11 "
+       id="polygon8" />
+  </g>
+  <g
+     id="node2"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title9">n13</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="2085.22,-241 2047.77,-223 2085.22,-205 2122.67,-223 "
+       id="polygon9" />
+    <text
+       text-anchor="middle"
+       x="2085.22"
+       y="-218.32001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text9">err</text>
+  </g>
+  <g
+     id="node3"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title10">n14</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="269.61,-407 209.1,-389 269.61,-371 330.13,-389 "
+       id="polygon10" />
+    <text
+       text-anchor="middle"
+       x="269.60999"
+       y="-384.32001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text10">not1.a</text>
+  </g>
+  <g
+     id="node18"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title11">c31</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="366.13,-368.75 366.13,-411.25 505.63,-411.25 505.63,-368.75 "
+       id="polygon11" />
+    <text
+       text-anchor="middle"
+       x="379"
+       y="-385.45001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text11">A</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="391.88,-368.75 391.88,-411.25"
+       id="polyline11" />
+    <text
+       text-anchor="middle"
+       x="436.25"
+       y="-393.95001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text12">$14</text>
+    <text
+       text-anchor="middle"
+       x="436.25"
+       y="-376.70001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text13">$logic_not</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="480.63,-368.75 480.63,-411.25"
+       id="polyline13" />
+    <text
+       text-anchor="middle"
+       x="493.13"
+       y="-385.45001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text14">Y</text>
+  </g>
+  <g
+     id="edge9"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title14">n14:e-&gt;c31:w</title>
+    <path
+       fill="none"
+       stroke="#e6ab02"
+       d="m 330.13,-389 c 11.38,0 16.68,-0.57 24.55,-0.9"
+       id="path14" />
+    <polygon
+       fill="#e6ab02"
+       stroke="#e6ab02"
+       points="364.62,-390.09 354.69,-386.4 354.55,-393.4 "
+       id="polygon14" />
+  </g>
+  <g
+     id="node4"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title15">n15</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="602.14,-409 541.63,-391 602.14,-373 662.66,-391 "
+       id="polygon15" />
+    <text
+       text-anchor="middle"
+       x="602.14001"
+       y="-386.32001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text15">not1.o</text>
+  </g>
+  <g
+     id="node48"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title16">x10</title>
+    <circle
+       fill="#000000"
+       stroke="#000000"
+       cx="700.46002"
+       cy="-392"
+       id="ellipse16"
+       r="1.8" />
+  </g>
+  <g
+     id="edge11"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title17">n15:e-&gt;x10:w</title>
+    <path
+       fill="none"
+       stroke="#e6ab02"
+       d="m 662.66,-391 c 11.38,0 16.68,-0.51 24.55,-0.8"
+       id="path17" />
+    <polygon
+       fill="#e6ab02"
+       stroke="#e6ab02"
+       points="697.15,-391.97 687.21,-388.3 687.08,-395.3 "
+       id="polygon17" />
+  </g>
+  <g
+     id="node5"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title18">n16</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="269.61,-341 209.1,-323 269.61,-305 330.13,-323 "
+       id="polygon18" />
+    <text
+       text-anchor="middle"
+       x="269.60999"
+       y="-318.32001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text18">not2.a</text>
+  </g>
+  <g
+     id="node19"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title19">c32</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="366.13,-301.75 366.13,-344.25 505.63,-344.25 505.63,-301.75 "
+       id="polygon19" />
+    <text
+       text-anchor="middle"
+       x="379"
+       y="-318.45001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text19">A</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="391.88,-301.75 391.88,-344.25"
+       id="polyline19" />
+    <text
+       text-anchor="middle"
+       x="436.25"
+       y="-326.95001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text20">$14</text>
+    <text
+       text-anchor="middle"
+       x="436.25"
+       y="-309.70001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text21">$logic_not</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="480.63,-301.75 480.63,-344.25"
+       id="polyline21" />
+    <text
+       text-anchor="middle"
+       x="493.13"
+       y="-318.45001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text22">Y</text>
+  </g>
+  <g
+     id="edge13"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title22">n16:e-&gt;c32:w</title>
+    <path
+       fill="none"
+       stroke="#d95f02"
+       d="m 330.13,-323 c 11.37,0 16.68,-0.06 24.55,-0.1"
+       id="path22" />
+    <polygon
+       fill="#d95f02"
+       stroke="#d95f02"
+       points="364.62,-323.12 354.62,-319.6 354.61,-326.6 "
+       id="polygon22" />
+  </g>
+  <g
+     id="node6"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title23">n17</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="602.14,-341 541.63,-323 602.14,-305 662.66,-323 "
+       id="polygon23" />
+    <text
+       text-anchor="middle"
+       x="602.14001"
+       y="-318.32001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text23">not2.o</text>
+  </g>
+  <g
+     id="node46"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title24">x8</title>
+    <circle
+       fill="#000000"
+       stroke="#000000"
+       cx="700.46002"
+       cy="-323"
+       id="ellipse24"
+       r="1.8" />
+  </g>
+  <g
+     id="edge15"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title25">n17:e-&gt;x8:w</title>
+    <path
+       fill="none"
+       stroke="#1b9e77"
+       d="m 662.66,-323 c 11.37,0 16.68,0 24.55,0"
+       id="path25" />
+    <polygon
+       fill="#1b9e77"
+       stroke="#1b9e77"
+       points="697.14,-323 687.14,-319.5 687.14,-326.5 "
+       id="polygon25" />
+  </g>
+  <g
+     id="node7"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title26">n18</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="269.61,-283 209.1,-265 269.61,-247 330.13,-265 "
+       id="polygon26" />
+    <text
+       text-anchor="middle"
+       x="269.60999"
+       y="-260.32001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text26">not3.a</text>
+  </g>
+  <g
+     id="node20"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title27">c33</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="366.13,-235.75 366.13,-278.25 505.63,-278.25 505.63,-235.75 "
+       id="polygon27" />
+    <text
+       text-anchor="middle"
+       x="379"
+       y="-252.45"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text27">A</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="391.88,-235.75 391.88,-278.25"
+       id="polyline27" />
+    <text
+       text-anchor="middle"
+       x="436.25"
+       y="-260.95001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text28">$14</text>
+    <text
+       text-anchor="middle"
+       x="436.25"
+       y="-243.7"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text29">$logic_not</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="480.63,-235.75 480.63,-278.25"
+       id="polyline29" />
+    <text
+       text-anchor="middle"
+       x="493.13"
+       y="-252.45"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text30">Y</text>
+  </g>
+  <g
+     id="edge17"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title30">n18:e-&gt;c33:w</title>
+    <path
+       fill="none"
+       stroke="#d95f02"
+       d="m 330.13,-265 c 11.77,0 16.76,4.07 24.71,6.36"
+       id="path30" />
+    <polygon
+       fill="#d95f02"
+       stroke="#d95f02"
+       points="364.63,-257.33 354.25,-255.19 355.19,-262.13 "
+       id="polygon30" />
+  </g>
+  <g
+     id="node8"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title31">n19</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="602.14,-267 541.63,-249 602.14,-231 662.66,-249 "
+       id="polygon31" />
+    <text
+       text-anchor="middle"
+       x="602.14001"
+       y="-244.32001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text31">not3.o</text>
+  </g>
+  <g
+     id="node44"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title32">x6</title>
+    <circle
+       fill="#000000"
+       stroke="#000000"
+       cx="700.46002"
+       cy="-234"
+       id="ellipse32"
+       r="1.8" />
+  </g>
+  <g
+     id="edge19"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title33">n19:e-&gt;x6:w</title>
+    <path
+       fill="none"
+       stroke="#a6761d"
+       d="m 662.66,-249 c 12.73,0 16.83,8.09 24.97,12.39"
+       id="path33" />
+    <polygon
+       fill="#a6761d"
+       stroke="#a6761d"
+       points="697.19,-234.35 686.65,-233.25 688.26,-240.06 "
+       id="polygon33" />
+  </g>
+  <g
+     id="node9"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title34">n20</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="1957.77,-299.46 1957.77,-284.54 1973.59,-274 1995.96,-274 2011.77,-284.54 2011.77,-299.46 1995.96,-310 1973.59,-310 "
+       id="polygon34" />
+    <text
+       text-anchor="middle"
+       x="1984.77"
+       y="-287.32001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text34">o</text>
+  </g>
+  <g
+     id="node10"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title35">n21</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="771.24,-416 738.26,-398 771.24,-380 804.23,-398 "
+       id="polygon35" />
+    <text
+       text-anchor="middle"
+       x="771.23999"
+       y="-393.32001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text35">o1</text>
+  </g>
+  <g
+     id="node38"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title36">x0</title>
+    <circle
+       fill="#000000"
+       stroke="#000000"
+       cx="842.03003"
+       cy="-400"
+       id="ellipse36"
+       r="1.8" />
+  </g>
+  <g
+     id="edge23"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title37">n21:e-&gt;x0:w</title>
+    <path
+       fill="none"
+       stroke="#66a61e"
+       d="m 804.23,-398 c 11.39,0 16.68,-1.01 24.55,-1.6"
+       id="path37" />
+    <polygon
+       fill="#66a61e"
+       stroke="#66a61e"
+       points="838.72,-399.95 828.85,-396.1 828.6,-403.09 "
+       id="polygon37" />
+  </g>
+  <g
+     id="node11"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title38">n22</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="771.24,-341 738.26,-323 771.24,-305 804.23,-323 "
+       id="polygon38" />
+    <text
+       text-anchor="middle"
+       x="771.23999"
+       y="-318.32001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text38">o2</text>
+  </g>
+  <g
+     id="node39"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title39">x1</title>
+    <circle
+       fill="#000000"
+       stroke="#000000"
+       cx="842.03003"
+       cy="-323"
+       id="ellipse39"
+       r="1.8" />
+  </g>
+  <g
+     id="edge25"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title40">n22:e-&gt;x1:w</title>
+    <path
+       fill="none"
+       stroke="#d95f02"
+       d="m 804.23,-323 c 11.37,0 16.68,0 24.55,0"
+       id="path40" />
+    <polygon
+       fill="#d95f02"
+       stroke="#d95f02"
+       points="838.72,-323 828.72,-319.5 828.72,-326.5 "
+       id="polygon40" />
+  </g>
+  <g
+     id="node12"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title41">n23</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="771.24,-221 738.26,-203 771.24,-185 804.23,-203 "
+       id="polygon41" />
+    <text
+       text-anchor="middle"
+       x="771.23999"
+       y="-198.32001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text41">o3</text>
+  </g>
+  <g
+     id="node40"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title42">x2</title>
+    <circle
+       fill="#000000"
+       stroke="#000000"
+       cx="842.03003"
+       cy="-141"
+       id="ellipse42"
+       r="1.8" />
+  </g>
+  <g
+     id="edge27"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title43">n23:e-&gt;x2:w</title>
+    <path
+       fill="none"
+       stroke="#666666"
+       d="m 804.23,-203 c 27.13,0 11.05,44.96 25.36,58.31"
+       id="path43" />
+    <polygon
+       fill="#666666"
+       stroke="#666666"
+       points="838.8,-141.5 828.2,-141.47 830.5,-148.08 "
+       id="polygon43" />
+  </g>
+  <g
+     id="node13"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title44">n24</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="944.81,-421 880.57,-403 944.81,-385 1009.04,-403 "
+       id="polygon44" />
+    <text
+       text-anchor="middle"
+       x="944.81"
+       y="-398.32001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text44">voter.a</text>
+  </g>
+  <g
+     id="node23"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title45">c37</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="1225.04,-421.75 1225.04,-472.25 1368.29,-472.25 1368.29,-421.75 "
+       id="polygon45" />
+    <text
+       text-anchor="middle"
+       x="1238.29"
+       y="-454.95001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text45">A</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1225.04,-447 1251.54,-447"
+       id="polyline45" />
+    <text
+       text-anchor="middle"
+       x="1238.29"
+       y="-429.70001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text46">B</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1251.54,-421.75 1251.54,-472.25"
+       id="polyline46" />
+    <text
+       text-anchor="middle"
+       x="1297.41"
+       y="-450.95001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text47">$9</text>
+    <text
+       text-anchor="middle"
+       x="1297.41"
+       y="-433.70001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text48">$logic_and</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1343.29,-421.75 1343.29,-472.25"
+       id="polyline48" />
+    <text
+       text-anchor="middle"
+       x="1355.79"
+       y="-442.45001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text49">Y</text>
+  </g>
+  <g
+     id="edge29"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title49">n24:e-&gt;c37:w</title>
+    <path
+       fill="none"
+       stroke="#7570b3"
+       d="m 1009.79,-403 c 41.02,0 1.79,-62.34 36,-85 53.07,-35.16 83.09,-20.86 143.25,0 14.73,5.11 16.07,19.03 25.02,25.27"
+       id="path49" />
+    <polygon
+       fill="#7570b3"
+       stroke="#7570b3"
+       points="1223.58,-460.04 1213.01,-459.39 1214.91,-466.13 "
+       id="polygon49" />
+  </g>
+  <g
+     id="node24"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title50">c38</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="1045.79,-365.75 1045.79,-416.25 1189.04,-416.25 1189.04,-365.75 "
+       id="polygon50" />
+    <text
+       text-anchor="middle"
+       x="1059.04"
+       y="-398.95001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text50">A</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1045.79,-391 1072.29,-391"
+       id="polyline50" />
+    <text
+       text-anchor="middle"
+       x="1059.04"
+       y="-373.70001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text51">B</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1072.29,-365.75 1072.29,-416.25"
+       id="polyline51" />
+    <text
+       text-anchor="middle"
+       x="1118.16"
+       y="-394.95001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text52">$1</text>
+    <text
+       text-anchor="middle"
+       x="1118.16"
+       y="-377.70001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text53">$logic_and</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1164.04,-365.75 1164.04,-416.25"
+       id="polyline53" />
+    <text
+       text-anchor="middle"
+       x="1176.54"
+       y="-386.45001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text54">Y</text>
+  </g>
+  <g
+     id="edge30"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title54">n24:e-&gt;c38:w</title>
+    <path
+       fill="none"
+       stroke="#7570b3"
+       d="m 1009.79,-403 c 11.37,0 16.68,-0.32 24.55,-0.5"
+       id="path54" />
+    <polygon
+       fill="#7570b3"
+       stroke="#7570b3"
+       points="1044.27,-403.61 1034.31,-400 1034.24,-407 "
+       id="polygon54" />
+  </g>
+  <g
+     id="node26"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title55">c40</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="1045.79,-233.75 1045.79,-284.25 1189.04,-284.25 1189.04,-233.75 "
+       id="polygon55" />
+    <text
+       text-anchor="middle"
+       x="1059.04"
+       y="-266.95001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text55">A</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1045.79,-259 1072.29,-259"
+       id="polyline55" />
+    <text
+       text-anchor="middle"
+       x="1059.04"
+       y="-241.7"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text56">B</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1072.29,-233.75 1072.29,-284.25"
+       id="polyline56" />
+    <text
+       text-anchor="middle"
+       x="1118.16"
+       y="-262.95001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text57">$4</text>
+    <text
+       text-anchor="middle"
+       x="1118.16"
+       y="-245.7"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text58">$logic_and</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1164.04,-233.75 1164.04,-284.25"
+       id="polyline58" />
+    <text
+       text-anchor="middle"
+       x="1176.54"
+       y="-254.45"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text59">Y</text>
+  </g>
+  <g
+     id="edge31"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title59">n24:e-&gt;c40:w</title>
+    <path
+       fill="none"
+       stroke="#7570b3"
+       d="m 1009.79,-403 c 56.04,0 -12.72,112.6 24.8,129.31"
+       id="path59" />
+    <polygon
+       fill="#7570b3"
+       stroke="#7570b3"
+       points="1044.3,-271.9 1033.83,-270.27 1035.1,-277.15 "
+       id="polygon59" />
+  </g>
+  <g
+     id="node28"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title60">c42</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="1047.66,-435.75 1047.66,-478.25 1187.16,-478.25 1187.16,-435.75 "
+       id="polygon60" />
+    <text
+       text-anchor="middle"
+       x="1060.54"
+       y="-452.45001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text60">A</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1073.41,-435.75 1073.41,-478.25"
+       id="polyline60" />
+    <text
+       text-anchor="middle"
+       x="1117.79"
+       y="-460.95001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text61">$6</text>
+    <text
+       text-anchor="middle"
+       x="1117.79"
+       y="-443.70001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text62">$logic_not</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1162.16,-435.75 1162.16,-478.25"
+       id="polyline62" />
+    <text
+       text-anchor="middle"
+       x="1174.66"
+       y="-452.45001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text63">Y</text>
+  </g>
+  <g
+     id="edge32"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title63">n24:e-&gt;c42:w</title>
+    <path
+       fill="none"
+       stroke="#7570b3"
+       d="m 1009.79,-403 c 24.33,0 13.41,-37.82 26.17,-50.23"
+       id="path63" />
+    <polygon
+       fill="#7570b3"
+       stroke="#7570b3"
+       points="1045.24,-456.61 1037.04,-449.9 1034.65,-456.48 "
+       id="polygon63" />
+  </g>
+  <g
+     id="node14"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title64">n25</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="944.81,-341 879.83,-323 944.81,-305 1009.79,-323 "
+       id="polygon64" />
+    <text
+       text-anchor="middle"
+       x="944.81"
+       y="-318.32001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text64">voter.b</text>
+  </g>
+  <g
+     id="node21"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title65">c35</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="1225.04,-167.75 1225.04,-218.25 1368.29,-218.25 1368.29,-167.75 "
+       id="polygon65" />
+    <text
+       text-anchor="middle"
+       x="1238.29"
+       y="-200.95"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text65">A</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1225.04,-193 1251.54,-193"
+       id="polyline65" />
+    <text
+       text-anchor="middle"
+       x="1238.29"
+       y="-175.7"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text66">B</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1251.54,-167.75 1251.54,-218.25"
+       id="polyline66" />
+    <text
+       text-anchor="middle"
+       x="1297.41"
+       y="-196.95"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text67">$12</text>
+    <text
+       text-anchor="middle"
+       x="1297.41"
+       y="-179.7"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text68">$logic_and</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1343.29,-167.75 1343.29,-218.25"
+       id="polyline68" />
+    <text
+       text-anchor="middle"
+       x="1355.79"
+       y="-188.45"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text69">Y</text>
+  </g>
+  <g
+     id="edge34"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title69">n25:e-&gt;c35:w</title>
+    <path
+       fill="none"
+       stroke="#e6ab02"
+       d="m 1009.79,-323 c 46.82,0 -0.93,70.22 36,99 60.08,46.83 95.58,21.2 167.82,18.58"
+       id="path69" />
+    <polygon
+       fill="#e6ab02"
+       stroke="#e6ab02"
+       points="1223.52,-205.6 1213.59,-201.92 1213.46,-208.91 "
+       id="polygon69" />
+  </g>
+  <g
+     id="edge35"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title70">n25:e-&gt;c38:w</title>
+    <path
+       fill="none"
+       stroke="#e6ab02"
+       d="m 1009.79,-323 c 24.54,0 12.69,-38.7 25.29,-51.39"
+       id="path70" />
+    <polygon
+       fill="#e6ab02"
+       stroke="#e6ab02"
+       points="1044.37,-377.85 1036.22,-371.08 1033.78,-377.64 "
+       id="polygon70" />
+  </g>
+  <g
+     id="node25"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title71">c39</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="1045.79,-125.75 1045.79,-176.25 1189.04,-176.25 1189.04,-125.75 "
+       id="polygon71" />
+    <text
+       text-anchor="middle"
+       x="1059.04"
+       y="-158.95"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text71">A</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1045.79,-151 1072.29,-151"
+       id="polyline71" />
+    <text
+       text-anchor="middle"
+       x="1059.04"
+       y="-133.7"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text72">B</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1072.29,-125.75 1072.29,-176.25"
+       id="polyline72" />
+    <text
+       text-anchor="middle"
+       x="1118.16"
+       y="-154.95"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text73">$2</text>
+    <text
+       text-anchor="middle"
+       x="1118.16"
+       y="-137.7"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text74">$logic_and</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1164.04,-125.75 1164.04,-176.25"
+       id="polyline74" />
+    <text
+       text-anchor="middle"
+       x="1176.54"
+       y="-146.45"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text75">Y</text>
+  </g>
+  <g
+     id="edge36"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title75">n25:e-&gt;c39:w</title>
+    <path
+       fill="none"
+       stroke="#e6ab02"
+       d="m 1009.79,-323 c 68.22,0 -24.06,140.66 24.73,157.69"
+       id="path75" />
+    <polygon
+       fill="#e6ab02"
+       stroke="#e6ab02"
+       points="1044.29,-163.85 1033.88,-161.86 1034.92,-168.79 "
+       id="polygon75" />
+  </g>
+  <g
+     id="node29"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title76">c43</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="1047.66,-303.75 1047.66,-346.25 1187.16,-346.25 1187.16,-303.75 "
+       id="polygon76" />
+    <text
+       text-anchor="middle"
+       x="1060.54"
+       y="-320.45001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text76">A</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1073.41,-303.75 1073.41,-346.25"
+       id="polyline76" />
+    <text
+       text-anchor="middle"
+       x="1117.79"
+       y="-328.95001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text77">$8</text>
+    <text
+       text-anchor="middle"
+       x="1117.79"
+       y="-311.70001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text78">$logic_not</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1162.16,-303.75 1162.16,-346.25"
+       id="polyline78" />
+    <text
+       text-anchor="middle"
+       x="1174.66"
+       y="-320.45001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text79">Y</text>
+  </g>
+  <g
+     id="edge37"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title79">n25:e-&gt;c43:w</title>
+    <path
+       fill="none"
+       stroke="#e6ab02"
+       d="m 1009.79,-323 c 11.8,0 17.2,-1.1 25.41,-1.72"
+       id="path79" />
+    <polygon
+       fill="#e6ab02"
+       stroke="#e6ab02"
+       points="1045.15,-325.07 1035.28,-321.22 1035.03,-328.21 "
+       id="polygon79" />
+  </g>
+  <g
+     id="node15"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title80">n26</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="944.81,-157 881.32,-139 944.81,-121 1008.3,-139 "
+       id="polygon80" />
+    <text
+       text-anchor="middle"
+       x="944.81"
+       y="-134.32001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text80">voter.c</text>
+  </g>
+  <g
+     id="node22"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title81">c36</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="1225.04,-351.75 1225.04,-402.25 1368.29,-402.25 1368.29,-351.75 "
+       id="polygon81" />
+    <text
+       text-anchor="middle"
+       x="1238.29"
+       y="-384.95001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text81">A</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1225.04,-377 1251.54,-377"
+       id="polyline81" />
+    <text
+       text-anchor="middle"
+       x="1238.29"
+       y="-359.70001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text82">B</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1251.54,-351.75 1251.54,-402.25"
+       id="polyline82" />
+    <text
+       text-anchor="middle"
+       x="1297.41"
+       y="-380.95001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text83">$7</text>
+    <text
+       text-anchor="middle"
+       x="1297.41"
+       y="-363.70001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text84">$logic_and</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1343.29,-351.75 1343.29,-402.25"
+       id="polyline84" />
+    <text
+       text-anchor="middle"
+       x="1355.79"
+       y="-372.45001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text85">Y</text>
+  </g>
+  <g
+     id="edge39"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title85">n26:e-&gt;c36:w</title>
+    <path
+       fill="none"
+       stroke="#7570b3"
+       d="m 1009.79,-139 c 18.98,0 17.77,17.68 36,23 61.11,17.86 95.11,41.67 143.25,0 39.04,-33.79 -11.15,-217.89 25.43,-245.03"
+       id="path85" />
+    <polygon
+       fill="#7570b3"
+       stroke="#7570b3"
+       points="1223.59,-363.92 1215.12,-357.56 1213,-364.24 "
+       id="polygon85" />
+  </g>
+  <g
+     id="edge40"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title86">n26:e-&gt;c39:w</title>
+    <path
+       fill="none"
+       stroke="#7570b3"
+       d="m 1009.79,-139 c 11.37,0 16.68,0.32 24.55,0.5"
+       id="path86" />
+    <polygon
+       fill="#7570b3"
+       stroke="#7570b3"
+       points="1044.27,-138.39 1034.24,-135 1034.31,-142 "
+       id="polygon86" />
+  </g>
+  <g
+     id="edge41"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title87">n26:e-&gt;c40:w</title>
+    <path
+       fill="none"
+       stroke="#7570b3"
+       d="m 1009.79,-139 c 45.81,0 -3.64,-88.95 25.05,-104.93"
+       id="path87" />
+    <polygon
+       fill="#7570b3"
+       stroke="#7570b3"
+       points="1044.31,-246.05 1035.31,-240.45 1033.79,-247.28 "
+       id="polygon87" />
+  </g>
+  <g
+     id="node27"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title88">c41</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="1047.66,-25.75 1047.66,-68.25 1187.16,-68.25 1187.16,-25.75 "
+       id="polygon88" />
+    <text
+       text-anchor="middle"
+       x="1060.54"
+       y="-42.450001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text88">A</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1073.41,-25.75 1073.41,-68.25"
+       id="polyline88" />
+    <text
+       text-anchor="middle"
+       x="1117.79"
+       y="-50.950001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text89">$11</text>
+    <text
+       text-anchor="middle"
+       x="1117.79"
+       y="-33.700001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text90">$logic_not</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1162.16,-25.75 1162.16,-68.25"
+       id="polyline90" />
+    <text
+       text-anchor="middle"
+       x="1174.66"
+       y="-42.450001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text91">Y</text>
+  </g>
+  <g
+     id="edge42"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title91">n26:e-&gt;c41:w</title>
+    <path
+       fill="none"
+       stroke="#7570b3"
+       d="m 1009.79,-139 c 39.36,0 2.6,73.52 25.9,89.02"
+       id="path91" />
+    <polygon
+       fill="#7570b3"
+       stroke="#7570b3"
+       points="1045.2,-47.51 1034.64,-46.63 1036.4,-53.41 "
+       id="polygon91" />
+  </g>
+  <g
+     id="node16"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title92">n27</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="1844.14,-241 1766.52,-223 1844.14,-205 1921.77,-223 "
+       id="polygon92" />
+    <text
+       text-anchor="middle"
+       x="1844.14"
+       y="-218.32001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text92">voter.err</text>
+  </g>
+  <g
+     id="node41"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title93">x3</title>
+    <circle
+       fill="#000000"
+       stroke="#000000"
+       cx="1984.77"
+       cy="-223"
+       id="ellipse93"
+       r="1.8" />
+  </g>
+  <g
+     id="edge44"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title94">n27:e-&gt;x3:w</title>
+    <path
+       fill="none"
+       stroke="#e6ab02"
+       d="m 1921.77,-223 c 22.4,0 30.62,0 48.59,0"
+       id="path94" />
+    <polygon
+       fill="#e6ab02"
+       stroke="#e6ab02"
+       points="1979.98,-223 1969.98,-219.5 1969.98,-226.5 "
+       id="polygon94" />
+  </g>
+  <g
+     id="node17"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title95">n28</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="1651.4,-310 1572.29,-292 1651.4,-274 1730.52,-292 "
+       id="polygon95" />
+    <text
+       text-anchor="middle"
+       x="1651.4"
+       y="-287.32001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text95">voter.out</text>
+  </g>
+  <g
+     id="node42"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title96">x4</title>
+    <circle
+       fill="#000000"
+       stroke="#000000"
+       cx="1844.14"
+       cy="-292"
+       id="ellipse96"
+       r="1.8" />
+  </g>
+  <g
+     id="edge46"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title97">n28:e-&gt;x4:w</title>
+    <path
+       fill="none"
+       stroke="#a6761d"
+       d="m 1730.52,-292 c 45.02,0 59.04,0 98.98,0"
+       id="path97" />
+    <polygon
+       fill="#a6761d"
+       stroke="#a6761d"
+       points="1839.35,-292 1829.35,-288.5 1829.35,-295.5 "
+       id="polygon97" />
+  </g>
+  <g
+     id="edge10"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title98">c31:e-&gt;n15:w</title>
+    <path
+       fill="none"
+       stroke="#e6ab02"
+       d="m 505.63,-390.12 c 11.38,0 16.68,-0.45 24.55,-0.7"
+       id="path98" />
+    <polygon
+       fill="#e6ab02"
+       stroke="#e6ab02"
+       points="540.12,-390.98 530.17,-387.32 530.06,-394.32 "
+       id="polygon98" />
+  </g>
+  <g
+     id="edge14"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title99">c32:e-&gt;n17:w</title>
+    <path
+       fill="none"
+       stroke="#1b9e77"
+       d="m 505.63,-323.12 c 11.37,0 16.68,0.06 24.55,0.09"
+       id="path99" />
+    <polygon
+       fill="#1b9e77"
+       stroke="#1b9e77"
+       points="540.12,-323 530.11,-319.53 530.12,-326.53 "
+       id="polygon99" />
+  </g>
+  <g
+     id="edge18"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title100">c33:e-&gt;n19:w</title>
+    <path
+       fill="none"
+       stroke="#a6761d"
+       d="m 505.63,-257.12 c 11.79,0 16.75,4.19 24.71,6.55"
+       id="path100" />
+    <polygon
+       fill="#a6761d"
+       stroke="#a6761d"
+       points="540.13,-249.21 529.74,-247.12 530.71,-254.05 "
+       id="polygon100" />
+  </g>
+  <g
+     id="node31"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title101">c45</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="1585.4,-197.75 1585.4,-248.25 1717.4,-248.25 1717.4,-197.75 "
+       id="polygon101" />
+    <text
+       text-anchor="middle"
+       x="1598.65"
+       y="-230.95"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text101">A</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1585.4,-223 1611.9,-223"
+       id="polyline101" />
+    <text
+       text-anchor="middle"
+       x="1598.65"
+       y="-205.7"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text102">B</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1611.9,-197.75 1611.9,-248.25"
+       id="polyline102" />
+    <text
+       text-anchor="middle"
+       x="1652.15"
+       y="-226.95"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text103">$13</text>
+    <text
+       text-anchor="middle"
+       x="1652.15"
+       y="-209.7"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text104">$logic_or</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1692.4,-197.75 1692.4,-248.25"
+       id="polyline104" />
+    <text
+       text-anchor="middle"
+       x="1704.9"
+       y="-218.45"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text105">Y</text>
+  </g>
+  <g
+     id="edge1"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title105">c35:e-&gt;c45:w</title>
+    <path
+       fill="none"
+       stroke="#e7298a"
+       d="m 1368.29,-193.12 c 92.4,0 117.71,-15.87 204.61,-17.17"
+       id="path105" />
+    <polygon
+       fill="#e7298a"
+       stroke="#e7298a"
+       points="1582.89,-210.36 1572.91,-206.79 1572.86,-213.79 "
+       id="polygon105" />
+  </g>
+  <g
+     id="node30"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title106">c44</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="1404.29,-339.75 1404.29,-390.25 1536.29,-390.25 1536.29,-339.75 "
+       id="polygon106" />
+    <text
+       text-anchor="middle"
+       x="1417.54"
+       y="-372.95001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text106">A</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1404.29,-365 1430.79,-365"
+       id="polyline106" />
+    <text
+       text-anchor="middle"
+       x="1417.54"
+       y="-347.70001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text107">B</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1430.79,-339.75 1430.79,-390.25"
+       id="polyline107" />
+    <text
+       text-anchor="middle"
+       x="1471.04"
+       y="-368.95001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text108">$10</text>
+    <text
+       text-anchor="middle"
+       x="1471.04"
+       y="-351.70001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text109">$logic_or</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1511.29,-339.75 1511.29,-390.25"
+       id="polyline109" />
+    <text
+       text-anchor="middle"
+       x="1523.79"
+       y="-360.45001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text110">Y</text>
+  </g>
+  <g
+     id="edge20"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title110">c36:e-&gt;c44:w</title>
+    <path
+       fill="none"
+       stroke="#66a61e"
+       d="m 1368.29,-377.12 c 11.37,0 16.68,-0.26 24.55,-0.4"
+       id="path110" />
+    <polygon
+       fill="#66a61e"
+       stroke="#66a61e"
+       points="1402.77,-377.61 1392.8,-374.02 1392.74,-381.02 "
+       id="polygon110" />
+  </g>
+  <g
+     id="edge47"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title111">c37:e-&gt;c44:w</title>
+    <path
+       fill="none"
+       stroke="#a6761d"
+       d="m 1368.29,-447.12 c 40.47,0 0.91,76.48 25.13,92.01"
+       id="path111" />
+    <polygon
+       fill="#a6761d"
+       stroke="#a6761d"
+       points="1402.82,-352.74 1392.27,-351.79 1393.98,-358.58 "
+       id="polygon111" />
+  </g>
+  <g
+     id="node32"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title112">c46</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="1230.66,-281.75 1230.66,-332.25 1362.66,-332.25 1362.66,-281.75 "
+       id="polygon112" />
+    <text
+       text-anchor="middle"
+       x="1243.91"
+       y="-314.95001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text112">A</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1230.66,-307 1257.16,-307"
+       id="polyline112" />
+    <text
+       text-anchor="middle"
+       x="1243.91"
+       y="-289.70001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text113">B</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1257.16,-281.75 1257.16,-332.25"
+       id="polyline113" />
+    <text
+       text-anchor="middle"
+       x="1297.41"
+       y="-310.95001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text114">$3</text>
+    <text
+       text-anchor="middle"
+       x="1297.41"
+       y="-293.70001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text115">$logic_or</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1337.66,-281.75 1337.66,-332.25"
+       id="polyline115" />
+    <text
+       text-anchor="middle"
+       x="1350.16"
+       y="-302.45001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text116">Y</text>
+  </g>
+  <g
+     id="edge48"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title116">c38:e-&gt;c46:w</title>
+    <path
+       fill="none"
+       stroke="#7570b3"
+       d="m 1189.04,-391.12 c 31.98,0 11.11,54.74 29.88,68.42"
+       id="path116" />
+    <polygon
+       fill="#7570b3"
+       stroke="#7570b3"
+       points="1228.21,-320.04 1217.63,-319.43 1219.55,-326.16 "
+       id="polygon116" />
+  </g>
+  <g
+     id="edge49"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title117">c39:e-&gt;c46:w</title>
+    <path
+       fill="none"
+       stroke="#666666"
+       d="m 1189.04,-151.12 c 61.78,0 -14.07,-124.86 29.43,-141.44"
+       id="path117" />
+    <polygon
+       fill="#666666"
+       stroke="#666666"
+       points="1228.17,-294.13 1218.86,-289.08 1217.74,-295.99 "
+       id="polygon117" />
+  </g>
+  <g
+     id="node33"
+     class="node"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title118">c47</title>
+    <polygon
+       fill="none"
+       stroke="#000000"
+       points="1404.29,-266.75 1404.29,-317.25 1536.29,-317.25 1536.29,-266.75 "
+       id="polygon118" />
+    <text
+       text-anchor="middle"
+       x="1417.54"
+       y="-299.95001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text118">A</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1404.29,-292 1430.79,-292"
+       id="polyline118" />
+    <text
+       text-anchor="middle"
+       x="1417.54"
+       y="-274.70001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text119">B</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1430.79,-266.75 1430.79,-317.25"
+       id="polyline119" />
+    <text
+       text-anchor="middle"
+       x="1471.04"
+       y="-295.95001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text120">$5</text>
+    <text
+       text-anchor="middle"
+       x="1471.04"
+       y="-278.70001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text121">$logic_or</text>
+    <polyline
+       fill="none"
+       stroke="#000000"
+       points="1511.29,-266.75 1511.29,-317.25"
+       id="polyline121" />
+    <text
+       text-anchor="middle"
+       x="1523.79"
+       y="-287.45001"
+       font-family="Times, serif"
+       font-size="14px"
+       id="text122">Y</text>
+  </g>
+  <g
+     id="edge50"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title122">c40:e-&gt;c47:w</title>
+    <path
+       fill="none"
+       stroke="#e7298a"
+       d="m 1189.04,-259.12 c 79.87,0 100.12,-1.98 179.25,-12.88 11.63,-1.6 16.7,-4.71 24.7,-6.33"
+       id="path122" />
+    <polygon
+       fill="#e7298a"
+       stroke="#e7298a"
+       points="1402.78,-279.24 1393.14,-274.83 1392.5,-281.8 "
+       id="polygon122" />
+  </g>
+  <g
+     id="edge51"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title123">c41:e-&gt;c35:w</title>
+    <path
+       fill="none"
+       stroke="#66a61e"
+       d="m 1188.16,-47.12 c 57.13,0 -13.2,-115.18 26,-131.37"
+       id="path123" />
+    <polygon
+       fill="#66a61e"
+       stroke="#66a61e"
+       points="1223.55,-180.12 1214.29,-174.96 1213.09,-181.86 "
+       id="polygon123" />
+  </g>
+  <g
+     id="edge52"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title124">c42:e-&gt;c36:w</title>
+    <path
+       fill="none"
+       stroke="#e7298a"
+       d="m 1188.16,-457.12 c 29.38,0 10.25,49.85 25.99,63.87"
+       id="path124" />
+    <polygon
+       fill="#e7298a"
+       stroke="#e7298a"
+       points="1223.6,-390.1 1213.01,-389.94 1215.22,-396.59 "
+       id="polygon124" />
+  </g>
+  <g
+     id="edge53"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title125">c43:e-&gt;c37:w</title>
+    <path
+       fill="none"
+       stroke="#d95f02"
+       d="m 1188.16,-325.12 c 46.64,0 -3.52,-90.51 25.72,-106.77"
+       id="path125" />
+    <polygon
+       fill="#d95f02"
+       stroke="#d95f02"
+       points="1223.56,-434.05 1214.56,-428.45 1213.04,-435.28 "
+       id="polygon125" />
+  </g>
+  <g
+     id="edge2"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title126">c44:e-&gt;c45:w</title>
+    <path
+       fill="none"
+       stroke="#7570b3"
+       d="m 1536.29,-365.12 c 56.96,0 -3.2,111.45 36.83,127.56"
+       id="path126" />
+    <polygon
+       fill="#7570b3"
+       stroke="#7570b3"
+       points="1582.91,-235.88 1572.46,-234.12 1573.64,-241.02 "
+       id="polygon126" />
+  </g>
+  <g
+     id="edge43"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title127">c45:e-&gt;n27:w</title>
+    <path
+       fill="none"
+       stroke="#e6ab02"
+       d="m 1718.4,-223.12 c 17.04,0 23.9,0.07 36.8,0.11"
+       id="path127" />
+    <polygon
+       fill="#e6ab02"
+       stroke="#e6ab02"
+       points="1765,-223 1755,-219.51 1755.01,-226.51 "
+       id="polygon127" />
+  </g>
+  <g
+     id="edge3"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title128">c46:e-&gt;c47:w</title>
+    <path
+       fill="none"
+       stroke="#7570b3"
+       d="m 1363.66,-307.12 c 13.57,0 19.46,1.4 29.19,2.1"
+       id="path128" />
+    <polygon
+       fill="#7570b3"
+       stroke="#7570b3"
+       points="1402.77,-304.68 1392.66,-301.52 1392.9,-308.52 "
+       id="polygon128" />
+  </g>
+  <g
+     id="edge45"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title129">c47:e-&gt;n28:w</title>
+    <path
+       fill="none"
+       stroke="#a6761d"
+       d="m 1536.29,-292.12 c 11.37,0 16.68,0.06 24.55,0.09"
+       id="path129" />
+    <polygon
+       fill="#a6761d"
+       stroke="#a6761d"
+       points="1570.77,-292 1560.77,-288.53 1560.78,-295.53 "
+       id="polygon129" />
+  </g>
+  <g
+     id="edge28"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title145">x0:e-&gt;n24:w</title>
+    <path
+       fill="none"
+       stroke="#7570b3"
+       d="m 843.83,-400 c 11.41,0 16.68,-1.52 24.54,-2.39"
+       id="path145" />
+    <polygon
+       fill="#7570b3"
+       stroke="#7570b3"
+       points="878.32,-402.92 868.52,-398.9 868.15,-405.89 "
+       id="polygon145" />
+  </g>
+  <g
+     id="edge33"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title146">x1:e-&gt;n25:w</title>
+    <path
+       fill="none"
+       stroke="#e6ab02"
+       d="m 843.83,-323 c 11.37,0 16.68,0 24.55,0"
+       id="path146" />
+    <polygon
+       fill="#e6ab02"
+       stroke="#e6ab02"
+       points="878.32,-323 868.32,-319.5 868.32,-326.5 "
+       id="polygon146" />
+  </g>
+  <g
+     id="edge38"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title147">x2:e-&gt;n26:w</title>
+    <path
+       fill="none"
+       stroke="#7570b3"
+       d="m 843.83,-141 c 11.39,0 16.68,1.01 24.55,1.6"
+       id="path147" />
+    <polygon
+       fill="#7570b3"
+       stroke="#7570b3"
+       points="878.32,-139.05 868.2,-135.91 868.45,-142.9 "
+       id="polygon147" />
+  </g>
+  <g
+     id="edge7"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title148">x3:e-&gt;n13:w</title>
+    <path
+       fill="none"
+       stroke="#d95f02"
+       d="m 1988.05,-223 c 22.4,0 30.62,0 48.59,0"
+       id="path148" />
+    <polygon
+       fill="#d95f02"
+       stroke="#d95f02"
+       points="2046.26,-223 2036.26,-219.5 2036.26,-226.5 "
+       id="polygon148" />
+  </g>
+  <g
+     id="edge21"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title149">x4:e-&gt;n20:w</title>
+    <path
+       fill="none"
+       stroke="#a6761d"
+       d="m 1847.42,-292 c 45.02,0 59.05,0 98.98,0"
+       id="path149" />
+    <polygon
+       fill="#a6761d"
+       stroke="#a6761d"
+       points="1956.26,-292 1946.26,-288.5 1946.26,-295.5 "
+       id="polygon149" />
+  </g>
+  <g
+     id="edge16"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title150">x5:e-&gt;n18:w</title>
+    <path
+       fill="none"
+       stroke="#d95f02"
+       d="m 173.1,-285 c 13.73,0 16.82,11.25 25.23,16.88"
+       id="path150" />
+    <polygon
+       fill="#d95f02"
+       stroke="#d95f02"
+       points="207.65,-265.42 197.07,-264.85 199.02,-271.57 "
+       id="polygon150" />
+  </g>
+  <g
+     id="edge26"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title151">x6:e-&gt;n23:w</title>
+    <path
+       fill="none"
+       stroke="#666666"
+       d="m 702.26,-234 c 16.33,0 16.3,18.54 25.22,26.95"
+       id="path151" />
+    <polygon
+       fill="#666666"
+       stroke="#666666"
+       points="736.84,-203.53 726.25,-203.78 728.71,-210.33 "
+       id="polygon151" />
+  </g>
+  <g
+     id="edge12"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title152">x7:e-&gt;n16:w</title>
+    <path
+       fill="none"
+       stroke="#d95f02"
+       d="m 173.1,-323 c 11.38,0 16.68,0 24.55,0"
+       id="path152" />
+    <polygon
+       fill="#d95f02"
+       stroke="#d95f02"
+       points="207.59,-323 197.59,-319.5 197.59,-326.5 "
+       id="polygon152" />
+  </g>
+  <g
+     id="edge24"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title153">x8:e-&gt;n22:w</title>
+    <path
+       fill="none"
+       stroke="#d95f02"
+       d="m 702.26,-323 c 11.37,0 16.68,0 24.55,0"
+       id="path153" />
+    <polygon
+       fill="#d95f02"
+       stroke="#d95f02"
+       points="736.74,-323 726.74,-319.5 726.74,-326.5 "
+       id="polygon153" />
+  </g>
+  <g
+     id="edge8"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title154">x9:e-&gt;n14:w</title>
+    <path
+       fill="none"
+       stroke="#e6ab02"
+       d="m 173.1,-361 c 15.52,0 16.5,-16.41 25.2,-24.11"
+       id="path154" />
+    <polygon
+       fill="#e6ab02"
+       stroke="#e6ab02"
+       points="207.68,-388.49 199.46,-381.8 197.08,-388.39 "
+       id="polygon154" />
+  </g>
+  <g
+     id="edge22"
+     class="edge"
+     transform="translate(-39.25,524.93311)">
+    <title
+       id="title155">x10:e-&gt;n21:w</title>
+    <path
+       fill="none"
+       stroke="#66a61e"
+       d="m 702.26,-392 c 11.66,0 16.77,-3.1 24.75,-4.84"
+       id="path155" />
+    <polygon
+       fill="#66a61e"
+       stroke="#66a61e"
+       points="736.75,-397.85 727.16,-393.34 726.45,-400.3 "
+       id="polygon155" />
   </g>
   <rect
      style="fill:none;stroke:#ff0000;stroke-width:5.99907"
      id="rect155"
      width="172.18745"
      height="204.27928"
-     x="353.03693"
-     y="163.82991" />
+     x="309.78693"
+     y="96.013016" />
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:35.1625px;line-height:1.25;font-family:'Nimbus Sans';-inkscape-font-specification:'Nimbus Sans';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.879061"
-     x="272.42178"
-     y="407.90594"
+     x="229.17178"
+     y="340.08905"
      id="text155"><tspan
        sodipodi:role="line"
        id="tspan155"
-       x="272.42178"
-       y="407.90594"
+       x="229.17178"
+       y="340.08905"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Nimbus Sans';-inkscape-font-specification:'Nimbus Sans';fill:#ff0000;stroke-width:0.879061">Replicated NOT gates</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:55.4739px;line-height:1.25;font-family:'Nimbus Sans';-inkscape-font-specification:'Nimbus Sans';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.38684"
-     x="1126.9551"
-     y="72.362701"
+     x="1711.4087"
+     y="42.577377"
      id="text156"><tspan
        sodipodi:role="line"
        id="tspan156"
-       x="1126.9551"
-       y="72.362701"
+       x="1711.4087"
+       y="42.577377"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Nimbus Sans';-inkscape-font-specification:'Nimbus Sans';fill:#ff0000;stroke-width:1.38684">Voter circuit</tspan></text>
+  <rect
+     style="fill:none;stroke:#ff0000;stroke-width:3.28234"
+     id="rect1"
+     width="725.88416"
+     height="503.88782"
+     x="974.19153"
+     y="1.5623863" />
 </svg>
