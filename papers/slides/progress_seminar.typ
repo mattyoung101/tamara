@@ -7,7 +7,7 @@
 )
 
 // Set the speaker notes configuration, you can show it by pympress
-// #let s = (s.methods.show-notes-on-second-screen)(self: s, right)
+#let s = (s.methods.show-notes-on-second-screen)(self: s, right)
 
 // Global information configuration
 #let s = (s.methods.info)(
@@ -105,7 +105,10 @@ TMR can be added manually...
 
 but this is *time consuming* and *error prone*.
 
-Can we automate it?
+#[
+#set text(size: 24pt)
+*Can we automate it?*
+]
 
 = TaMaRa
 == Concept
@@ -165,6 +168,7 @@ Two main paradigms:
 ])
 
 #speaker-note[
+#set text(size: 18pt)
 - Construct TaMaRa logic graph and logic cones
     - Analyse Yosys RTLIL netlist
     - Perform backwards BFS from IOs to FFs (or other IOs) to collect combinatorial RTLIL primitives
