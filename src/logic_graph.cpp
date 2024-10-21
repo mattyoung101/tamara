@@ -85,10 +85,6 @@ void replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *module) {
 TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(
     const RTLILAnyPtr &ptr, RTLILWireConnections &connections) {
     // based on example 3 of https://en.cppreference.com/w/cpp/utility/variant/visit
-    //
-    // this is completely insane, holy shit
-    //
-    // why do we have to do this? for some reason we can't just pass the class member `id`??
     auto localId = id;
     auto selfPtr = getSelfPtr();
     return std::visit(
@@ -215,25 +211,29 @@ void LogicCone::search(RTLIL::Module *module, RTLILWireConnections &connections)
         log("    Consider %s '%s' in cone %u (%zu items remain)\n", node->identify().c_str(),
             log_id(getRTLILName(node)), id, frontier.size());
 
-        // add to logic cone if not IO, this is because we don't want to replicate IOs, but we do replicate
-        // Elements and FFs. we can't replicate IOs because they're outputs/inputs of course.
-        // also don't add the first element to the cone, as it'll cause duplicates elsewhere.
-        if (dynamic_pointer_cast<IONode>(node) == nullptr && !first) {
-            cone.push_back(node);
-            log("    Add %s to cone (now has %zu items)\n", node->identify().c_str(), cone.size());
-        } else {
-            log("    Skip adding %s to cone (first: %s)\n", node->identify().c_str(),
-                first ? "true" : "false");
-        }
-
         if (shouldAddNeighbours(node) || first) {
             // locate neighbours and add to BFS queue
             auto neighbours = node->computeNeighbours(module, connections);
             for (const auto &neighbour : neighbours) {
                 frontier.push(neighbour);
             }
+
+            // since this is not a terminal node, we can go ahead and add it to the cone. remember, we don't
+            // want to add terminals to the cone on either its input or output.
+            //
+            // add to logic cone if not IO, this is because we don't want to replicate IOs, but we do
+            // replicate Elements and FFs. we can't replicate IOs because they're outputs/inputs of course.
+            // also don't add the first element to the cone, as it'll cause duplicates elsewhere.
+            if (dynamic_pointer_cast<IONode>(node) == nullptr && !first) {
+                cone.push_back(node);
+                log("    Add %s to cone (now has %zu items)\n", node->identify().c_str(), cone.size());
+            } else {
+                log("    Skip adding %s to cone (first: %s)\n", node->identify().c_str(),
+                    first ? "true" : "false");
+            }
         } else {
-            // found terminal, start wrapping up search -> don't add neighbours
+            // found terminal, start wrapping up search -> don't add neighbours, and don't add elements to
+            // cone
             log("    %s %s is a terminal, wrapping up search\n", node->identify().c_str(),
                 log_id(getRTLILName(node)));
         }
@@ -253,11 +253,11 @@ void LogicCone::search(RTLIL::Module *module, RTLILWireConnections &connections)
 }
 
 void LogicCone::replicate(RTLIL::Module *module) {
-    // FIXME if a logic cone contains zero elements in the cone, only terminals, we may want to not replicate
-    // it?
-    // this might fix our current bug with replicating too many times
-
-    if (cone.empty()) { }
+    // don't replicate cones that don't have any internal elements
+    if (cone.empty()) {
+        log("Cone %u has no internal elements - skipping replication\n", id);
+        return;
+    }
 
     log("Replicating %zu collected items for logic cone %u\n", cone.size(), id);
     for (const auto &item : cone) {
