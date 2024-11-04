@@ -1,0 +1,15 @@
+# Tests end to end TaMaRa for the Brown Deer Technologies RV8U CPU
+
+plugin -i libtamara.so
+
+read_verilog ../tests/verilog/browndeer_rv8u.v
+hierarchy -top browndeer_rv8u
+tamara_propagate
+check
+
+prep
+write_rtlil
+tamara_tmr
+check
+
+write_rtlil
