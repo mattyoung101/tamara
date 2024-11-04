@@ -7,7 +7,9 @@ _BCompSc(Hons) thesis, University of Queensland, 2024-2025_
 
 * [Introduction](#introduction)
 * [Building](#building)
-* [Usage in Yosys](#usage-in-yosys)
+  * [Setup](#setup)
+  * [Compile and run](#compile-and-run)
+  * [Usage in Yosys](#usage-in-yosys)
 * [Testing and verification](#testing-and-verification)
   * [Formal verification](#formal-verification)
   * [Fault-injection simulation](#fault-injection-simulation)
@@ -27,8 +29,7 @@ TODO: thesis abstract here
 For more information, please see my thesis: TODO
 
 ## Building
-**Toolchain and environment**
-
+### Setup
 You will need the following tools:
 - CMake 3.20+
 - A C++20 compiler _(Clang 16 or newer is recommended)_
@@ -52,7 +53,7 @@ When a new version of the Yosys submodule is pushed, use this to update it:
 git submodule update --init --recursive --remote
 ```
 
-**Compiling and running**
+### Compile and run
 
 Generate the project (assuming you've installed Ninja, otherwise omit `-G Ninja`):
 
@@ -85,12 +86,10 @@ ninja && yosys -m libtamara.so
 If you have Yosys installed on your system, you can run `ninja install` to install TaMaRa as a global plugin.
 (TODO this is not yet true)
 
-## Usage in Yosys
+### Usage in Yosys
 TODO
 
 ## Testing and verification
-TODO: we need like a full test suite to auto run for bisect and regressions
-
 ### Formal verification
 The formal verification flows are based on Yosys' excellent [eqy](https://github.com/YosysHQ/eqy) and
 [mcy](https://github.com/YosysHQ/mcy) tools.
@@ -162,10 +161,10 @@ For the proposal and proposal draft, build the Gantt charts by running `just`.
 The thesis uses [uqthesis_eecs_hons](https://github.com/mattyoung101/uqthesis_eecs_hons) Typst template.
 
 ## Licence
-Copyright 2024 Matt Young.
+Copyright (c) 2024 Matt Young.
 
-All code and tests are available under the **Mozilla Public License v2.0**, see the file LICENSE.code.
+Code and tests are available under the **Mozilla Public License v2.0**, see the file LICENSE.code.
 
-All papers and slides (in the `papers` directory) are available under **CC Attribution 4.0 International**,
+Papers and slides (in the `papers` directory) are available under **CC Attribution 4.0 International**,
 see the file LICENSE.papers.
 

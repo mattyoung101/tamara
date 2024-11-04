@@ -1,9 +1,14 @@
 #!/bin/bash
-# set -e
+# TaMaRa: An automated triple modular redundancy EDA flow for Yosys.
+#
+# Copyright (c) 2024 Matt Young.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL
+# was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 dir=$(pwd)
 
-if [[ $dir != *tamara/build ]]
-then
+if [[ $dir != *tamara/build ]] then
     echo "ERROR: verismith.sh must be run from the tamara/build directory. You are in: $dir"
     exit 1
 fi
