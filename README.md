@@ -3,6 +3,21 @@ By Matt Young <m.young2@student.uq.edu.au>
 
 _BCompSc(Hons) thesis, University of Queensland, 2024-2025_
 
+<!-- mtoc-start -->
+
+* [Introduction](#introduction)
+* [Building](#building)
+* [Usage in Yosys](#usage-in-yosys)
+* [Testing and verification](#testing-and-verification)
+  * [Formal verification](#formal-verification)
+  * [Fault-injection simulation](#fault-injection-simulation)
+  * [Bitstream fault injection using ecp5_shotgun](#bitstream-fault-injection-using-ecp5_shotgun)
+  * [Fuzzing and regression pipe](#fuzzing-and-regression-pipe)
+* [Compiling papers](#compiling-papers)
+* [Licence](#licence)
+
+<!-- mtoc-end -->
+
 ## Introduction
 TaMaRa is a plugin for Yosys that automatically adds Triple Modular Redundancy (TMR) to any circuit
 to improve its reliability in space and other safety-critical applications.
@@ -76,8 +91,7 @@ TODO
 ## Testing and verification
 TODO: we need like a full test suite to auto run for bisect and regressions
 
-**Formal verification**
-
+### Formal verification
 The formal verification flows are based on Yosys' excellent [eqy](https://github.com/YosysHQ/eqy) and
 [mcy](https://github.com/YosysHQ/mcy) tools.
 
@@ -97,13 +111,36 @@ equivalence checking.
 
 TODO: mutation coverage
 
-**Fault-injection simulation**
+### Fault-injection simulation
 
 TODO
 
-**Bitstream fault injection using ecp5_shotgun**
+### Bitstream fault injection using ecp5_shotgun
 
 TODO
+
+### Fuzzing and regression pipe
+TaMaRa includes a regression pipeline based on Verilog fuzzing techniques to try and identify crashes and
+other problematic behaviour in the tool.
+
+You will need GNU Parallel and [Verismith](https://github.com/ymherklotz/verismith). Verismith is very
+challenging to build, but I was able to get it to work on Arch as follows:
+
+1. [Install ghcup](https://www.haskell.org/ghcup/install/) to setup the GHC toolchain.
+2. Setup cabal 3.12.1.0 and GHC 9.6.4.
+3. Build verismith using cabal.
+
+```
+ghcup install ghc --set 9.6.4
+ghcup install cabal --set 3.12.1.0
+cabal update
+cabal build
+```
+
+Now, you need to symlink the location of the `verismith` binary to `<TAMARA>/build/verismith`. The command
+`cabal list-bin verismith` will tell you where the binary is located.
+
+Finally, to run the pipeline, just go to the build directory and run `../tests/fuzz/verismith.sh`.
 
 ## Compiling papers
 This repo also includes various papers including the proposal draft, presentation slides, and the actual

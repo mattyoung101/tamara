@@ -1,0 +1,12 @@
+# Test case for Verismith; assumes data has already been read using read_verilog
+
+plugin -i libtamara.so
+
+hierarchy -top top
+tamara_propagate
+check
+
+prep
+tamara_tmr
+check
+
