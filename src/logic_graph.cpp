@@ -22,11 +22,9 @@ uint32_t LogicCone::g_cone_ID = 0;
 
 namespace {
 
-//! An IO is simply a wire with no neighbours (since it should be at the edge of the circuit)
+//! An IO is simply a wire at the edge of the circuit
 constexpr bool isWireIO(RTLIL::Wire *wire, RTLILWireConnections &connections) {
-    // FIXME this check is broken, we need to check if the wire is an output/input of the module as well
-    // this is what causes #1 on the github
-    return connections[wire].empty();
+    return connections[wire].empty() || wire->port_input || wire->port_output;
 }
 
 //! Returns the RTLIL ID for a RTLILAnyPtr
