@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <optional>
 #include <queue>
+#include <stdexcept>
 
 USING_YOSYS_NAMESPACE;
 
@@ -64,6 +65,9 @@ public:
     //! Identifies this node (for debug)
     virtual std::string identify() = 0;
 
+    //! Returns replicas, if this is supported (not supported on IONode, which cannot be replicated).
+    virtual std::vector<RTLILAnyPtr> getReplicas() = 0;
+
     //! During LogicCone::computeNeighbours, this call turns an RTLIL neighbour (ptr) into a new logic graph
     //! node, with the parent correctly set to this TMRGraphNode using getSelfPtr().
     [[nodiscard]] TMRGraphNode::Ptr newLogicGraphNeighbour(
@@ -111,6 +115,15 @@ public:
         return cell;
     }
 
+    std::vector<RTLILAnyPtr> getReplicas() override {
+        std::vector<RTLILAnyPtr> out {};
+        out.reserve(replicas.size());
+        for (const auto &replica : replicas) {
+            out.emplace_back(replica);
+        }
+        return out;
+    }
+
 private:
     RTLIL::Cell *cell;
     std::vector<RTLIL::Cell *> replicas;
@@ -141,6 +154,15 @@ public:
 
     RTLILAnyPtr getRTLILObjPtr() override {
         return wire;
+    }
+
+    std::vector<RTLILAnyPtr> getReplicas() override {
+        std::vector<RTLILAnyPtr> out {};
+        out.reserve(replicas.size());
+        for (const auto &replica : replicas) {
+            out.emplace_back(replica);
+        }
+        return out;
     }
 
 private:
@@ -197,6 +219,10 @@ public:
         return io;
     }
 
+    std::vector<RTLILAnyPtr> getReplicas() override {
+        log_error("TaMaRa internal error: Cannot get replicas of an IONode!");
+    }
+
 private:
     RTLIL::Wire *io;
 };
@@ -242,6 +268,9 @@ private:
 
     // list of logic cone elements, to be replicated (does not include terminals)
     std::vector<TMRGraphNode::Ptr> cone;
+
+    // first replicated node
+    std::optional<TMRGraphNode::Ptr> firstReplicated;
 
     // BFS frontier
     std::queue<TMRGraphNode::Ptr> frontier;

@@ -194,6 +194,7 @@ void LogicCone::verifyInputNodes() const {
 }
 
 void LogicCone::search(RTLIL::Module *module, RTLILWireConnections &connections) {
+    // check that we're starting the search from scratch on this cone
     log_assert(frontier.empty());
     log_assert(cone.empty()); // NOLINT(bugprone-unused-return-value)
     log_assert(inputNodes.empty());
@@ -253,19 +254,24 @@ void LogicCone::search(RTLIL::Module *module, RTLILWireConnections &connections)
 }
 
 void LogicCone::replicate(RTLIL::Module *module) {
-    // don't replicate cones that don't have any internal elements
+    // don't replicate cones that don't have any internal elements (prevents duplication)
     if (cone.empty()) {
         log("Cone %u has no internal elements - skipping replication\n", id);
         return;
     }
+    log_assert(frontier.empty() && "Search might not be finished");
 
     log("Replicating %zu collected items for logic cone %u\n", cone.size(), id);
     for (const auto &item : cone) {
         item->replicate(module);
+        if (!firstReplicated.has_value()) {
+            log("    First replicated node. Voter will be inserted between this node and output %s\n",
+                log_id(getRTLILName(outputNode)));
+            firstReplicated = item;
+        }
     }
 
     // special case for end points (IOs and FFs) -> only replicate FFs, don't replicate IOs
-    // FIXME we may not want to replicate input terminals, because it produces duplicates?
     log("Checking terminals\n");
     for (const auto &node : inputNodes) {
         replicateIfNotIO(node, module);
@@ -275,12 +281,27 @@ void LogicCone::replicate(RTLIL::Module *module) {
 
 void LogicCone::insertVoter(RTLIL::Module *module) {
     log("Inserting voter into logic cone %u\n", id);
+    log_assert(!voter.has_value() && "Cone already has a voter!");
+
+    if (cone.empty()) {
+        log("Skippiong voter insertion into cone %u - internal elements empty\n", id);
+        return;
+    }
+
     voter = VoterBuilder::build(module);
 }
 
 void LogicCone::wire(RTLIL::Module *module) {
     log("Wiring logic cone %u\n", id);
-    log_assert(voter.has_value());
+    if (cone.empty()) {
+        // FIXME in this case, we probably will have wiring to do, just not to the voter
+        log("Skipping wiring of cone %u - internal elements empty\n", id);
+        return;
+    }
+
+    // connect voter between output and firstReplicated
+    log_assert(voter.has_value() && "Voter not yet inserted!");
+    log_assert(firstReplicated.has_value() && "Replicate might not have been called yet");
 }
 
 std::vector<LogicCone> LogicCone::buildSuccessors(RTLILWireConnections &connections) {
