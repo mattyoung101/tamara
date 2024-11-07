@@ -1,0 +1,35 @@
+# Title of the thesis you intend to submit
+title: An automated triple modular redundancy EDA flow for Yosys
+
+# Your full name
+author: Matthew Young
+
+# Your email
+email: m.young2@student.uq.edu.au
+
+# The degrees you currently have
+degrees_current: Bachelor of Computer Science
+
+# The degree you are aiming to achieve
+degrees_candidate: Bachelor of Computer Science (Honours)
+
+# The month you are submitting your thesis in
+month: June
+
+# The year you are submitting your thesis in
+year: 2025
+
+# The unit you are enrolling in for your thesis
+unit: REIT4882
+
+# The full name and title of your supervisor
+supervisor: "Associate Professor John Williams"
+
+# The full name of your faculty
+faculty: "Electrical Engineering and Computer Science"
+
+# The full name of your faculty's Head of School, used to address a letter to
+head_of_school_long: "Prof. Michael Brünig"
+
+# The short name of your faculty's Head of School, used to greet in a letter
+head_of_school_short: "Professor Brünig"
