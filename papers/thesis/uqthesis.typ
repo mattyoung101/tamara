@@ -69,7 +69,7 @@
 #include "pages/chapters/intro.typ"
 #pagebreak()
 
-#include "pages/chapters/method.typ"
+#include "pages/chapters/lit_review.typ"
 #pagebreak()
 
 #include "pages/chapters/results.typ"

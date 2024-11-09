@@ -1,7 +1,11 @@
 = Abstract
-
-In this paper, we present a novel approach to writing a thesis at the University of Queensland. Whereas
-previous theses were written in LaTeX, they can now be written in Typst. We demonstrate that this creates a
-420% improvement in productivity and ease of use.
-
-#lorem(100)
+Safety-critical sectors require Application Specific Integrated Circuit (ASIC) designs and Field Programmable
+Gate Array (FPGA) gateware to be fault-tolerant. In particular, space-fairing computers need to mitigate the
+effects of Single Event Upsets (SEUs) caused by ionising radiation. One common fault-tolerant design technique
+is Triple Modular Redundancy (TMR), which mitigates SEUs by triplicating key parts of the design and using
+voter circuits. Typically, this is manually implemented by designers at the Hardware Description Language
+(HDL) level, but this is error-prone and time-consuming. Leveraging the power and flexibility of the
+open-source Yosys Electronic Design Automation (EDA) tool, in this thesis I present *TaMaRa*: a novel
+fully automated TMR flow, implemented as a Yosys plugin. I provide a comprehensive review of relevant
+automated TMR literature, and provide a detailed plan of the TaMaRa project, including its design and
+verification.

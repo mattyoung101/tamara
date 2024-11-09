@@ -1,16 +1,61 @@
 = Introduction
-== Why use Typst?
-#lorem(100)
+For safety-critical sectors such as aerospace and defence, both Application Specific Integrated Circuits
+(ASICs) and Field Programmable Gate Array (FPGA) gateware must be designed to be fault tolerant to prevent
+catastrophic malfunctions. In the context of digital electronics, _fault tolerant_ means that the design is
+able to gracefully recover and continue operating in the event of a fault, or upset. A Single Event Upset
+(SEU) occurs when ionising radiation strikes a transistor on a digital circuit, causing it to transition from
+a 1 to a 0, or vice versa. This type of upset is most common in space, where the Earth's magnetosphere is not
+present to dissipate the ionising particles @OBryan2021. On an unprotected system, an unlucky SEU may corrupt
+the system's state to such a severe degree that it may cause destruction or loss of life - particularly
+important given the safety-critical nature of most space-fairing systems (satellites, crew capsules, missiles,
+etc). Thus, fault tolerant computing is widely studied and applied for space-based computing systems.
 
-Check out my citations:
+One common fault-tolerant design technique is Triple Modular Redundancy (TMR), which mitigates SEUs by
+triplicating key parts of the design and using voter circuits to select a non-corrupted result if an SEU
+occurs (see @fig:tmrdiagram). Typically, TMR is manually designed at the Hardware Description Language (HDL)
+level, for example, by manually instantiating three copies of the target module, designing a voter circuit,
+and linking them all together. However, this approach is an additional time-consuming and potentially
+error-prone step in the already complex design pipeline.
 
-- Quaternions @Shoemake1985
-- Phong shading @Phong1975IlluminationFC
-- Simplex noise @simplexNoise
-- FFT @Cooley1965AnAF
+#figure(
+    image("../../diagrams/tmr_diagram.svg"),
+    caption: [ Diagram demonstrating how TMR is inserted into an abstract design ]
+) <fig:tmrdiagram>
 
-=== An overview of typesetting
-#lorem(200)
+Modern digital ICs and FPGAs are described using Hardware Description Languages (HDLs), such as SystemVerilog
+or VHDL. The process of transforming this high level description into a photolithography mask (for ICs) or
+bitstream (for FPGAs) is achieved through the use of Electronic Design Automation (EDA) tools. This generally
+comprises of the following stages (@fig:synthflow):
 
-=== A novel approach to setting types
-#lorem(100)
+#figure(
+    image("../../diagrams/synthesis_flow.svg"),
+    caption: [ Simplified representation of a typical EDA synthesis flow ]
+) <fig:synthflow>
+
+- *Synthesis*: The transformation of a high-level textual HDL description into a lower level synthesisable
+    netlist.
+    - *Elaboration:* Includes the instantiation of HDL modules, resolution of generic parameters and
+        constants. Like compilers, synthesis tools are typically split into frontend/backend, and elaboration
+        could be considered a frontend/language parsing task.
+    - *Optimisation:* This includes a multitude of tasks, anywhere from small peephole optimisations, to
+        completely re-coding FSMs. In commercial tools, this is typically timing driven.
+    - *Technology mapping:* This involves mapping the technology-independent netlist to the target platform,
+        whether that be FPGA LUTs, or ASIC standard cells.
+- *Placement*: The process of optimally placing the netlist onto the target device. For FPGAs, this involves
+    choosing which logic elements to use. For digital ICs, this is much more complex and manual - usually done
+    by dedicated layout engineers who design a _floorplan_.
+- *Routing*: The process of optimally connecting all the placed logic elements (FPGAs) or standard cells
+    (ICs).
+
+Due to their enormous complexity and cutting-edge nature, most IC EDA tools are commercial proprietary
+software sold by the big three vendors: Synopsys, Cadence and Siemens. These are economically infeasible for
+almost all researchers, and even if they could be licenced, would not be possible to extend to implement
+custom synthesis passes. The major FPGA vendors, AMD and Intel, also develop their own EDA tools for each of
+their own devices, which are often cheaper or free. However, these tools are still proprietary software and
+cannot be modified by researchers. Until recently, there was no freely available, research-grade, open-source
+EDA tool available for study and improvement. That changed with the introduction of Yosys @Wolf2013. Yosys is
+a capable synthesis tool that can emit optimised netlists for various FPGA families as well as a few silicon
+process nodes (e.g. Skywater 130nm). When combined with the Nextpnr place and route tool @Shah2019,
+Yosys+Nextpnr forms a fully end-to-end FPGA synthesis flow for Lattice iCE40 and ECP5 devices. Importantly,
+for this thesis, Yosys can be modified either by changing the source code or by developing modular plugins
+that can be dynamically loaded at runtime.
