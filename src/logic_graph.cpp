@@ -5,9 +5,11 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL
 // was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #include "tamara/logic_graph.hpp"
+#include "kernel/celltypes.h"
 #include "kernel/log.h"
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
+#include "tamara/termcolour.hpp"
 #include "tamara/util.hpp"
 #include "tamara/voter_builder.hpp"
 #include <cstdint>
@@ -18,9 +20,15 @@ USING_YOSYS_NAMESPACE;
 
 using namespace tamara;
 
+#define COLOUR(the_colour) (termcolour::colour(termcolour::Colour::the_colour).c_str())
+#define RESET() (termcolour::reset().c_str())
+
 uint32_t LogicCone::g_cone_ID = 0;
 
 namespace {
+
+//! Static message for when logRTLILName with an optional evaluates to none
+const char *const NONE_MESSAGE = "None";
 
 //! An IO is simply a wire at the edge of the circuit
 constexpr bool isWireIO(RTLIL::Wire *wire, RTLILWireConnections &connections) {
@@ -42,6 +50,30 @@ RTLIL::IdString getRTLILName(const RTLILAnyPtr &ptr) {
         ptr);
 }
 
+//! Returns the RTLIL ID for a TMRGraphNode::Ptr
+RTLIL::IdString getRTLILName(const TMRGraphNode::Ptr &ptr) {
+    return getRTLILName(ptr->getRTLILObjPtr());
+}
+
+//! Override of getRTLILName that returns a char* through log_id
+const char *logRTLILName(const TMRGraphNode::Ptr &ptr) {
+    return log_id(getRTLILName(ptr));
+}
+
+//! Override of getRTLILName that returns a char* through log_id. If the optional is not present, returns
+//! "None".
+const char *logRTLILName(const std::optional<TMRGraphNode::Ptr> &optional) {
+    if (!optional.has_value()) {
+        return NONE_MESSAGE;
+    }
+    return log_id(getRTLILName(*optional));
+}
+
+//! Override for getRTLILName that returns a char* through log_id
+const char *logRTLILName(const RTLILAnyPtr &ptr) {
+    return log_id(getRTLILName(ptr));
+}
+
 //! Instantiates a new logic cone from the RTLILAnyPtr.
 LogicCone newLogicCone(const RTLILAnyPtr &ptr) {
     return std::visit(
@@ -57,11 +89,6 @@ LogicCone newLogicCone(const RTLILAnyPtr &ptr) {
             }
         },
         ptr);
-}
-
-//! Returns the RTLIL ID for a TMRGraphNode::Ptr
-RTLIL::IdString getRTLILName(const TMRGraphNode::Ptr &ptr) {
-    return getRTLILName(ptr->getRTLILObjPtr());
 }
 
 //! Determines if neighbours should be added to a node during backwards BFS.
@@ -168,6 +195,43 @@ void IONode::replicate([[maybe_unused]] RTLIL::Module *module) {
     log_error("TaMaRa internal error: Cannot replicate IO node!\n");
 }
 
+void IONode::connect(RTLIL::Module *module, const TMRGraphNode::Ptr &other) {
+    // this also shouldn't happen
+    log_error("TaMaRa internal error: Cannot re-connect IO node!\n");
+}
+
+void ElementCellNode::connect(RTLIL::Module *module, const TMRGraphNode::Ptr &other) {
+    auto otherPtr = other->getRTLILObjPtr();
+    CellTypes cellTypes(module->design);
+
+    std::visit(
+        [&, cellTypes](auto &&arg) {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
+                // this re-declaration is mainly for the benefit of clangd
+                RTLIL::Cell *cell = arg;
+
+                // locate output port
+                for (const auto &connection : cell->connections()) {
+                    auto [idString, sigSpec] = connection;
+
+                    // determine if output port
+                    if (cellTypes.cell_output(cell->type, idString)) {
+                        // found it
+                    }
+                }
+            }
+            if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
+                // TODO
+            }
+        },
+        otherPtr);
+}
+
+void ElementWireNode::connect(RTLIL::Module *module, const TMRGraphNode::Ptr &other) {
+    // TODO
+}
+
 std::vector<TMRGraphNode::Ptr> TMRGraphNode::computeNeighbours(
     RTLIL::Module *module, RTLILWireConnections &connections) {
     auto obj = getRTLILObjPtr();
@@ -205,7 +269,7 @@ void LogicCone::search(RTLIL::Module *module, RTLILWireConnections &connections)
     // normally wouldn't (because it's an FFNode/IONode)
     bool first = true;
 
-    log("Starting search for cone %u\n", id);
+    log("%sStarting search for cone %u%s\n", COLOUR(Blue), id, RESET());
     while (!frontier.empty()) {
         auto node = frontier.front();
         frontier.pop();
@@ -227,16 +291,23 @@ void LogicCone::search(RTLIL::Module *module, RTLILWireConnections &connections)
             // also don't add the first element to the cone, as it'll cause duplicates elsewhere.
             if (dynamic_pointer_cast<IONode>(node) == nullptr && !first) {
                 cone.push_back(node);
-                log("    Add %s to cone (now has %zu items)\n", node->identify().c_str(), cone.size());
+                log("    %sAdd %s to cone (now has %zu items)%s\n", COLOUR(Green), node->identify().c_str(),
+                    cone.size(), RESET());
             } else {
-                log("    Skip adding %s to cone (first: %s)\n", node->identify().c_str(),
-                    first ? "true" : "false");
+                log("    %sSkip adding %s to cone (first: %s)%s\n", COLOUR(Red), node->identify().c_str(),
+                    first ? "true" : "false", RESET());
+            }
+
+            // select voter cut point: the first node that we find on the backwards BFS (not the initial node)
+            if (!voterCutPoint.has_value() && !first) {
+                voterCutPoint = node;
+                log("    %sSet voter cut point to this node%s\n", COLOUR(Cyan), RESET());
             }
         } else {
             // found terminal, start wrapping up search -> don't add neighbours, and don't add elements to
             // cone
-            log("    %s %s is a terminal, wrapping up search\n", node->identify().c_str(),
-                log_id(getRTLILName(node)));
+            log("    %s%s %s is a terminal, wrapping up search%s\n", COLOUR(Yellow), node->identify().c_str(),
+                log_id(getRTLILName(node)), RESET());
         }
 
         if (!frontier.empty()) {
@@ -246,33 +317,29 @@ void LogicCone::search(RTLIL::Module *module, RTLILWireConnections &connections)
             // we're terminating search
             inputNodes.push_back(node);
         }
+
         first = false;
     }
 
     verifyInputNodes();
-    log("Search complete for cone %u, have %zu items\n", id, cone.size());
+    log("%sSearch complete for cone %u, have %zu items\n%s", COLOUR(Blue), id, cone.size(), RESET());
 }
 
 void LogicCone::replicate(RTLIL::Module *module) {
     // don't replicate cones that don't have any internal elements (prevents duplication)
     if (cone.empty()) {
-        log("Cone %u has no internal elements - skipping replication\n", id);
+        log("%sCone %u has no internal elements - skipping replication%s\n", COLOUR(Red), id, RESET());
         return;
     }
     log_assert(frontier.empty() && "Search might not be finished");
 
-    log("Replicating %zu collected items for logic cone %u\n", cone.size(), id);
+    log("%sReplicating %zu collected items for logic cone %u%s\n", COLOUR(Blue), cone.size(), id, RESET());
     for (const auto &item : cone) {
         item->replicate(module);
-        if (!firstReplicated.has_value()) {
-            log("    First replicated node. Voter will be inserted between this node and output %s\n",
-                log_id(getRTLILName(outputNode)));
-            firstReplicated = item;
-        }
     }
 
     // special case for end points (IOs and FFs) -> only replicate FFs, don't replicate IOs
-    log("Checking terminals\n");
+    log("%sChecking terminals%s\n", COLOUR(Cyan), RESET());
     for (const auto &node : inputNodes) {
         replicateIfNotIO(node, module);
     }
@@ -280,11 +347,11 @@ void LogicCone::replicate(RTLIL::Module *module) {
 }
 
 void LogicCone::insertVoter(RTLIL::Module *module) {
-    log("Inserting voter into logic cone %u\n", id);
+    log("%sInserting voter into logic cone %u%s\n", COLOUR(Blue), id, RESET());
     log_assert(!voter.has_value() && "Cone already has a voter!");
-
     if (cone.empty()) {
-        log("Skippiong voter insertion into cone %u - internal elements empty\n", id);
+        log("%sSkipping voter insertion into cone %u - internal elements empty%s\n", COLOUR(Red), id,
+            RESET());
         return;
     }
 
@@ -292,32 +359,49 @@ void LogicCone::insertVoter(RTLIL::Module *module) {
 }
 
 void LogicCone::wire(RTLIL::Module *module) {
-    log("Wiring logic cone %u\n", id);
+    log("%sWiring logic cone %u%s\n", COLOUR(Blue), id, RESET());
     if (cone.empty()) {
         // FIXME in this case, we probably will have wiring to do, just not to the voter
-        log("Skipping wiring of cone %u - internal elements empty\n", id);
+        log("%sSkipping wiring of cone %u - internal elements empty%s\n", COLOUR(Red), id, RESET());
         return;
     }
 
     // connect voter between output and firstReplicated
     log_assert(voter.has_value() && "Voter not yet inserted!");
-    log_assert(firstReplicated.has_value() && "Replicate might not have been called yet");
+    log_assert(voterCutPoint.has_value() && "Voter cut point not set!");
+
+    log("Going to cut voter between output %s and cut point %s\n", logRTLILName(outputNode),
+        logRTLILName(voterCutPoint));
+
+    auto replicas = voterCutPoint->get()->getReplicas();
+    log_assert(replicas.size() == 2 && "Unexpected replica size");
+
+    // we also add the original node to the list of replicas, so that we can connect it up to the voter
+    // since we already have one original node, + 2 replicas, this is a total of 3 :)
+    // this is a little bit confusing for the terminology since it's not _technically_ a replica
+    replicas.push_back(voterCutPoint->get()->getRTLILObjPtr());
+
+    int i = 0;
+    for (const auto &replica : replicas) {
+        log("Connecting voter port %s to replica %s\n", log_id((*voter)[i]->name), logRTLILName(replica));
+        i++;
+    }
 }
 
 std::vector<LogicCone> LogicCone::buildSuccessors(RTLILWireConnections &connections) {
-    log("Considering potential successors for cone %u\n", id);
+    log("%sConsidering potential successors for cone %u%s\n", COLOUR(Blue), id, RESET());
     std::vector<LogicCone> out {};
     for (const auto &node : inputNodes) {
-        log("Considering %s %s as a successor cone... ", node->identify().c_str(),
-            log_id(getRTLILName(node)));
+        log("%sConsidering %s %s as a successor cone... %s", COLOUR(Yellow), node->identify().c_str(),
+            log_id(getRTLILName(node)), RESET());
 
         // check if it has a neighbour
         if (connections[node->getRTLILObjPtr()].size() > 0) {
             // we have neighbours, this is a valid successor
-            log("Confirmed.\n");
+            log("%sConfirmed.%s\n", COLOUR(Green), RESET());
             out.push_back(newLogicCone(node->getRTLILObjPtr()));
         } else {
-            log("Has no additional neighbours, not a valid successor.\n");
+            log("%sHas no additional neighbours, not a valid successor.%s\n", COLOUR(Red), RESET());
         }
     }
 

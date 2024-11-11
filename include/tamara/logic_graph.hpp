@@ -16,6 +16,9 @@
 
 USING_YOSYS_NAMESPACE;
 
+// FIXME I think we should remove all the parents stuff, it isn't necessary any more and doesn't make sense I
+// think
+
 namespace tamara {
 
 //! Base node class in the graph
@@ -52,7 +55,7 @@ public:
         return id;
     }
 
-    //! Virtual method that sub-classes should override to compute neighbours of this node for BFS
+    //! Compute neighbours of this node for the backwards BFS
     [[nodiscard]] std::vector<TMRGraphNode::Ptr> computeNeighbours(
         RTLIL::Module *module, RTLILWireConnections &connections);
 
@@ -68,6 +71,10 @@ public:
     //! Returns replicas, if this is supported (not supported on IONode, which cannot be replicated).
     virtual std::vector<RTLILAnyPtr> getReplicas() = 0;
 
+    //! Connects this TMRGraphNode's underlying RTLIL primitive to the other node's underlying RTLIL primitive,
+    //! if supported. (Not supported for IONode.)
+    virtual void connect(RTLIL::Module *module, const TMRGraphNode::Ptr &other) = 0;
+
     //! During LogicCone::computeNeighbours, this call turns an RTLIL neighbour (ptr) into a new logic graph
     //! node, with the parent correctly set to this TMRGraphNode using getSelfPtr().
     [[nodiscard]] TMRGraphNode::Ptr newLogicGraphNeighbour(
@@ -82,7 +89,10 @@ public:
     }
 
 private:
+    //! Pointer to parent node, not present if root
     std::optional<TMRGraphNode::Ptr> parent;
+
+    //! ID of the cone that this TMRGraphNode belongs to
     uint32_t id;
 };
 
@@ -106,6 +116,8 @@ public:
     }
 
     void replicate(RTLIL::Module *module) override;
+
+    void connect(RTLIL::Module *module, const TMRGraphNode::Ptr &other) override;
 
     std::string identify() override {
         return "ElementCellNode";
@@ -147,6 +159,8 @@ public:
     }
 
     void replicate(RTLIL::Module *module) override;
+
+    void connect(RTLIL::Module *module, const TMRGraphNode::Ptr &other) override;
 
     std::string identify() override {
         return "ElementWireNode";
@@ -211,6 +225,8 @@ public:
 
     void replicate(RTLIL::Module *module) override;
 
+    void connect(RTLIL::Module *module, const TMRGraphNode::Ptr &other) override;
+
     std::string identify() override {
         return "IONode";
     }
@@ -269,8 +285,8 @@ private:
     // list of logic cone elements, to be replicated (does not include terminals)
     std::vector<TMRGraphNode::Ptr> cone;
 
-    // first replicated node
-    std::optional<TMRGraphNode::Ptr> firstReplicated;
+    // voter cut point (i.e. where to wire the voter), this is the first node found on the backwards BFS
+    std::optional<TMRGraphNode::Ptr> voterCutPoint;
 
     // BFS frontier
     std::queue<TMRGraphNode::Ptr> frontier;
