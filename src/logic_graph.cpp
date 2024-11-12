@@ -131,18 +131,31 @@ void connect(RTLIL::Module *module, const RTLILAnyPtr &replica, RTLIL::Wire *vot
                     if (cellTypes.cell_output(cell->type, idString)) {
                         // found it
                         if (foundOutput) {
-                            log_error("Cell %s has multiple output ports! Connection may not be handled correctly!\n",
-                                        log_id(cell->name));
+                            log_error("Cell %s has multiple output ports! Connection may not be handled "
+                                      "correctly!\n",
+                                log_id(cell->name));
                         }
                         foundOutput = true;
+
+                        log("connect: Changing output connection %s\n in RTLILAnyPtr(Wire*) %s\n to voter wire "
+                            "%s\n",
+                            log_id(idString), log_id(cell->name), log_id(voter->name));
+                        cell->setPort(idString, voter);
+                        cell->check();
                     }
                 }
             }
             if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
-                // TODO
+                // this re-declaration is mainly for the benefit of clangd
+                RTLIL::Wire *wire = arg;
+                log("connect: Creating connection between wire %s -> voter %s\n",
+                    log_id(wire->name), log_id(voter->name));
+                module->connect(wire, voter);
             }
         },
         replica);
+
+    module->check();
 }
 
 } // namespace
@@ -371,7 +384,7 @@ void LogicCone::wire(RTLIL::Module *module) {
     log_assert(voter.has_value() && "Voter not yet inserted!");
     log_assert(voterCutPoint.has_value() && "Voter cut point not set!");
 
-    log("Going to cut voter between output %s and cut point %s\n", logRTLILName(outputNode),
+    log("Going to splice voter between LogicCone output %s and cut point %s\n", logRTLILName(outputNode),
         logRTLILName(voterCutPoint));
 
     auto replicas = voterCutPoint->get()->getReplicas();
@@ -384,18 +397,27 @@ void LogicCone::wire(RTLIL::Module *module) {
 
     int i = 0;
     for (const auto &replica : replicas) {
-        log("Connecting voter port %s to replica %s\n", log_id(voter.value()[i]->name), logRTLILName(replica));
+        log("%sConnecting voter port %s %s %s to replica %s %s\n",
+            COLOUR(Yellow),
+            RESET(),
+            log_id(voter.value()[i]->name),
+
+            COLOUR(Yellow),
+            RESET(),
+            logRTLILName(replica));
         connect(module, replica, voter.value()[i]);
         i++;
     }
+
+    // now, wire the cone's output node to the voter's OUT connection
+    connect(module, outputNode->getRTLILObjPtr(), voter->out);
 }
 
 std::vector<LogicCone> LogicCone::buildSuccessors(RTLILWireConnections &connections) {
     log("%sConsidering potential successors for cone %u%s\n", COLOUR(Blue), id, RESET());
     std::vector<LogicCone> out {};
     for (const auto &node : inputNodes) {
-        log("%sConsidering %s %s as a successor cone... %s", COLOUR(Yellow), node->identify().c_str(),
-            log_id(getRTLILName(node)), RESET());
+        log("Considering %s %s as a successor cone... ", node->identify().c_str(), log_id(getRTLILName(node)));
 
         // check if it has a neighbour
         if (connections[node->getRTLILObjPtr()].size() > 0) {
