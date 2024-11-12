@@ -71,10 +71,6 @@ public:
     //! Returns replicas, if this is supported (not supported on IONode, which cannot be replicated).
     virtual std::vector<RTLILAnyPtr> getReplicas() = 0;
 
-    //! Connects this TMRGraphNode's underlying RTLIL primitive to the other node's underlying RTLIL primitive,
-    //! if supported. (Not supported for IONode.)
-    virtual void connect(RTLIL::Module *module, const TMRGraphNode::Ptr &other) = 0;
-
     //! During LogicCone::computeNeighbours, this call turns an RTLIL neighbour (ptr) into a new logic graph
     //! node, with the parent correctly set to this TMRGraphNode using getSelfPtr().
     [[nodiscard]] TMRGraphNode::Ptr newLogicGraphNeighbour(
@@ -117,8 +113,6 @@ public:
 
     void replicate(RTLIL::Module *module) override;
 
-    void connect(RTLIL::Module *module, const TMRGraphNode::Ptr &other) override;
-
     std::string identify() override {
         return "ElementCellNode";
     }
@@ -159,8 +153,6 @@ public:
     }
 
     void replicate(RTLIL::Module *module) override;
-
-    void connect(RTLIL::Module *module, const TMRGraphNode::Ptr &other) override;
 
     std::string identify() override {
         return "ElementWireNode";
@@ -224,8 +216,6 @@ public:
     }
 
     void replicate(RTLIL::Module *module) override;
-
-    void connect(RTLIL::Module *module, const TMRGraphNode::Ptr &other) override;
 
     std::string identify() override {
         return "IONode";

@@ -107,6 +107,44 @@ void replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *module) {
         log("Input node %s is IONode, it will NOT be replicated\n", log_id(getRTLILName(node)));
     }
 }
+
+//! Connects the given replica port to the voter port, in the context of the module.
+void connect(RTLIL::Module *module, const RTLILAnyPtr &replica, RTLIL::Wire *voter) {
+    // Impl note: This could also be part of voter_builder, but I decided to keep it here because I want all
+    // of the RTLILAnyPtr crap to be contained within this file.
+
+    CellTypes cellTypes(module->design);
+
+    std::visit(
+        [&, cellTypes](auto &&arg) {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
+                // this re-declaration is mainly for the benefit of clangd
+                RTLIL::Cell *cell = arg;
+
+                // locate output port
+                bool foundOutput = false;
+                for (const auto &connection : cell->connections()) {
+                    auto [idString, sigSpec] = connection;
+
+                    // determine if output port
+                    if (cellTypes.cell_output(cell->type, idString)) {
+                        // found it
+                        if (foundOutput) {
+                            log_error("Cell %s has multiple output ports! Connection may not be handled correctly!\n",
+                                        log_id(cell->name));
+                        }
+                        foundOutput = true;
+                    }
+                }
+            }
+            if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
+                // TODO
+            }
+        },
+        replica);
+}
+
 } // namespace
 
 TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(
@@ -193,43 +231,6 @@ void ElementWireNode::replicate(RTLIL::Module *module) {
 void IONode::replicate([[maybe_unused]] RTLIL::Module *module) {
     // this shouldn't happen since we call replicateIfNotIO
     log_error("TaMaRa internal error: Cannot replicate IO node!\n");
-}
-
-void IONode::connect(RTLIL::Module *module, const TMRGraphNode::Ptr &other) {
-    // this also shouldn't happen
-    log_error("TaMaRa internal error: Cannot re-connect IO node!\n");
-}
-
-void ElementCellNode::connect(RTLIL::Module *module, const TMRGraphNode::Ptr &other) {
-    auto otherPtr = other->getRTLILObjPtr();
-    CellTypes cellTypes(module->design);
-
-    std::visit(
-        [&, cellTypes](auto &&arg) {
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
-                // this re-declaration is mainly for the benefit of clangd
-                RTLIL::Cell *cell = arg;
-
-                // locate output port
-                for (const auto &connection : cell->connections()) {
-                    auto [idString, sigSpec] = connection;
-
-                    // determine if output port
-                    if (cellTypes.cell_output(cell->type, idString)) {
-                        // found it
-                    }
-                }
-            }
-            if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
-                // TODO
-            }
-        },
-        otherPtr);
-}
-
-void ElementWireNode::connect(RTLIL::Module *module, const TMRGraphNode::Ptr &other) {
-    // TODO
 }
 
 std::vector<TMRGraphNode::Ptr> TMRGraphNode::computeNeighbours(
@@ -361,7 +362,7 @@ void LogicCone::insertVoter(RTLIL::Module *module) {
 void LogicCone::wire(RTLIL::Module *module) {
     log("%sWiring logic cone %u%s\n", COLOUR(Blue), id, RESET());
     if (cone.empty()) {
-        // FIXME in this case, we probably will have wiring to do, just not to the voter
+        // TODO in this case, we probably will have wiring to do, just not to the voter
         log("%sSkipping wiring of cone %u - internal elements empty%s\n", COLOUR(Red), id, RESET());
         return;
     }
@@ -383,7 +384,8 @@ void LogicCone::wire(RTLIL::Module *module) {
 
     int i = 0;
     for (const auto &replica : replicas) {
-        log("Connecting voter port %s to replica %s\n", log_id((*voter)[i]->name), logRTLILName(replica));
+        log("Connecting voter port %s to replica %s\n", log_id(voter.value()[i]->name), logRTLILName(replica));
+        connect(module, replica, voter.value()[i]);
         i++;
     }
 }
