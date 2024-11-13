@@ -54,12 +54,13 @@ struct TamaraTMRPass : public Pass {
             log_error("No top module selected\n");
         }
 
-        // locate the error sink (place where we route the voter 'err' signals too)
-        locateErrorSink(design->top_module());
-
         auto *const module = design->top_module();
         log("Applying TMR to top module: %s\n", log_id(module->name));
         log_push();
+
+        // locate the error sink (place where we route the voter 'err' signals too)
+        log_header(design, "Locating error sink\n");
+        locateErrorSink(design->top_module());
 
         // analyse wire connections, this is used later by the logic cone code for neighbour calculations
         // I thought that we might be able to get this through RTLIL directly, but I think we have to compute
@@ -98,7 +99,7 @@ struct TamaraTMRPass : public Pass {
             log("\n");
 
             // wire up the netlist
-            cone.wire(module);
+            cone.wire(module, errorSink, neighbours);
             log("\n");
 
             // generate successors
@@ -131,7 +132,7 @@ struct TamaraTMRPass : public Pass {
             log("\n");
 
             // wire up the netlist
-            cone.wire(module);
+            cone.wire(module, errorSink, neighbours);
             log("\n");
 
             // generate successors
@@ -260,7 +261,6 @@ private:
     void locateErrorSink(RTLIL::Module *module) {
         bool foundErrorSink = false;
 
-        // FIXME have this handle internal wires as well
         for (const auto &wire : module->wires()) {
             if (wire->has_attribute(ERROR_SINK_ANNOTATION)) {
                 if (foundErrorSink) {

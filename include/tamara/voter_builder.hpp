@@ -8,7 +8,6 @@
 #include "kernel/log.h"
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
-#include <stdexcept>
 
 USING_YOSYS_NAMESPACE;
 
@@ -17,6 +16,7 @@ namespace tamara {
 //! Result from building a voter
 class Voter {
 public:
+    // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes) don't care
     RTLIL::Wire *a, *b, *c, *out, *err;
 
     RTLIL::Wire *operator[](int i) const {

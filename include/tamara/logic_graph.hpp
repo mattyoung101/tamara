@@ -258,7 +258,7 @@ public:
     void insertVoter(RTLIL::Module *module);
 
     //! Wires up the replicated components and the module
-    void wire(RTLIL::Module *module);
+    void wire(RTLIL::Module *module, std::optional<Wire*> errorSink, RTLILWireConnections &connections);
 
     //! Builds a new logic cone that will continue the search onwards, or none if we're already at the input
     std::vector<LogicCone> buildSuccessors(RTLILWireConnections &connections);
@@ -287,7 +287,12 @@ private:
     // logic cone ID, mostly used to identify this cone for debug
     uint32_t id;
 
+    //! Verifies all terminals in LogicCone::search are legal.
     void verifyInputNodes() const;
+
+    //! Returns a list of replicas for the given RTLIL. This is expensive because it traverses the entire
+    //! cone.
+    std::vector<RTLILAnyPtr> collectReplicasRTLIL(const RTLILAnyPtr &obj);
 
     // Based on this idea: https://stackoverflow.com/a/2978575
     // We don't thread, so no mutex required

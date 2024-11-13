@@ -137,7 +137,8 @@ void connect(RTLIL::Module *module, const RTLILAnyPtr &replica, RTLIL::Wire *vot
                         }
                         foundOutput = true;
 
-                        log("connect: Changing output connection %s\n in RTLILAnyPtr(Wire*) %s\n to voter wire "
+                        log("connect: Changing output connection %s\n in RTLILAnyPtr(Wire*) %s\n to voter "
+                            "wire "
                             "%s\n",
                             log_id(idString), log_id(cell->name), log_id(voter->name));
                         cell->setPort(idString, voter);
@@ -148,8 +149,8 @@ void connect(RTLIL::Module *module, const RTLILAnyPtr &replica, RTLIL::Wire *vot
             if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
                 // this re-declaration is mainly for the benefit of clangd
                 RTLIL::Wire *wire = arg;
-                log("connect: Creating connection between wire %s -> voter %s\n",
-                    log_id(wire->name), log_id(voter->name));
+                log("connect: Creating connection between wire %s -> voter %s\n", log_id(wire->name),
+                    log_id(voter->name));
                 module->connect(wire, voter);
             }
         },
@@ -260,7 +261,6 @@ std::vector<TMRGraphNode::Ptr> TMRGraphNode::computeNeighbours(
     return out;
 }
 
-//! Verifies all terminals in LogicCone::search are legal.
 void LogicCone::verifyInputNodes() const {
     for (const auto &node : inputNodes) {
         if (dynamic_pointer_cast<IONode>(node) == nullptr && dynamic_pointer_cast<FFNode>(node) == nullptr) {
@@ -269,6 +269,27 @@ void LogicCone::verifyInputNodes() const {
                 node->identify().c_str(), log_id(getRTLILName(node)));
         }
     }
+}
+
+std::vector<RTLILAnyPtr> LogicCone::collectReplicasRTLIL(const RTLILAnyPtr &obj) {
+    std::vector<TMRGraphNode::Ptr> allObjects;
+    allObjects.reserve(cone.size() + inputNodes.size());
+    for (const auto &element : cone) {
+        allObjects.push_back(element);
+    }
+    for (const auto &element : inputNodes) {
+        allObjects.push_back(element);
+    }
+    allObjects.push_back(outputNode);
+
+    for (const auto &element : allObjects) {
+        // log("check if %s == %s\n", logRTLILName(element), logRTLILName(obj));
+        if (getRTLILName(element) == getRTLILName(obj)) {
+            return element->getReplicas();
+        }
+    }
+    log_error("TaMaRa internal error: Unable to find any replicas for RTLIL object %s in cone %d!\n",
+        logRTLILName(obj), id);
 }
 
 void LogicCone::search(RTLIL::Module *module, RTLILWireConnections &connections) {
@@ -372,7 +393,8 @@ void LogicCone::insertVoter(RTLIL::Module *module) {
     voter = VoterBuilder::build(module);
 }
 
-void LogicCone::wire(RTLIL::Module *module) {
+void LogicCone::wire(
+    RTLIL::Module *module, std::optional<Wire *> errorSink, RTLILWireConnections &connections) {
     log("%sWiring logic cone %u%s\n", COLOUR(Blue), id, RESET());
     if (cone.empty()) {
         // TODO in this case, we probably will have wiring to do, just not to the voter
@@ -397,27 +419,52 @@ void LogicCone::wire(RTLIL::Module *module) {
 
     int i = 0;
     for (const auto &replica : replicas) {
-        log("%sConnecting voter port %s %s %s to replica %s %s\n",
-            COLOUR(Yellow),
-            RESET(),
-            log_id(voter.value()[i]->name),
-
-            COLOUR(Yellow),
-            RESET(),
-            logRTLILName(replica));
+        log("%sConnecting voter port %s %s %s to replica %s %s\n", COLOUR(Yellow), RESET(),
+            log_id(voter.value()[i]->name), COLOUR(Yellow), RESET(), logRTLILName(replica));
         connect(module, replica, voter.value()[i]);
         i++;
     }
 
     // now, wire the cone's output node to the voter's OUT connection
     connect(module, outputNode->getRTLILObjPtr(), voter->out);
+
+    // now, we need to track down and re-wire those wires which we replicated (currently, they will have
+    // multiple drivers)
+    log("%sFixing up wires we replicated (that will now have multiple drivers)%s\n", COLOUR(Cyan), RESET());
+    for (const auto &element : cone) {
+        auto wirePtr = std::dynamic_pointer_cast<ElementWireNode>(element);
+        if (wirePtr == nullptr) {
+            // not a wire
+            continue;
+        }
+
+        // let's determine if this wire is actually connected to something we've replicated
+        auto *wire = std::get<Wire *>(wirePtr->getRTLILObjPtr());
+        auto connectedNodes = connections[wire]; // FIXME might need to be reversed??
+        for (const auto &connected : connectedNodes) {
+            // FIXME this will blow up for wire-wire connections
+            auto *cell = std::get<RTLIL::Cell *>(connected);
+            if (cell->has_attribute(CONE_ANNOTATION)) {
+                log("Found replicated cell '%s' connected to wire '%s'\n", log_id(cell->name),
+                    log_id(wire->name));
+
+                // now we can collect replicas for the cell, and replicas for the wire, and tie them together!
+                auto cellReplicas = collectReplicasRTLIL(cell);
+                auto wireReplicas = element->getReplicas();
+
+                log_assert(cellReplicas.size() == wireReplicas.size()
+                    && "Cannot pair cell replicas with wire replicas!");
+            }
+        }
+    }
 }
 
 std::vector<LogicCone> LogicCone::buildSuccessors(RTLILWireConnections &connections) {
     log("%sConsidering potential successors for cone %u%s\n", COLOUR(Blue), id, RESET());
     std::vector<LogicCone> out {};
     for (const auto &node : inputNodes) {
-        log("Considering %s %s as a successor cone... ", node->identify().c_str(), log_id(getRTLILName(node)));
+        log("Considering %s %s as a successor cone... ", node->identify().c_str(),
+            log_id(getRTLILName(node)));
 
         // check if it has a neighbour
         if (connections[node->getRTLILObjPtr()].size() > 0) {

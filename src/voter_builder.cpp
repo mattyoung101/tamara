@@ -25,7 +25,8 @@ namespace {
 //! Makes sure that the RTLIL object is ignored. We wouldn't want to accidentally triplicate voters.
 template <typename T>
 constexpr T makeIgnored(T obj) {
-    obj->set_bool_attribute(IGNORE_ANNOTATION);
+    // we don't explicitly add (* tamara_ignore *), in case we want to process the circuit multiple times
+    // intentionally as a test
     obj->set_bool_attribute(VOTER_ANNOTATION);
     return obj;
 }
