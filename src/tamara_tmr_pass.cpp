@@ -11,6 +11,7 @@
 #include "kernel/yosys_common.h"
 #include "tamara/logic_graph.hpp"
 #include "tamara/util.hpp"
+#include <cmath>
 #include <unordered_set>
 #include <vector>
 
@@ -52,6 +53,9 @@ struct TamaraTMRPass : public Pass {
         if (design->top_module() == nullptr) {
             log_error("No top module selected\n");
         }
+
+        // locate the error sink (place where we route the voter 'err' signals too)
+        locateErrorSink(design->top_module());
 
         auto *const module = design->top_module();
         log("Applying TMR to top module: %s\n", log_id(module->name));
@@ -143,6 +147,8 @@ struct TamaraTMRPass : public Pass {
     }
 
 private:
+    std::optional<RTLIL::Wire *> errorSink;
+
     //! Determines if the cells annotations are suitable to triplicate
     static constexpr bool shouldConsiderForTMR(const RTLIL::AttrObject *obj) {
         return obj->has_attribute(TRIPLICATE_ANNOTATION) && !obj->has_attribute(IGNORE_ANNOTATION);
@@ -246,6 +252,32 @@ private:
         // log_error("dump\n");
 
         return connections;
+    }
+
+    //! Locates the error sink in the top module, i.e. the place where we route the voter error signal to. If
+    //! there is no error sink, this will raise a warning. We look for output wires from the module with the
+    //! annotation (* tamara_error_sink *).
+    void locateErrorSink(RTLIL::Module *module) {
+        bool foundErrorSink = false;
+
+        // FIXME have this handle internal wires as well
+        for (const auto &wire : module->wires()) {
+            if (wire->has_attribute(ERROR_SINK_ANNOTATION)) {
+                if (foundErrorSink) {
+                    log_error("Duplicate error sink: '%s'. Only one error sink is allowed per top module.\n",
+                        log_id(wire));
+                }
+
+                log("Found error sink: %s\n", log_id(wire->name));
+                errorSink = wire;
+                foundErrorSink = true;
+            }
+        }
+
+        if (!foundErrorSink) {
+            log_warning("No error sink found for top module. The 'err' signal from TaMaRa voters will not be "
+                        "routed anywhere!\n");
+        }
     }
 
 } const TamaraTMRPass;

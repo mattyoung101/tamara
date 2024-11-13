@@ -21,6 +21,7 @@ const auto REPLICA_ANNOTATION = ID(tamara_replica);
 const auto CONE_ANNOTATION = ID(tamara_cone);
 const auto ORIGINAL_ANNOTATION = ID(tamara_original);
 const auto VOTER_ANNOTATION = ID(tamara_voter);
+const auto ERROR_SINK_ANNOTATION = ID(tamara_error_sink);
 
 //! Pointer to an RTLIL wire or cell (not strictly "any", but for our use case it suffices)
 using RTLILAnyPtr = std::variant<RTLIL::Wire*, RTLIL::Cell*>;

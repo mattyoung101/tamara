@@ -11,7 +11,7 @@
 #include "tamara/util.hpp"
 #include <vector>
 
-USING_YOSYS_NAMESPACE
+USING_YOSYS_NAMESPACE;
 
 namespace tamara {
 
@@ -39,9 +39,6 @@ struct TamaraPropagatePass : public Pass {
     void execute(std::vector<std::string> args, RTLIL::Design *design) override {
         log_header(design, "Propagating TaMaRa triplicate annotations\n\n");
         log_push();
-
-        // TODO if a non-top module has (* tamara_triplicate *) -> complain, this wouldn't make sense
-        // tell the user it should be applied to the instantiation instead
 
         propagateModules(design);
         design->scratchpad_set_bool("tamara_propagate.didRun", true);
