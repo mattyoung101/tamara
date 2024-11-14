@@ -1,0 +1,16 @@
+# Tests end to end TaMaRa for a CRC8 calculator
+
+plugin -i libtamara.so
+
+read_verilog ../tests/verilog/crc8.v
+hierarchy -top crc
+tamara_propagate
+check
+
+prep
+write_rtlil
+tamara_tmr
+check
+
+write_rtlil
+show

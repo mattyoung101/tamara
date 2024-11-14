@@ -22,10 +22,13 @@
 // CRC shift direction:         left (big endian)
 // Input word width:            8 bits
 
+(* tamara_triplicate *)
 module crc (
     input [7:0] crcIn,
     input [7:0] data,
-    output [7:0] crcOut
+    output [7:0] crcOut,
+    (* tamara_error_sink *)
+    output error
 );
     assign crcOut[0] = crcIn[0] ^ crcIn[6] ^ crcIn[7] ^ data[0] ^ data[6] ^ data[7];
     assign crcOut[1] = crcIn[0] ^ crcIn[1] ^ crcIn[6] ^ data[0] ^ data[1] ^ data[6];
