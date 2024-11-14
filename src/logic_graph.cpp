@@ -159,6 +159,23 @@ void connect(RTLIL::Module *module, const RTLILAnyPtr &replica, RTLIL::Wire *vot
     module->check();
 }
 
+//! RTLILWireConnections maps a -> (b, c, d, e); but what this function does is find "a" given say b, or c, or
+//! d. Returns empty list if no results found.
+//! Note: This is REALLY expensive currently on the order of O(n^2).
+std::vector<RTLILAnyPtr> rtlilInverseLookup(RTLILWireConnections &connections, Wire *target) {
+    std::vector<RTLILAnyPtr> out;
+    for (const auto &pair : connections) {
+        const auto &[key, value] = pair;
+        for (const auto &item : value) {
+            // TODO this currently only checks cells, but maybe we want wires too?
+            if (std::holds_alternative<Cell*>(item) && std::get<Cell*>(item)->name == target->name) {
+                out.push_back(key);
+            }
+        }
+    }
+    return out;
+}
+
 } // namespace
 
 TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(
@@ -424,6 +441,7 @@ void LogicCone::wire(
         connect(module, replica, voter.value()[i]);
         i++;
     }
+    module->check();
 
     // now, wire the cone's output node to the voter's OUT connection
     connect(module, outputNode->getRTLILObjPtr(), voter->out);
@@ -440,12 +458,16 @@ void LogicCone::wire(
 
         // let's determine if this wire is actually connected to something we've replicated
         auto *wire = std::get<Wire *>(wirePtr->getRTLILObjPtr());
-        auto connectedNodes = connections[wire]; // FIXME might need to be reversed??
+        auto connectedNodes = connections[wire];
+
         for (const auto &connected : connectedNodes) {
-            // FIXME this will blow up for wire-wire connections
+            // this is a cell which is connected to that wire
+            // FIXME this will blow up for wire-wire connections I expect
             auto *cell = std::get<RTLIL::Cell *>(connected);
+
+            // if the cell has a (* tamara_cone *) annotation, it's been touched by replicate()
             if (cell->has_attribute(CONE_ANNOTATION)) {
-                log("Found replicated cell '%s' connected to wire '%s'\n", log_id(cell->name),
+                log("Found replicated cell '%s' connected to wire node '%s'\n", log_id(cell->name),
                     log_id(wire->name));
 
                 // now we can collect replicas for the cell, and replicas for the wire, and tie them together!
@@ -454,8 +476,32 @@ void LogicCone::wire(
 
                 log_assert(cellReplicas.size() == wireReplicas.size()
                     && "Cannot pair cell replicas with wire replicas!");
+
+                // remember we just asserted that cellReplicas == wireReplicas size
+                for (size_t j = 0; j < cellReplicas.size(); j++) {
+                    auto *cellReplica = std::get<Cell *>(cellReplicas[j]);
+                    auto *wireReplica = std::get<Wire *>(wireReplicas[j]);
+                    log("Connect %s to %s\n", log_id(cellReplica->name), log_id(wireReplica->name));
+
+                    connect(module, cellReplica, wireReplica);
+                    cell->check();
+                    cellReplica->check();
+
+                    // FIXME now I think we need to connect the other side of the wire??
+                    // because this makes the DFF connect to the wire, but now we need to make the wire
+                    // connect to the cell
+                }
             }
         }
+
+        // now, we also need to do the reverse to connect up the other side
+        log("looking for cells that connect to %s\n", log_id(wire->name));
+        auto reverse = rtlilInverseLookup(connections, wire);
+        for (const auto &item : reverse) {
+            log("reverse for %s: %s\n", log_id(wire->name), logRTLILName(item));
+        }
+
+        module->check();
     }
 }
 
