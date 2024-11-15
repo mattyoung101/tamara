@@ -163,12 +163,15 @@ void connect(RTLIL::Module *module, const RTLILAnyPtr &replica, RTLIL::Wire *vot
 //! d. Returns empty list if no results found.
 //! Note: This is REALLY expensive currently on the order of O(n^2).
 std::vector<RTLILAnyPtr> rtlilInverseLookup(RTLILWireConnections &connections, Wire *target) {
+    log("Performing inverse lookup for wire %s\n", log_id(target->name));
     std::vector<RTLILAnyPtr> out;
     for (const auto &pair : connections) {
         const auto &[key, value] = pair;
+
         for (const auto &item : value) {
-            // TODO this currently only checks cells, but maybe we want wires too?
-            if (std::holds_alternative<Cell*>(item) && std::get<Cell*>(item)->name == target->name) {
+            log("Check mapping %s -> %s\n", logRTLILName(key), logRTLILName(item));
+
+            if (getRTLILName(item) == target->name) {
                 out.push_back(key);
             }
         }
