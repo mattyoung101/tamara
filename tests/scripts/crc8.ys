@@ -13,4 +13,4 @@ tamara_tmr
 check
 
 write_rtlil
-show
+show -colors 420

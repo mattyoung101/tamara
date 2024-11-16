@@ -145,16 +145,53 @@ void connect(RTLIL::Module *module, const RTLILAnyPtr &replica, RTLIL::Wire *vot
                         cell->check();
                     }
                 }
+
+                if (!foundOutput) {
+                    log_error("Could not find output port for cell %s\n", log_id(cell->name));
+                }
             }
             if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
                 // this re-declaration is mainly for the benefit of clangd
                 RTLIL::Wire *wire = arg;
                 log("connect: Creating connection between wire %s -> voter %s\n", log_id(wire->name),
                     log_id(voter->name));
+                // FIXME this seems to break shit
+                // this is because it doesn't handle wires of different sizes
+                log("wire width: %d, voter width: %d\n", wire->width, voter->width);
                 module->connect(wire, voter);
             }
         },
         replica);
+
+    module->check();
+}
+
+//! Changes the input port of the cell "cell" to point to the wire "wire".
+//! Does not currently support cells with multiple input ports.
+void changeInput(RTLIL::Module *module, RTLIL::Cell *cell, RTLIL::Wire *wire) {
+    CellTypes cellTypes(module->design);
+
+    // locate input port
+    bool foundInput = false;
+    for (const auto &connection : cell->connections()) {
+        auto [idString, sigSpec] = connection;
+        if (cellTypes.cell_input(cell->type, idString)) {
+            if (foundInput) {
+                log_error(
+                    "Cell %s has multiple input ports. This is currently unsupported.\n", log_id(cell->name));
+            }
+
+            log("changeInput: Changing input port '%s' to point to wire %s\n", log_id(idString),
+                log_id(wire->name));
+            cell->setPort(idString, wire);
+
+            foundInput = true;
+        }
+    }
+
+    if (!foundInput) {
+        log_error("Could not find input port for cell %s\n", log_id(cell->name));
+    }
 
     module->check();
 }
@@ -169,7 +206,7 @@ std::vector<RTLILAnyPtr> rtlilInverseLookup(RTLILWireConnections &connections, W
         const auto &[key, value] = pair;
 
         for (const auto &item : value) {
-            log("Check mapping %s -> %s\n", logRTLILName(key), logRTLILName(item));
+            // log("Check mapping %s -> %s\n", logRTLILName(key), logRTLILName(item));
 
             if (getRTLILName(item) == target->name) {
                 out.push_back(key);
@@ -489,19 +526,73 @@ void LogicCone::wire(
                     connect(module, cellReplica, wireReplica);
                     cell->check();
                     cellReplica->check();
-
-                    // FIXME now I think we need to connect the other side of the wire??
-                    // because this makes the DFF connect to the wire, but now we need to make the wire
-                    // connect to the cell
                 }
+            } else {
+                log_warning("Cell '%s' was not replicated, but perhaps should have been? (LogicCone::wire "
+                            "fix up pass)\n",
+                    log_id(cell->name));
             }
         }
 
+        // FIXME we also need to now disconnect the other side of FF (since it has 3 outgoing connections now)
+
         // now, we also need to do the reverse to connect up the other side
-        log("looking for cells that connect to %s\n", log_id(wire->name));
-        auto reverse = rtlilInverseLookup(connections, wire);
-        for (const auto &item : reverse) {
-            log("reverse for %s: %s\n", log_id(wire->name), logRTLILName(item));
+        // that is, currently we have, for example:
+        //
+        // DFF -> $6
+        // DFF -> $7
+        // DFF -> ff -> (not, not, not)
+        //
+        // whereas, instead, we would like:
+        //
+        // DFF -> $6 -> not
+        // DFF -> $7 -> not
+        // DFF -> ff -> not
+        //
+        // In other words, previously, we handled connecting the LHS (the DFF to the replicated wire), but now
+        // we also need to handle the RHS (the wire to the not)
+        log("%sLooking for cells that connect to %s (reverse lookup)%s\n", COLOUR(Cyan), log_id(wire->name),
+            RESET());
+        auto reverses = rtlilInverseLookup(connections, wire);
+        for (const auto &reverse : reverses) {
+            log("Reverse for %s: %s\n", log_id(wire->name), logRTLILName(reverse));
+
+            // now, find the replicas for the reverse (if it's been replicated)
+            // FIXME this will also blow up for wire-wire connections
+            auto *cell = std::get<RTLIL::Cell *>(reverse);
+            if (cell->has_attribute(CONE_ANNOTATION)) {
+                // now track down the replicas for the cell and for us
+                auto cellReplicas = collectReplicasRTLIL(cell);
+                auto wireReplicas = element->getReplicas();
+
+                log_assert(cellReplicas.size() == wireReplicas.size()
+                    && "Cannot pair cell replicas with wire replicas!");
+
+                // remember we just asserted that cellReplicas == wireReplicas size
+                for (size_t j = 0; j < cellReplicas.size(); j++) {
+                    // log("cellReplica: %s  wireReplica: %s\n", logRTLILName(cellReplicas[j]),
+                    // logRTLILName(wireReplicas[j]));
+
+                    auto *thisCell = std::get<RTLIL::Cell*>(cellReplicas[j]);
+                    auto *thisWire = std::get<RTLIL::Wire*>(wireReplicas[j]);
+
+                    log("Going to connect input port of cell %s to our wire %s\n",
+                       log_id(thisCell->name), log_id(thisWire->name));
+
+                    changeInput(module, thisCell, thisWire);
+
+                    // FIXME now I think we need a SPECIAL connect() that connects the INPUT of cellReplica to
+                    // the wire
+                    //
+                    // FIXME and of course what do we do if the cell has multiple inputs???
+                    // perhaps a better way to handle this is to go back and rewrite how we replicate wires
+                    // more carefully
+                }
+            } else {
+                log_warning("Cell '%s' was not replicated, but perhaps should have been? (LogicCone::wire "
+                            "fix up *inverse* pass)\n",
+                    log_id(cell->name));
+            }
         }
 
         module->check();

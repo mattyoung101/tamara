@@ -8,6 +8,7 @@ tamara_propagate
 check
 
 prep
+tamara_propagate
 tamara_tmr
 check
 

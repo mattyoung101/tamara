@@ -13,4 +13,5 @@ write_rtlil
 tamara_tmr
 check
 write_rtlil
+write_verilog
 show -colors 420

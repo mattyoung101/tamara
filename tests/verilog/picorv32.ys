@@ -1,4 +1,0 @@
-plugin -i ../build/libtamara.so
-read_verilog picorv32.v
-hierarchy -top picorv32
-tmr
