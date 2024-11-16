@@ -156,7 +156,6 @@ private:
     }
 
     //! Inserts a value into the hashmap, or adds it then inserts if not present
-    // TODO make this a templated function in utils.hpp
     static constexpr void addConnection(
         RTLILWireConnections &connections, RTLILAnyPtr key, const RTLILAnyPtr &value) {
         if (!connections.contains(key)) {
@@ -190,27 +189,24 @@ private:
                 continue;
             }
 
-            // FIXME why does this trigger? I thought the cells should be known??
-            // but tbf Yosys show doesn't do this so idk
-
-            // if (cellTypes.cell_known(cell->type)) {
-            //     log_error("Cell %s type %s is not known to Yosys!\n", log_id(cell->name),
-            //               log_id(cell->type));
-            // }
-
             log("Checking connections for cell: %s (%zu connections)\n", log_id(cell->name),
                 cell->connections().size());
 
             // find wires that this is connected to
             for (const auto &connection : cell->connections()) {
                 const auto &[name, signal] = connection;
-                if (!signal.is_wire()) {
-                    // TODO do we actually want to skip here? or do something else?
-                    log("Signal %s is not wire, skipping\n", log_id(name));
-                    continue;
+
+                Wire *wire = nullptr;
+                if (signal.is_wire()) {
+                    wire = signal.as_wire();
+                } else if (signal.is_bit()) {
+                    wire = signal.as_bit().wire;
                 }
 
-                auto *const wire = signal.as_wire();
+                if (wire == nullptr) {
+                    log_warning("Trouble accessing wire from connection '%s'\n", log_id(name));
+                    continue;
+                }
 
                 // this is an output from the cell, so connect wire -> cell (remember we work backwards)
                 if (cellTypes.cell_output(cell->type, name)) {
@@ -233,6 +229,7 @@ private:
         for (const auto &connection : module->connections()) {
             const auto &[lhs, rhs] = connection;
 
+            // FIXME it seems like this never triggers
             if (rhs.is_wire() && lhs.is_wire()) {
                 auto *const lhsWire = lhs.as_wire();
                 auto *const rhsWire = rhs.as_wire();
@@ -259,22 +256,19 @@ private:
     //! there is no error sink, this will raise a warning. We look for output wires from the module with the
     //! annotation (* tamara_error_sink *).
     void locateErrorSink(RTLIL::Module *module) {
-        bool foundErrorSink = false;
-
         for (const auto &wire : module->wires()) {
             if (wire->has_attribute(ERROR_SINK_ANNOTATION)) {
-                if (foundErrorSink) {
+                if (errorSink.has_value()) {
                     log_error("Duplicate error sink: '%s'. Only one error sink is allowed per top module.\n",
                         log_id(wire));
                 }
 
                 log("Found error sink: %s\n", log_id(wire->name));
                 errorSink = wire;
-                foundErrorSink = true;
             }
         }
 
-        if (!foundErrorSink) {
+        if (!errorSink.has_value()) {
             log_warning("No error sink found for top module. The 'err' signal from TaMaRa voters will not be "
                         "routed anywhere!\n");
         }
