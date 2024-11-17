@@ -547,8 +547,6 @@ void LogicCone::fixUpReplicatedWires(RTLIL::Module *module, RTLILWireConnections
             }
         }
 
-        // FIXME we also need to now disconnect the other side of FF (since it has 3 outgoing connections now)
-
         // now, we also need to do the reverse to connect up the other side
         // that is, currently we have, for example:
         //

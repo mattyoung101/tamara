@@ -12,10 +12,6 @@ module not_dff_tmr(
 
 logic ff;
 
-// (* tamara_error_sink *)
-// (* keep *)
-// logic err2;
-
 always_ff @(posedge clk) begin
     ff <= a;
 end
