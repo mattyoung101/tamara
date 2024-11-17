@@ -486,6 +486,19 @@ void LogicCone::wire(
     // now, wire the cone's output node to the voter's OUT connection
     connect(module, outputNode->getRTLILObjPtr(), voter->out);
 
+    // fix up replicated wires (complicated)
+    fixUpReplicatedWires(module, connections);
+
+    // sink error node
+    log("%sSinking error node%s\n", COLOUR(Cyan), RESET());
+    if (!errorSink.has_value()) {
+        log_warning("Error sink is undefined, cannot sink it! You should define (* tamara_error_sink *) on a wire.");
+        return;
+    }
+    connect(module, errorSink.value(), voter->err);
+}
+
+void LogicCone::fixUpReplicatedWires(RTLIL::Module *module, RTLILWireConnections &connections) {
     // now, we need to track down and re-wire those wires which we replicated (currently, they will have
     // multiple drivers)
     log("%sFixing up wires we replicated (that will now have multiple drivers)%s\n", COLOUR(Cyan), RESET());

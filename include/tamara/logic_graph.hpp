@@ -294,6 +294,9 @@ private:
     //! cone.
     std::vector<RTLILAnyPtr> collectReplicasRTLIL(const RTLILAnyPtr &obj);
 
+    //! Tracks down and re-wires those wires which we replicated (currently, they will have multiple drivers)
+    void fixUpReplicatedWires(RTLIL::Module *module, RTLILWireConnections &connections);
+
     // Based on this idea: https://stackoverflow.com/a/2978575
     // We don't thread, so no mutex required
     static uint32_t g_cone_ID;
