@@ -1,0 +1,18 @@
+# Tests applying end to end TMR to a simple NOT gate circuit WITH a DFF.
+
+plugin -i libtamara.so
+
+read_verilog -sv ../tests/verilog/not_2bit.sv
+hierarchy -top inverter
+tamara_propagate
+
+synth
+tamara_propagate
+check
+write_rtlil
+
+tamara_tmr
+check
+write_rtlil
+write_verilog
+show -colors 420
