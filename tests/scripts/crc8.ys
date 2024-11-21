@@ -4,8 +4,6 @@ plugin -i libtamara.so
 
 read_verilog ../tests/verilog/crc8.v
 hierarchy -top crc
-tamara_propagate
-check
 
 prep
 write_rtlil

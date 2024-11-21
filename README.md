@@ -74,8 +74,7 @@ $ yosys
 yosys> plugin -i libtamara.so
 ```
 
-This will then make available the `tamara_propagate` and `tamara_tmr` commands (with their help as well, which
-you should look at!)
+This will then make available the `tamara_tmr` command (with help as well, which you should look at!)
 
 For a quick build and run cycle, you can compile and load TaMaRa at the same time:
 

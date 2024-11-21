@@ -12,7 +12,6 @@ include(GNUInstallDirs)
 
 add_library(tamara SHARED
     src/tamara_tmr_pass.cpp
-    src/tamara_propagate_pass.cpp
     src/tamara_debug.cpp
     src/voter_builder.cpp
     src/logic_graph.cpp

@@ -4,7 +4,6 @@ plugin -i libtamara.so
 
 read_verilog -sv ../tests/verilog/not_voter_eqy.sv
 hierarchy -top inverter
-tamara_propagate
 
 prep
 check

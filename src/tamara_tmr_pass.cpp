@@ -38,16 +38,13 @@ struct TamaraTMRPass : public Pass {
         log("majority voters.\n\n");
 
         log("The 'tamara_tmr' command should be run after synthesis but before\n");
-        log("techmapping. It must be run after the 'tamara_propagate command.\n");
+        log("techmapping.\n");
     }
 
     void execute(std::vector<std::string> args, RTLIL::Design *design) override {
         log_header(design, "Starting TaMaRa automated triple modular redundancy\n\n");
 
-        // first check we have run propagate
-        if (!design->scratchpad_get_bool("tamara_propagate.didRun")) {
-            log_error("You have not yet run tamara_propagate! See 'help tamara_propagate'.\n");
-        }
+        // FIXME: find design marked (* tamara_triplicate *)
 
         // we can only operate on one module
         if (design->top_module() == nullptr) {
@@ -152,7 +149,7 @@ private:
 
     //! Determines if the cells annotations are suitable to triplicate
     static constexpr bool shouldConsiderForTMR(const RTLIL::AttrObject *obj) {
-        return obj->has_attribute(TRIPLICATE_ANNOTATION) && !obj->has_attribute(IGNORE_ANNOTATION);
+        return !obj->has_attribute(IGNORE_ANNOTATION);
     }
 
     //! Inserts a value into the hashmap, or adds it then inserts if not present

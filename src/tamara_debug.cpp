@@ -33,7 +33,6 @@ struct TamaraDebug : public Pass {
 
         log("Executes the debug task specified.\n");
         log("Current tasks:\n");
-        log("- forcePropagateDone\n");
         log("- mkvoter\n");
         log("- replicateNot\n");
     }
@@ -46,13 +45,10 @@ struct TamaraDebug : public Pass {
             log_error("Must specify debug task.\n");
         }
 
-        const auto task = args[1];
+        const auto &task = args[1];
 
         // sadly we can't switch on strings
-        if (task == "forcePropagateDone") {
-            log("Forcing propagate to be marked as done\n");
-            design->scratchpad_set_bool("tamara_propagate.didRun", true);
-        } else if (task == "mkvoter") {
+        if (task == "mkvoter") {
             log("Generating one voter\n");
             auto *top = design->addModule(NEW_ID);
 

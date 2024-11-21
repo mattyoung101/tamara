@@ -3,8 +3,6 @@
 plugin -i libtamara.so
 
 hierarchy -top top
-tamara_propagate
-check
 
 prep
 tamara_tmr

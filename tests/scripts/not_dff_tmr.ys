@@ -4,7 +4,6 @@ plugin -i libtamara.so
 
 read_verilog -sv ../tests/verilog/not_dff_tmr.sv
 hierarchy -top not_dff_tmr
-tamara_propagate
 
 prep
 check

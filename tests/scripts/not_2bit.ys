@@ -4,9 +4,7 @@ plugin -i libtamara.so
 
 read_verilog -sv ../tests/verilog/not_2bit.sv
 hierarchy -top inverter
-tamara_propagate
 
-prep
 splitnets
 splitcells
 write_rtlil

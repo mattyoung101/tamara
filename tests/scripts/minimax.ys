@@ -4,8 +4,6 @@ plugin -i libtamara.so
 
 read_verilog ../tests/verilog/minimax.v
 hierarchy -top minimax
-tamara_propagate
-check
 
 prep
 write_rtlil

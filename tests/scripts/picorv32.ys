@@ -4,11 +4,8 @@ plugin -i libtamara.so
 
 read_verilog ../tests/verilog/picorv32.v
 hierarchy -top picorv32
-tamara_propagate
-check
 
 prep
-tamara_propagate
 tamara_tmr
 check
 

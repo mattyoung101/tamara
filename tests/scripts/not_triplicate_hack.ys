@@ -4,7 +4,7 @@ plugin -i libtamara.so
 
 read_verilog -sv ../tests/verilog/not_dff_tmr.sv
 write_rtlil
-tamara_propagate
+
 prep
 write_rtlil
 

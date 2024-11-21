@@ -12,7 +12,6 @@ plugin -i libtamara.so
 read_verilog -sv ../tests/verilog/not_tmr.sv
 hierarchy -top inverter
 rename -top design
-tamara_propagate
 prep
 tamara_tmr
 
