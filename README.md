@@ -168,3 +168,7 @@ Code and tests are available under the **Mozilla Public License v2.0**, see the 
 Papers and slides (in the `papers` directory) are available under **CC Attribution 4.0 International**,
 see the file LICENSE.papers.
 
+Many files in the `tests/verilog` directory have been pulled in from other projects. These are all under
+compatible open-source licences, and have their copyright included at the top of the file if applicable.
+As these are external projects, the TaMaRa MPL 2.0 licence does _not_ apply to these files.
+

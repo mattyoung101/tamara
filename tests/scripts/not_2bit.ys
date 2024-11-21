@@ -6,10 +6,11 @@ read_verilog -sv ../tests/verilog/not_2bit.sv
 hierarchy -top inverter
 tamara_propagate
 
-synth
-tamara_propagate
-check
+prep
+splitnets
+splitcells
 write_rtlil
+show -colors 420
 
 tamara_tmr
 check

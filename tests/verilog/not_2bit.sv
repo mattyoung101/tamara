@@ -1,4 +1,5 @@
-// Gold circuit without voter
+// Simple example of a 2 bit inverter
+
 (* tamara_triplicate *)
 module inverter(
     input logic[1:0] a,

@@ -1,14 +1,16 @@
-// 16-bit parallel in, serial out shift register
-(*triplicate*)
+// 4-bit parallel in, serial out shift register
+(* tamara_triplicate *)
 module shiftreg_piso(
     input logic clk,
     input logic rst,
     input logic load,
-    input logic[15:0] din,
-    output logic dout
+    input logic[3:0] din,
+    output logic dout,
+    (* tamara_error_sink *)
+    output logic err
 );
 
-logic[15:0] temp;
+logic[3:0] temp;
 
 always_ff @(posedge clk) begin
     if (rst) begin
@@ -20,9 +22,9 @@ always_ff @(posedge clk) begin
             temp <= din;
         end else begin
             // dout is the high bit
-            dout <= temp[15];
+            dout <= temp[3];
             // shift along temp
-            temp <= { temp[14:0], 1'b0 };
+            temp <= { temp[2:0], 1'b0 };
         end
     end
 end

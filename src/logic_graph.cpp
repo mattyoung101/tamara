@@ -178,7 +178,8 @@ void changeInput(RTLIL::Module *module, RTLIL::Cell *cell, RTLIL::Wire *wire) {
         if (cellTypes.cell_input(cell->type, idString)) {
             if (foundInput) {
                 log_error(
-                    "Cell %s has multiple input ports. This is currently unsupported.\n", log_id(cell->name));
+                    "Cell %s has multiple input ports (this one is %s). This is currently unsupported.\n",
+                    log_id(cell->name), log_id(idString));
             }
 
             log("changeInput: Changing input port '%s' to point to wire %s\n", log_id(idString),
@@ -492,7 +493,8 @@ void LogicCone::wire(
     // sink error node
     log("%sSinking error node%s\n", COLOUR(Cyan), RESET());
     if (!errorSink.has_value()) {
-        log_warning("Error sink is undefined, cannot sink it! You should define (* tamara_error_sink *) on a wire.");
+        log_warning(
+            "Error sink is undefined, cannot sink it! You should define (* tamara_error_sink *) on a wire.");
         return;
     }
     connect(module, errorSink.value(), voter->err);
@@ -584,11 +586,11 @@ void LogicCone::fixUpReplicatedWires(RTLIL::Module *module, RTLILWireConnections
                     // log("cellReplica: %s  wireReplica: %s\n", logRTLILName(cellReplicas[j]),
                     // logRTLILName(wireReplicas[j]));
 
-                    auto *thisCell = std::get<RTLIL::Cell*>(cellReplicas[j]);
-                    auto *thisWire = std::get<RTLIL::Wire*>(wireReplicas[j]);
+                    auto *thisCell = std::get<RTLIL::Cell *>(cellReplicas[j]);
+                    auto *thisWire = std::get<RTLIL::Wire *>(wireReplicas[j]);
 
-                    log("Going to connect input port of cell %s to our wire %s\n",
-                       log_id(thisCell->name), log_id(thisWire->name));
+                    log("Going to connect input port of cell %s to our wire %s\n", log_id(thisCell->name),
+                        log_id(thisWire->name));
 
                     changeInput(module, thisCell, thisWire);
 
