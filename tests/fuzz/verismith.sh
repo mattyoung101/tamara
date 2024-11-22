@@ -14,9 +14,9 @@ if [[ $dir != *tamara/build ]] then
 fi
 
 # Number of test cases to run
-TESTS=1000
-UUID=$(uuid)
-VERISMITH_DIR=/tmp/verismith/$UUID
+TESTS=100
+UUID=$(date +%Y-%m-%d-%H-%M.%S)
+VERISMITH_DIR=verismith_out/$UUID
 
 echo "Making temp dir in $VERISMITH_DIR..."
 mkdir -p $VERISMITH_DIR
