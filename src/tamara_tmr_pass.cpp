@@ -44,7 +44,7 @@ struct TamaraTMRPass : public Pass {
     void execute(std::vector<std::string> args, RTLIL::Design *design) override {
         log_header(design, "Starting TaMaRa automated triple modular redundancy\n\n");
 
-        // FIXME: find design marked (* tamara_triplicate *)
+        // FIXME: find module marked (* tamara_triplicate *)
 
         // we can only operate on one module
         if (design->top_module() == nullptr) {
@@ -78,8 +78,6 @@ struct TamaraTMRPass : public Pass {
         auto successors = std::queue<LogicCone>();
 
         for (const auto &output : outputs) {
-            // TODO should we skip the cell if it's not labelled tamara_triplicate?
-
             log("Searching from output port %s\n", log_id(output->name));
             auto cone = LogicCone(output);
 
@@ -113,8 +111,6 @@ struct TamaraTMRPass : public Pass {
         while (!successors.empty()) {
             auto cone = successors.front();
             successors.pop();
-
-            // TODO should we skip the cell if it's not labelled tamara_triplicate?
 
             // start at the output port, do a BFS backwards to build up our logic cones
             cone.search(module, neighbours);
@@ -253,6 +249,7 @@ private:
     //! there is no error sink, this will raise a warning. We look for output wires from the module with the
     //! annotation (* tamara_error_sink *).
     void locateErrorSink(RTLIL::Module *module) {
+        errorSink = std::nullopt;
         for (const auto &wire : module->wires()) {
             if (wire->has_attribute(ERROR_SINK_ANNOTATION)) {
                 if (errorSink.has_value()) {
