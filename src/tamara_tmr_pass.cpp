@@ -229,8 +229,9 @@ private:
                 if (shouldConsiderForTMR(lhsWire) && shouldConsiderForTMR(rhsWire)) {
                     log("[neighbour] %s --> %s\n", log_id(lhsWire->name), log_id(rhsWire->name));
 
-                    // build connection between RHS -> LHS (since we do backwards BFS)
-                    addConnection(connections, rhsWire, lhsWire);
+                    // apparently we don't actually need to reverse this, we're ok to just map lhs -> rhs
+                    // despite doing backwards BFS
+                    addConnection(connections, lhsWire, rhsWire);
                 }
             } else {
                 // TODO get name, if possible?

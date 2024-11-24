@@ -74,6 +74,21 @@ const char *logRTLILName(const RTLILAnyPtr &ptr) {
     return log_id(getRTLILName(ptr));
 }
 
+//! Casts a RTLILAnyPtr to an RTLIL::AttrObject
+const RTLIL::AttrObject *toAttrObject(const RTLILAnyPtr &ptr) {
+    return std::visit(
+        [](auto &&arg) {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
+                return dynamic_cast<RTLIL::AttrObject *>(arg);
+            }
+            if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
+                return dynamic_cast<RTLIL::AttrObject *>(arg);
+            }
+        },
+        ptr);
+}
+
 //! Instantiates a new logic cone from the RTLILAnyPtr.
 LogicCone newLogicCone(const RTLILAnyPtr &ptr) {
     return std::visit(
@@ -512,21 +527,21 @@ void LogicCone::fixUpReplicatedWires(RTLIL::Module *module, RTLILWireConnections
         }
 
         // let's determine if this wire is actually connected to something we've replicated
+        // we've already checked it's a wire, so this std::get is safe to do
         auto *wire = std::get<Wire *>(wirePtr->getRTLILObjPtr());
         auto connectedNodes = connections[wire];
 
         for (const auto &connected : connectedNodes) {
             // this is a cell which is connected to that wire
-            // FIXME this will blow up for wire-wire connections I expect
-            auto *cell = std::get<RTLIL::Cell *>(connected);
+            const auto *attrObject = toAttrObject(connected);
 
             // if the cell has a (* tamara_cone *) annotation, it's been touched by replicate()
-            if (cell->has_attribute(CONE_ANNOTATION)) {
-                log("Found replicated cell '%s' connected to wire node '%s'\n", log_id(cell->name),
+            if (attrObject->has_attribute(CONE_ANNOTATION)) {
+                log("Found replicated cell '%s' connected to wire node '%s'\n", logRTLILName(connected),
                     log_id(wire->name));
 
                 // now we can collect replicas for the cell, and replicas for the wire, and tie them together!
-                auto cellReplicas = collectReplicasRTLIL(cell);
+                auto cellReplicas = collectReplicasRTLIL(connected);
                 auto wireReplicas = element->getReplicas();
 
                 log_assert(cellReplicas.size() == wireReplicas.size()
@@ -539,13 +554,12 @@ void LogicCone::fixUpReplicatedWires(RTLIL::Module *module, RTLILWireConnections
                     log("Connect %s to %s\n", log_id(cellReplica->name), log_id(wireReplica->name));
 
                     connect(module, cellReplica, wireReplica);
-                    cell->check();
                     cellReplica->check();
                 }
             } else {
                 log_warning("Cell '%s' was not replicated, but perhaps should have been? (LogicCone::wire "
                             "fix up pass)\n",
-                    log_id(cell->name));
+                    logRTLILName(connected));
             }
         }
 
@@ -571,11 +585,10 @@ void LogicCone::fixUpReplicatedWires(RTLIL::Module *module, RTLILWireConnections
             log("Reverse for %s: %s\n", log_id(wire->name), logRTLILName(reverse));
 
             // now, find the replicas for the reverse (if it's been replicated)
-            // FIXME this will also blow up for wire-wire connections
-            auto *cell = std::get<RTLIL::Cell *>(reverse);
-            if (cell->has_attribute(CONE_ANNOTATION)) {
+            const auto *attrObject = toAttrObject(reverse);
+            if (attrObject->has_attribute(CONE_ANNOTATION)) {
                 // now track down the replicas for the cell and for us
-                auto cellReplicas = collectReplicasRTLIL(cell);
+                auto cellReplicas = collectReplicasRTLIL(reverse);
                 auto wireReplicas = element->getReplicas();
 
                 log_assert(cellReplicas.size() == wireReplicas.size()
@@ -604,7 +617,7 @@ void LogicCone::fixUpReplicatedWires(RTLIL::Module *module, RTLILWireConnections
             } else {
                 log_warning("Cell '%s' was not replicated, but perhaps should have been? (LogicCone::wire "
                             "fix up *inverse* pass)\n",
-                    log_id(cell->name));
+                    logRTLILName(reverse));
             }
         }
 
