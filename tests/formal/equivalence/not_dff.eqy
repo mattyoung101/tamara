@@ -15,7 +15,11 @@ rename -top design
 prep
 tamara_tmr
 
-[strategy sby]
-use sby
-depth 2
-engine smtbmc yices
+# [strategy sby]
+# use sby
+# depth 2
+# engine smtbmc yices
+
+[strategy sat]
+use sat
+depth 15

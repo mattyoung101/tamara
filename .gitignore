@@ -2,3 +2,4 @@
 build
 *.bkp
 *.autosave
+.directory
