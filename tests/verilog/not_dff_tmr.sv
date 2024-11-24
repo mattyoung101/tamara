@@ -18,4 +18,8 @@ end
 
 assign o = !ff;
 
+`ifndef TAMARA
+assign err = 0;
+`endif
+
 endmodule

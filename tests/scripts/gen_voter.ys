@@ -6,5 +6,5 @@ write_rtlil
 #write_verilog
 #write_cxxrtl
 check
-show
+show -colors 420
 

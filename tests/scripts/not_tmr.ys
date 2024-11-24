@@ -2,7 +2,7 @@
 
 plugin -i libtamara.so
 
-read_verilog -sv ../tests/verilog/not_voter_eqy.sv
+read_verilog -DTAMARA -sv ../tests/verilog/not_tmr.sv
 hierarchy -top inverter
 
 prep

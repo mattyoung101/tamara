@@ -2,7 +2,7 @@
 
 plugin -i libtamara.so
 
-read_verilog -sv ../tests/verilog/not_dff_tmr.sv
+read_verilog -DTAMARA -sv ../tests/verilog/not_dff_tmr.sv
 hierarchy -top not_dff_tmr
 
 prep

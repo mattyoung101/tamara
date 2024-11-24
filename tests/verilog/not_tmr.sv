@@ -10,6 +10,10 @@ module inverter(
 
 assign o = !a;
 
+`ifndef TAMARA
+assign err = 0;
+`endif
+
 endmodule
 
 

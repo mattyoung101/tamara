@@ -9,7 +9,7 @@ rename -top design
 
 [gate]
 plugin -i libtamara.so
-read_verilog -sv ../tests/verilog/not_tmr.sv
+read_verilog -DTAMARA -sv ../tests/verilog/not_tmr.sv
 hierarchy -top inverter
 rename -top design
 prep
