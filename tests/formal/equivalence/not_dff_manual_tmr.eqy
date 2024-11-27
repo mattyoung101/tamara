@@ -1,0 +1,21 @@
+# Test that checks that a sequential circuit is equivalent when manually replicating elements and inserting a
+# voter.
+
+[gold]
+read_verilog -sv ../tests/verilog/not_dff_tmr.sv
+prep -top not_dff_tmr
+
+[gate]
+read_verilog -sv ../tests/verilog/voter.sv
+read_verilog -sv ../tests/verilog/not_dff_manual_tmr.sv
+prep -top not_dff_tmr
+flatten
+
+[strategy sby]
+use sby
+depth 2
+engine smtbmc yices
+
+# [strategy sat]
+# use sat
+# depth 25

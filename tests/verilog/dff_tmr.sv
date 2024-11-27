@@ -1,4 +1,4 @@
-// This is literally just a NOT gate
+// This is the same as not_dff_tmr but without the NOT gate
 
 (* tamara_triplicate *)
 module dff_tmr(

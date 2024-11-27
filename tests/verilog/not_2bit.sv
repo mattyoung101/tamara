@@ -1,4 +1,4 @@
-// Simple example of a 2 bit inverter
+// Simple example of a 2 bit inverter which triggers the multi-bit wiring problem
 
 (* tamara_triplicate *)
 module inverter(

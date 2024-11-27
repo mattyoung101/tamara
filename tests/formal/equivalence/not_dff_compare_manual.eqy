@@ -1,0 +1,24 @@
+# Test that checks that a manual implementation of the not_dff_tmr circuit is equivalent to the TaMaRa auto
+# generated one
+
+[gold]
+read_verilog -sv ../tests/verilog/voter.sv
+read_verilog -sv ../tests/verilog/not_dff_manual_tmr.sv
+prep -top not_dff_tmr
+flatten
+
+[gate]
+plugin -i libtamara.so
+read_verilog -DTAMARA -sv ../tests/verilog/not_dff_tmr.sv
+hierarchy -top not_dff_tmr
+prep
+tamara_tmr
+
+[strategy sby]
+use sby
+depth 2
+engine smtbmc yices
+
+# [strategy sat]
+# use sat
+# depth 25
