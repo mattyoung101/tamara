@@ -14,7 +14,7 @@ if [[ $dir != *tamara/build ]] then
 fi
 
 # Number of test cases to run
-TESTS=100
+TESTS=4096
 UUID=$(date +%Y-%m-%d-%H-%M.%S)
 VERISMITH_DIR=verismith_out/$UUID
 
@@ -23,7 +23,7 @@ mkdir -p $VERISMITH_DIR
 
 # Run verismith to generate bulk Verilog files in parallel
 echo "Generating data..."
-seq -w 0 $TESTS | parallel --progress ./verismith generate ">" $VERISMITH_DIR/{}.v
+seq -w 0 $TESTS | parallel --progress ./verismith generate --config ../tests/fuzz/tiny.toml ">" $VERISMITH_DIR/{}.v
 
 # Prepend (* tamara_triplicate *) to each file
 echo "Prepending (* tamara_triplicate *) annotation..."

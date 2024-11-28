@@ -1,0 +1,2 @@
+read_verilog ../tests/fuzz/reduce/gh7/bug.v
+script ../tests/scripts/verismith.ys
