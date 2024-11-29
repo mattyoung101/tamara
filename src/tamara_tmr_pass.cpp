@@ -194,6 +194,9 @@ private:
                     wire = signal.as_wire();
                 } else if (signal.is_bit()) {
                     wire = signal.as_bit().wire;
+                } else if (!signal.chunks().empty()) {
+                    // FIXME this is somewhat questionable and should be tested on more designs
+                    wire = signal.chunks().front().wire;
                 }
 
                 if (wire == nullptr) {
