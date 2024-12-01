@@ -32,8 +32,8 @@ public:
 //! Used to build and insert voters into a Yosys RTLIL design.
 class VoterBuilder {
 public:
-    //! Insert one voter into the design.
-    static Voter build(RTLIL::Module *module);
+    //! Insert one voter into the design. The voter will operate on the specified number of bits.
+    static Voter build(RTLIL::Module *module, int bits);
 };
 
 }; // namespace tamara

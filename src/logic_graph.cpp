@@ -463,7 +463,10 @@ void LogicCone::insertVoter(RTLIL::Module *module) {
         return;
     }
 
-    voter = VoterBuilder::build(module);
+    // FIXME get number of bits correct
+    // FIXME also on this note - throw an error if we detect a non IO-node wire that's multi bit (should have
+    // been removed by splitnets and splitcells)
+    voter = VoterBuilder::build(module, 1);
 }
 
 void LogicCone::wire(

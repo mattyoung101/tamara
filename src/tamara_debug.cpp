@@ -35,6 +35,7 @@ struct TamaraDebug : public Pass {
         log("Current tasks:\n");
         log("- mkvoter\n");
         log("- replicateNot\n");
+        log("- mkMultiVoter\n");
     }
 
     void execute(std::vector<std::string> args, RTLIL::Design *design) override {
@@ -71,7 +72,7 @@ struct TamaraDebug : public Pass {
             top->fixup_ports();
 
             // build voter
-            auto voter = tamara::VoterBuilder::build(top);
+            auto voter = tamara::VoterBuilder::build(top, 1);
 
             // add output ports and connect voter to output
             top->connect(voter.a, a);
@@ -96,6 +97,41 @@ struct TamaraDebug : public Pass {
             // fake cone so we can try inserting a voter
             auto cone = tamara::LogicCone(notGate);
             cone.insertVoter(top);
+        } else if (task == "mkMultiVoter") {
+            log("Generating a 2-bit voter\n");
+
+            auto *top = design->addModule(NEW_ID);
+
+            // add inputs
+            // note: these don't have the $ symbol, because they are top-level ports
+            auto *a = top->addWire(ID(a), 2);
+            auto *b = top->addWire(ID(b), 2);
+            auto *c = top->addWire(ID(c), 2);
+            a->port_input = true;
+            b->port_input = true;
+            c->port_input = true;
+
+            // add outputs
+            auto *out = top->addWire(ID(out), 2);
+            auto *err = top->addWire(ID(err), 2);
+            out->port_output = true;
+            err->port_output = true;
+
+            // add wires to ports
+            top->fixup_ports();
+
+            // build voter
+            auto voter = tamara::VoterBuilder::build(top, 2);
+
+            // add output ports and connect voter to output
+            top->connect(voter.a, a);
+            top->connect(voter.b, b);
+            top->connect(voter.c, c);
+            top->connect(err, voter.err);
+            top->connect(out, voter.out);
+
+            top->check();
+
         } else {
             log_error("Unhandled debug task: '%s'\n", task.c_str());
         }

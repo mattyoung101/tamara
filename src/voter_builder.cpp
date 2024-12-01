@@ -9,22 +9,23 @@
 #include "kernel/yosys_common.h"
 #include "tamara/util.hpp"
 
-USING_YOSYS_NAMESPACE
+USING_YOSYS_NAMESPACE;
 
 // NOLINTBEGIN(bugprone-macro-parentheses) These macros do not need parentheses
-#define WIRE(A, B) auto A##_##B##_wire = module->addWire(NEW_ID_SUFFIX(#A "_" #B "_wire"));
-#define NOT(number, A, B) makeIgnored(module->addLogicNot(NEW_ID_SUFFIX("not" #number), A, B))
-#define AND(number, A, B, Y) makeIgnored(module->addLogicAnd(NEW_ID_SUFFIX("and" #number), A, B, Y))
-#define OR(number, A, B, Y) makeIgnored(module->addLogicOr(NEW_ID_SUFFIX("or" #number), A, B, Y))
+#define WIRE(A, B) auto A##_##B##_wire = makeAsVoter(module->addWire(NEW_ID_SUFFIX(#A "_" #B "_wire"), bits));
+#define NOT(number, A, B) makeAsVoter(module->addLogicNot(NEW_ID_SUFFIX("not" #number), A, B))
+#define AND(number, A, B, Y) makeAsVoter(module->addLogicAnd(NEW_ID_SUFFIX("and" #number), A, B, Y))
+#define OR(number, A, B, Y) makeAsVoter(module->addLogicOr(NEW_ID_SUFFIX("or" #number), A, B, Y))
 // NOLINTEND(bugprone-macro-parentheses)
 
 using namespace tamara;
 
 namespace {
 
-//! Makes sure that the RTLIL object is ignored. We wouldn't want to accidentally triplicate voters.
+//! Makes sure that the RTLIL object is marked as a voter. This is mainly for the benefit of fault injection
+//! testing, so that it doesn't flip the bits of voters.
 template <typename T>
-constexpr T makeIgnored(T obj) {
+constexpr T makeAsVoter(T obj) {
     // we don't explicitly add (* tamara_ignore *), in case we want to process the circuit multiple times
     // intentionally as a test
     obj->set_bool_attribute(VOTER_ANNOTATION);
@@ -33,15 +34,15 @@ constexpr T makeIgnored(T obj) {
 
 }; // namespace
 
-Voter VoterBuilder::build(RTLIL::Module *module) {
+Voter VoterBuilder::build(RTLIL::Module *module, int bits) {
     // add inputs
-    auto *a = module->addWire(NEW_ID_SUFFIX("A"));
-    auto *b = module->addWire(NEW_ID_SUFFIX("B"));
-    auto *c = module->addWire(NEW_ID_SUFFIX("C"));
+    auto *a = module->addWire(NEW_ID_SUFFIX("A"), bits);
+    auto *b = module->addWire(NEW_ID_SUFFIX("B"), bits);
+    auto *c = module->addWire(NEW_ID_SUFFIX("C"), bits);
 
     // add outputs
-    auto *out = module->addWire(NEW_ID_SUFFIX("OUT"));
-    auto *err = module->addWire(NEW_ID_SUFFIX("ERR"));
+    auto *out = module->addWire(NEW_ID_SUFFIX("OUT"), bits);
+    auto *err = module->addWire(NEW_ID_SUFFIX("ERR"), bits);
 
     // N.B. This is all based on the Logisim design (tests/manual_tests/simple_tmr.circ)
 
