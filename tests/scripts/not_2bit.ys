@@ -9,10 +9,9 @@ prep
 splitcells
 splitnets
 write_rtlil
-show -colors 420
 
-# tamara_tmr
-# check
-# write_rtlil
-# write_verilog
-# show -colors 420
+tamara_tmr
+check
+write_rtlil
+write_verilog
+show -colors 420

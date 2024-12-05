@@ -113,7 +113,7 @@ struct TamaraDebug : public Pass {
 
             // add outputs
             auto *out = top->addWire(ID(out), 2);
-            auto *err = top->addWire(ID(err), 2);
+            auto *err = top->addWire(ID(err));
             out->port_output = true;
             err->port_output = true;
 
@@ -131,7 +131,6 @@ struct TamaraDebug : public Pass {
             top->connect(out, voter.out);
 
             top->check();
-
         } else {
             log_error("Unhandled debug task: '%s'\n", task.c_str());
         }

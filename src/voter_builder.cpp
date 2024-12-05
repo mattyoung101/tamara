@@ -34,6 +34,8 @@ constexpr T makeAsVoter(T obj) {
 
 }; // namespace
 
+// TODO design wise, I think we should have voter_builder.cpp/.h also handle wiring the error signal
+
 Voter VoterBuilder::build(RTLIL::Module *module, int bits) {
     // add inputs
     auto *a = module->addWire(NEW_ID_SUFFIX("A"), bits);
@@ -42,9 +44,15 @@ Voter VoterBuilder::build(RTLIL::Module *module, int bits) {
 
     // add outputs
     auto *out = module->addWire(NEW_ID_SUFFIX("OUT"), bits);
-    auto *err = module->addWire(NEW_ID_SUFFIX("ERR"), bits);
+    // ERR is always 1-bit, either there is an error, or no error
+    auto *err = module->addWire(NEW_ID_SUFFIX("ERR"));
 
     // N.B. This is all based on the Logisim design (tests/manual_tests/simple_tmr.circ)
+
+    // FIXME we need to reconsider how the error signal is going to work, we need to sink the error into an
+    // internal buffer and then AND them all together
+    // ---
+    // I think we need a $reduce_or cell somewhere (maybe instead of the last $or cell?)
 
     // NOT
     // a -> not0 -> and2

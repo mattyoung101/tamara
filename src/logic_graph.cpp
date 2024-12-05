@@ -14,6 +14,7 @@
 #include "tamara/voter_builder.hpp"
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <variant>
 
 USING_YOSYS_NAMESPACE;
@@ -96,7 +97,7 @@ LogicCone newLogicCone(const RTLILAnyPtr &ptr) {
             using T = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
                 // make sure we have a DFF if it's an RTLIL::Cell
-                log_assert(isDFF(arg));
+                log_assert(isDFF(arg) && "Tried to instantiate logic cone with a non-DFF cell");
                 return LogicCone(arg);
             }
             if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
@@ -214,7 +215,7 @@ void changeInput(RTLIL::Module *module, RTLIL::Cell *cell, RTLIL::Wire *wire) {
 
 //! RTLILWireConnections maps a -> (b, c, d, e); but what this function does is find "a" given say b, or c, or
 //! d. Returns empty list if no results found.
-//! Note: This is REALLY expensive currently on the order of O(n^2).
+//! PERF: This is REALLY expensive currently on the order of O(n^2).
 std::vector<RTLILAnyPtr> rtlilInverseLookup(RTLILWireConnections &connections, Wire *target) {
     log("Performing inverse lookup for wire %s\n", log_id(target->name));
     std::vector<RTLILAnyPtr> out;
@@ -454,19 +455,20 @@ void LogicCone::replicate(RTLIL::Module *module) {
     replicateIfNotIO(outputNode, module);
 }
 
-void LogicCone::insertVoter(RTLIL::Module *module) {
+std::optional<Voter> LogicCone::insertVoter(RTLIL::Module *module) {
     log("%sInserting voter into logic cone %u%s\n", COLOUR(Blue), id, RESET());
     log_assert(!voter.has_value() && "Cone already has a voter!");
     if (cone.empty()) {
         log("%sSkipping voter insertion into cone %u - internal elements empty%s\n", COLOUR(Red), id,
             RESET());
-        return;
+        return std::nullopt;
     }
 
-    // FIXME get number of bits correct
-    // FIXME also on this note - throw an error if we detect a non IO-node wire that's multi bit (should have
-    // been removed by splitnets and splitcells)
-    voter = VoterBuilder::build(module, 1);
+    auto width = outputNode->getWidth();
+    log("Voter width: %d bits\n", width);
+
+    voter = VoterBuilder::build(module, width);
+    return voter;
 }
 
 void LogicCone::wire(
@@ -507,15 +509,6 @@ void LogicCone::wire(
 
     // fix up replicated wires (complicated)
     fixUpReplicatedWires(module, connections);
-
-    // sink error node
-    log("%sSinking error node%s\n", COLOUR(Cyan), RESET());
-    if (!errorSink.has_value()) {
-        log_warning(
-            "Error sink is undefined, cannot sink it! You should define (* tamara_error_sink *) on a wire.");
-        return;
-    }
-    connect(module, errorSink.value(), voter->err);
 }
 
 void LogicCone::fixUpReplicatedWires(RTLIL::Module *module, RTLILWireConnections &connections) {

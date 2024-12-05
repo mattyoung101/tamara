@@ -71,6 +71,9 @@ public:
     //! Returns replicas, if this is supported (not supported on IONode, which cannot be replicated).
     virtual std::vector<RTLILAnyPtr> getReplicas() = 0;
 
+    //! Returns the width of the wire if this makes sense, otherwise throws an error
+    virtual int getWidth() = 0;
+
     //! During LogicCone::computeNeighbours, this call turns an RTLIL neighbour (ptr) into a new logic graph
     //! node, with the parent correctly set to this TMRGraphNode using getSelfPtr().
     [[nodiscard]] TMRGraphNode::Ptr newLogicGraphNeighbour(
@@ -130,6 +133,10 @@ public:
         return out;
     }
 
+    int getWidth() override {
+        log_error("TaMaRa internal error: Cannot get width of an ElementCellNode!\n");
+    }
+
 private:
     RTLIL::Cell *cell;
     std::vector<RTLIL::Cell *> replicas;
@@ -169,6 +176,10 @@ public:
             out.emplace_back(replica);
         }
         return out;
+    }
+
+    int getWidth() override {
+        return wire->width;
     }
 
 private:
@@ -229,6 +240,10 @@ public:
         log_error("TaMaRa internal error: Cannot get replicas of an IONode!");
     }
 
+    int getWidth() override {
+        return io->width;
+    }
+
 private:
     RTLIL::Wire *io;
 };
@@ -254,8 +269,9 @@ public:
     //! Replicates the RTLIL components in a logic cone
     void replicate(RTLIL::Module *module);
 
-    //! Inserts voters into the module
-    void insertVoter(RTLIL::Module *module);
+    //! Inserts voters into the module. Returns a copy of the voter (this is mainly for routing the error
+    //! signal). This is an optional, if std::nullopt, then a voter was not inserted for this cone.
+    std::optional<Voter> insertVoter(RTLIL::Module *module);
 
     //! Wires up the replicated components and the module
     void wire(RTLIL::Module *module, std::optional<Wire*> errorSink, RTLILWireConnections &connections);
