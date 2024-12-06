@@ -1,0 +1,81 @@
+# Truth table
+# Exported on Fri Dec 06 17:27:41 AEST 2024
+
+# Hints and Notes on Formatting:
+# * You can edit this file then import it back into Logisim!
+# * Anything after a '#' is a comment and will be ignored.
+# * Blank lines and separator lines (e.g., ~~~~~~) are ignored.
+# * Keep column names simple (no spaces, punctuation, etc.)
+# * 'Name[N..0]' indicates an N+1 bit variable, whereas
+#   'Name' by itself indicates a 1-bit variable.
+# * You can use 'x' or '-' to indicate "don't care" for both
+#   input and output bits.
+# * You can use binary (e.g., '10100011xxxx') notation or
+#   or hex (e.g., 'C3x'). Logisim will figure out which is which.
+
+a[1..0] b[1..0] c[1..0] | outt[1..0] err
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  00      00      00    |     --      - 
+  00      00      01    |     --      - 
+  00      00      10    |     --      - 
+  00      00      11    |     --      - 
+  00      01      00    |     --      - 
+  00      01      01    |     --      - 
+  00      01      10    |     --      - 
+  00      01      11    |     --      - 
+  00      10      00    |     --      - 
+  00      10      01    |     --      - 
+  00      10      10    |     --      - 
+  00      10      11    |     --      - 
+  00      11      00    |     --      - 
+  00      11      01    |     --      - 
+  00      11      10    |     --      - 
+  00      11      11    |     --      - 
+  01      00      00    |     --      - 
+  01      00      01    |     --      - 
+  01      00      10    |     --      - 
+  01      00      11    |     --      - 
+  01      01      00    |     --      - 
+  01      01      01    |     --      - 
+  01      01      10    |     --      - 
+  01      01      11    |     --      - 
+  01      10      00    |     --      - 
+  01      10      01    |     --      - 
+  01      10      10    |     --      - 
+  01      10      11    |     --      - 
+  01      11      00    |     --      - 
+  01      11      01    |     --      - 
+  01      11      10    |     --      - 
+  01      11      11    |     --      - 
+  10      00      00    |     --      - 
+  10      00      01    |     --      - 
+  10      00      10    |     --      - 
+  10      00      11    |     --      - 
+  10      01      00    |     --      - 
+  10      01      01    |     --      - 
+  10      01      10    |     --      - 
+  10      01      11    |     --      - 
+  10      10      00    |     --      - 
+  10      10      01    |     --      - 
+  10      10      10    |     --      - 
+  10      10      11    |     --      - 
+  10      11      00    |     --      - 
+  10      11      01    |     --      - 
+  10      11      10    |     --      - 
+  10      11      11    |     --      - 
+  11      00      00    |     --      - 
+  11      00      01    |     --      - 
+  11      00      10    |     --      - 
+  11      00      11    |     --      - 
+  11      01      00    |     --      - 
+  11      01      01    |     --      - 
+  11      01      10    |     --      - 
+  11      01      11    |     --      - 
+  11      10      00    |     --      - 
+  11      10      01    |     --      - 
+  11      10      10    |     --      - 
+  11      10      11    |     --      - 
+  11      11      00    |     --      - 
+  11      11      01    |     --      - 
+  11      11      10    |     --      - 
+  11      11      11    |     --      - 
