@@ -5,35 +5,36 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL
 // was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #pragma once
-#include "kernel/log.h"
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
+#include <cstddef>
 
 USING_YOSYS_NAMESPACE;
 
 namespace tamara {
 
-//! Result from building a voter
-class Voter {
-public:
-    // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes) don't care
-    RTLIL::Wire *a, *b, *c, *out, *err;
-
-    RTLIL::Wire *operator[](int i) const {
-        switch (i) {
-            case 0: return a;
-            case 1: return b;
-            case 2: return c;
-            default: log_error("Invalid voter operator[] index: %d\n", i);
-        }
-    }
-};
-
 //! Used to build and insert voters into a Yosys RTLIL design.
 class VoterBuilder {
 public:
-    //! Insert one voter into the design. The voter will operate on the specified number of bits.
-    static Voter build(RTLIL::Module *module, int bits);
+    //! Instantiates a new voter builder for the specified module
+    VoterBuilder(RTLIL::Module *module) : module(module) {}
+
+    //! Insert one voter into the design. The voter will use the number of bits in the input wires.
+    //! You specify the `a, b` and `c` wires, as well as the output wire.
+    void build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::Wire *out);
+
+    //! Finalises all of the voters in this module by OR'ing together all the intermediate error signals into
+    //! a final error signal.
+    void finalise(RTLIL::Wire *err);
+
+    //! Returns the number of inserted voters
+    size_t getSize();
+
+private:
+    RTLIL::Module *module;
+    size_t size = 0;
+
+    // TODO hashmap for all modules into their intermediate errors
 };
 
 }; // namespace tamara

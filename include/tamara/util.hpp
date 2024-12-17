@@ -5,6 +5,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL
 // was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #pragma once
+#include "kernel/log.h"
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
 #include <unordered_map>
@@ -34,6 +35,12 @@ constexpr bool isDFF(const RTLIL::Cell *cell) {
     // this logic is borrowed from Yosys wreduce.cc
     return cell->type.in(ID($dff), ID($dffe), ID($adff), ID($adffe), ID($sdff), ID($sdffe), ID($sdffce),
         ID($dlatch), ID($adlatch));
+}
+
+
+template <typename T>
+constexpr void nonNull(T ptr) {
+    log_assert(ptr != nullptr && "TaMaRa internal error: Unexpected null pointer!");
 }
 
 } // namespace tamara

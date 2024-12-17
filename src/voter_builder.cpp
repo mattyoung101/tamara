@@ -5,6 +5,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL
 // was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #include "tamara/voter_builder.hpp"
+#include "kernel/log.h"
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
 #include "tamara/util.hpp"
@@ -12,7 +13,7 @@
 USING_YOSYS_NAMESPACE;
 
 // NOLINTBEGIN(bugprone-macro-parentheses) These macros do not need parentheses
-#define WIRE(A, B) auto A##_##B##_wire = makeAsVoter(module->addWire(NEW_ID_SUFFIX(#A "_" #B "_wire"), bits));
+#define WIRE(A, B) auto A##_##B##_wire = makeAsVoter(module->addWire(NEW_ID_SUFFIX(#A "_" #B "_wire")));
 #define NOT(number, A, B) makeAsVoter(module->addLogicNot(NEW_ID_SUFFIX("not" #number), A, B))
 #define AND(number, A, B, Y) makeAsVoter(module->addLogicAnd(NEW_ID_SUFFIX("and" #number), A, B, Y))
 #define OR(number, A, B, Y) makeAsVoter(module->addLogicOr(NEW_ID_SUFFIX("or" #number), A, B, Y))
@@ -34,25 +35,13 @@ constexpr T makeAsVoter(T obj) {
 
 }; // namespace
 
-// TODO design wise, I think we should have voter_builder.cpp/.h also handle wiring the error signal
+namespace {
 
-Voter VoterBuilder::build(RTLIL::Module *module, int bits) {
-    // add inputs
-    auto *a = module->addWire(NEW_ID_SUFFIX("A"), bits);
-    auto *b = module->addWire(NEW_ID_SUFFIX("B"), bits);
-    auto *c = module->addWire(NEW_ID_SUFFIX("C"), bits);
-
-    // add outputs
-    auto *out = module->addWire(NEW_ID_SUFFIX("OUT"), bits);
-    // ERR is always 1-bit, either there is an error, or no error
-    auto *err = module->addWire(NEW_ID_SUFFIX("ERR"));
-
+//! Inserts one voter. This also takes an error signal, which should be eventually routed through a $reduce_or
+//! cell.
+void buildOne(RTLIL::Module *module, RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::Wire *out,
+    RTLIL::Wire *err) {
     // N.B. This is all based on the Logisim design (tests/manual_tests/simple_tmr.circ)
-
-    // FIXME we need to reconsider how the error signal is going to work, we need to sink the error into an
-    // internal buffer and then AND them all together
-    // ---
-    // I think we need a $reduce_or cell somewhere (maybe instead of the last $or cell?)
 
     // NOT
     // a -> not0 -> and2
@@ -106,8 +95,65 @@ Voter VoterBuilder::build(RTLIL::Module *module, int bits) {
 
     // or1, and5 -> or3 -> err
     OR(3, or1_or3_wire, and5_or3_wire, err);
+}
+
+}; // namespace
+
+void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::Wire *out) {
+    nonNull(module);
+    nonNull(a);
+    nonNull(b);
+    nonNull(c);
+    nonNull(out);
+    log_assert(((a->width == b->width) == c->width) && "Mismatch between input wire sizes");
+
+    auto bits = a->width;
+    log_assert(out->width == bits && "Output wire size mismatch");
+
+    // the ERROR wire is as wide as the number of input bits, we'll $reduce_or this down later; and then later
+    // route it to the global module error signal
+    auto *err = module->addWire(NEW_ID_SUFFIX("ERR"), bits);
+
+    log("Inserting voter in module %s for a: %s, b: %s, c: %s\n", log_id(module->name), log_id(a->name),
+        log_id(b->name), log_id(c->name));
+
+    // generate one unique voter per bit
+    for (int bit = 0; bit < bits; bit++) {
+        log("Adding voter for bit %d\n", bit);
+
+        // extract bits from wire
+        auto *a_bit = makeAsVoter(module->addWire(NEW_ID_SUFFIX("a_bit_" + std::to_string(bit))));
+        auto *b_bit = makeAsVoter(module->addWire(NEW_ID_SUFFIX("b_bit_" + std::to_string(bit))));
+        auto *c_bit = makeAsVoter(module->addWire(NEW_ID_SUFFIX("c_bit_" + std::to_string(bit))));
+        auto *out_bit = makeAsVoter(module->addWire(NEW_ID_SUFFIX("out_bit_" + std::to_string(bit))));
+        auto *err_bit = makeAsVoter(module->addWire(NEW_ID_SUFFIX("err_bit_" + std::to_string(bit))));
+
+        // select bits from wires
+        for (auto *wire : { a_bit, b_bit, c_bit, out_bit, err_bit }) {
+            wire->start_offset = bit;
+            wire->upto = true;
+        }
+
+        // connect a, b, c, out, err to input wires
+        // TODO
+
+        buildOne(module, a_bit, b_bit, c_bit, out_bit, err_bit);
+        size++;
+    }
+
+    // insert $reduce_or reduction to OR every err bit in the voter
+
+    // TODO we need to reconsider how the error signal is going to work, we need to sink the error into an
+    // internal buffer and then AND them all together
+    // ---
+    // I think we need a $reduce_or cell somewhere (maybe instead of the last $or cell?)
 
     module->check();
+}
 
-    return { .a = a, .b = b, .c = c, .out = out, .err = err };
+void VoterBuilder::finalise(RTLIL::Wire *err) {
+    if (err->width != 1) {
+        log_error(
+            "Voter error signal '%s' should be 1 bit. Yours is %d bits.", log_id(err->name), err->width);
+    }
 }

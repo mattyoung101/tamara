@@ -10,6 +10,7 @@
 #include "kernel/yosys_common.h"
 #include "tamara/logic_graph.hpp"
 #include "tamara/voter_builder.hpp"
+#include <string>
 #include <vector>
 
 USING_YOSYS_NAMESPACE;
@@ -33,7 +34,7 @@ struct TamaraDebug : public Pass {
 
         log("Executes the debug task specified.\n");
         log("Current tasks:\n");
-        log("- mkvoter\n");
+        log("- mkvoter <bits>\n");
         log("- replicateNot\n");
         log("- mkMultiVoter\n");
     }
@@ -50,21 +51,24 @@ struct TamaraDebug : public Pass {
 
         // sadly we can't switch on strings
         if (task == "mkvoter") {
-            log("Generating one voter\n");
+            auto bits = static_cast<int>(std::stol(args[2]));
+            log("Generating a %d bit voter\n", bits);
             auto *top = design->addModule(NEW_ID);
+
+            VoterBuilder builder(top);
 
             // add inputs
             // note: these don't have the $ symbol, because they are top-level ports
-            auto *a = top->addWire(ID(a));
-            auto *b = top->addWire(ID(b));
-            auto *c = top->addWire(ID(c));
+            auto *a = top->addWire(ID(a), bits);
+            auto *b = top->addWire(ID(b), bits);
+            auto *c = top->addWire(ID(c), bits);
             a->port_input = true;
             b->port_input = true;
             c->port_input = true;
 
             // add outputs
-            auto *out = top->addWire(ID(out));
-            auto *err = top->addWire(ID(err));
+            auto *out = top->addWire(ID(out), bits);
+            auto *err = top->addWire(ID(err)); // error is always 1 bit
             out->port_output = true;
             err->port_output = true;
 
@@ -72,14 +76,8 @@ struct TamaraDebug : public Pass {
             top->fixup_ports();
 
             // build voter
-            auto voter = tamara::VoterBuilder::build(top, 1);
-
-            // add output ports and connect voter to output
-            top->connect(voter.a, a);
-            top->connect(voter.b, b);
-            top->connect(voter.c, c);
-            top->connect(err, voter.err);
-            top->connect(out, voter.out);
+            builder.build(a, b, c, out);
+            builder.finalise(err);
 
             top->check();
         } else if (task == "replicateNot") {
@@ -96,41 +94,7 @@ struct TamaraDebug : public Pass {
 
             // fake cone so we can try inserting a voter
             auto cone = tamara::LogicCone(notGate);
-            cone.insertVoter(top);
-        } else if (task == "mkMultiVoter") {
-            log("Generating a 2-bit voter\n");
-
-            auto *top = design->addModule(NEW_ID);
-
-            // add inputs
-            // note: these don't have the $ symbol, because they are top-level ports
-            auto *a = top->addWire(ID(a), 2);
-            auto *b = top->addWire(ID(b), 2);
-            auto *c = top->addWire(ID(c), 2);
-            a->port_input = true;
-            b->port_input = true;
-            c->port_input = true;
-
-            // add outputs
-            auto *out = top->addWire(ID(out), 2);
-            auto *err = top->addWire(ID(err));
-            out->port_output = true;
-            err->port_output = true;
-
-            // add wires to ports
-            top->fixup_ports();
-
-            // build voter
-            auto voter = tamara::VoterBuilder::build(top, 2);
-
-            // add output ports and connect voter to output
-            top->connect(voter.a, a);
-            top->connect(voter.b, b);
-            top->connect(voter.c, c);
-            top->connect(err, voter.err);
-            top->connect(out, voter.out);
-
-            top->check();
+            // cone.insertVoter(top);
         } else {
             log_error("Unhandled debug task: '%s'\n", task.c_str());
         }

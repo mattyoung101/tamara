@@ -128,6 +128,8 @@ void replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *module) {
 void connect(RTLIL::Module *module, const RTLILAnyPtr &replica, RTLIL::Wire *voter) {
     // Impl note: This could also be part of voter_builder, but I decided to keep it here because I want all
     // of the RTLILAnyPtr crap to be contained within this file.
+    nonNull(module);
+    nonNull(voter);
 
     CellTypes cellTypes(module->design);
 
@@ -455,24 +457,24 @@ void LogicCone::replicate(RTLIL::Module *module) {
     replicateIfNotIO(outputNode, module);
 }
 
-std::optional<Voter> LogicCone::insertVoter(RTLIL::Module *module) {
+void LogicCone::insertVoter(
+    RTLIL::Module *module, VoterBuilder &builder, const std::vector<RTLILAnyPtr> &replicas) {
     log("%sInserting voter into logic cone %u%s\n", COLOUR(Blue), id, RESET());
-    log_assert(!voter.has_value() && "Cone already has a voter!");
     if (cone.empty()) {
         log("%sSkipping voter insertion into cone %u - internal elements empty%s\n", COLOUR(Red), id,
             RESET());
-        return std::nullopt;
+        return;
     }
 
-    auto width = outputNode->getWidth();
-    log("Voter width: %d bits\n", width);
+    log("Going to splice voter between LogicCone output %s and cut point %s\n", logRTLILName(outputNode),
+        logRTLILName(voterCutPoint));
 
-    voter = VoterBuilder::build(module, width);
-    return voter;
+    // FIXME
+    // builder.build(replicas[0], replicas[1], replicas[2], outputNode->getRTLILObjPtr());
 }
 
-void LogicCone::wire(
-    RTLIL::Module *module, std::optional<Wire *> errorSink, RTLILWireConnections &connections) {
+void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
+    RTLILWireConnections &connections, VoterBuilder &builder) {
     log("%sWiring logic cone %u%s\n", COLOUR(Blue), id, RESET());
     if (cone.empty()) {
         // TODO in this case, we probably will have wiring to do, just not to the voter
@@ -481,12 +483,7 @@ void LogicCone::wire(
     }
 
     // connect voter between output and firstReplicated
-    log_assert(voter.has_value() && "Voter not yet inserted!");
     log_assert(voterCutPoint.has_value() && "Voter cut point not set!");
-
-    log("Going to splice voter between LogicCone output %s and cut point %s\n", logRTLILName(outputNode),
-        logRTLILName(voterCutPoint));
-
     auto replicas = voterCutPoint->get()->getReplicas();
     log_assert(replicas.size() == 2 && "Unexpected replica size");
 
@@ -495,20 +492,16 @@ void LogicCone::wire(
     // this is a little bit confusing for the terminology since it's not _technically_ a replica
     replicas.push_back(voterCutPoint->get()->getRTLILObjPtr());
 
-    int i = 0;
-    for (const auto &replica : replicas) {
-        log("%sConnecting voter port %s %s %s to replica %s %s\n", COLOUR(Yellow), RESET(),
-            log_id(voter.value()[i]->name), COLOUR(Yellow), RESET(), logRTLILName(replica));
-        connect(module, replica, voter.value()[i]);
-        i++;
-    }
-    module->check();
+    // handle voter insertion
+    insertVoter(module, builder, replicas);
+
+    // FIXME below:
 
     // now, wire the cone's output node to the voter's OUT connection
-    connect(module, outputNode->getRTLILObjPtr(), voter->out);
+    // connect(module, outputNode->getRTLILObjPtr(), voter->out);
 
     // fix up replicated wires (complicated)
-    fixUpReplicatedWires(module, connections);
+    // fixUpReplicatedWires(module, connections);
 }
 
 void LogicCone::fixUpReplicatedWires(RTLIL::Module *module, RTLILWireConnections &connections) {

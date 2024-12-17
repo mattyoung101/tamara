@@ -269,12 +269,8 @@ public:
     //! Replicates the RTLIL components in a logic cone
     void replicate(RTLIL::Module *module);
 
-    //! Inserts voters into the module. Returns a copy of the voter (this is mainly for routing the error
-    //! signal). This is an optional, if std::nullopt, then a voter was not inserted for this cone.
-    std::optional<Voter> insertVoter(RTLIL::Module *module);
-
-    //! Wires up the replicated components and the module
-    void wire(RTLIL::Module *module, std::optional<Wire*> errorSink, RTLILWireConnections &connections);
+    //! Wires up the replicated components and the module, and inserts a voter
+    void wire(RTLIL::Module *module, std::optional<Wire*> errorSink, RTLILWireConnections &connections, VoterBuilder &builder);
 
     //! Builds a new logic cone that will continue the search onwards, or none if we're already at the input
     std::vector<LogicCone> buildSuccessors(RTLILWireConnections &connections);
@@ -297,9 +293,6 @@ private:
     // BFS frontier
     std::queue<TMRGraphNode::Ptr> frontier;
 
-    // voter for this logic cone, if it's been inserted
-    std::optional<Voter> voter;
-
     // logic cone ID, mostly used to identify this cone for debug
     uint32_t id;
 
@@ -312,6 +305,9 @@ private:
 
     //! Tracks down and re-wires those wires which we replicated (currently, they will have multiple drivers)
     void fixUpReplicatedWires(RTLIL::Module *module, RTLILWireConnections &connections);
+
+    //! Inserts voter into the cone.
+    void insertVoter(RTLIL::Module *module, VoterBuilder &builder, const std::vector<RTLILAnyPtr> &replicas);
 
     // Based on this idea: https://stackoverflow.com/a/2978575
     // We don't thread, so no mutex required
