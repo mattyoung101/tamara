@@ -53,7 +53,10 @@ add_library(tamara SHARED
 target_include_directories(tamara PRIVATE include lib/yosys)
 target_compile_options(tamara PRIVATE "-Wall" "-Wextra" "-Wno-unused-parameter" "-ggdb"
                                       "-fdiagnostics-color=always")
-# note on diagnostic colour: https://stackoverflow.com/a/73349744/5007892
+# note on diagnostic colour: https://stackoverflow.com/a/73349744/500789
+
+# HACK
+target_include_directories(tamara PRIVATE "/usr/include/tcl8.6")
 
 # these based on `yosys-config` on Arch
 target_compile_definitions(tamara PRIVATE -DYOSYS_ENABLE_READLINE -DYOSYS_ENABLE_PLUGINS

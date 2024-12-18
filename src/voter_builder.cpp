@@ -39,6 +39,7 @@ namespace {
 
 //! Inserts one voter. This also takes an error signal, which should be eventually routed through a $reduce_or
 //! cell.
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 void buildOne(RTLIL::Module *module, RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::Wire *out,
     RTLIL::Wire *err) {
     // N.B. This is all based on the Logisim design (tests/manual_tests/simple_tmr.circ)
@@ -100,12 +101,12 @@ void buildOne(RTLIL::Module *module, RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire
 }; // namespace
 
 void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::Wire *out) {
-    nonNull(module);
-    nonNull(a);
-    nonNull(b);
-    nonNull(c);
-    nonNull(out);
-    log_assert(((a->width == b->width) == c->width) && "Mismatch between input wire sizes");
+    NOTNULL(module);
+    NOTNULL(a);
+    NOTNULL(b);
+    NOTNULL(c);
+    NOTNULL(out);
+    log_assert((a->width == b->width && a->width == c->width && b->width == c->width) && "Mismatch between input wire sizes");
 
     auto bits = a->width;
     log_assert(out->width == bits && "Output wire size mismatch");
@@ -128,11 +129,13 @@ void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::
         auto *out_bit = makeAsVoter(module->addWire(NEW_ID_SUFFIX("out_bit_" + std::to_string(bit))));
         auto *err_bit = makeAsVoter(module->addWire(NEW_ID_SUFFIX("err_bit_" + std::to_string(bit))));
 
+        // TODO we need to use RTLIL::SigChunk, which we should add as a port to the voter in buildOne
+
         // select bits from wires
-        for (auto *wire : { a_bit, b_bit, c_bit, out_bit, err_bit }) {
-            wire->start_offset = bit;
-            wire->upto = true;
-        }
+        // for (auto *wire : { a_bit, b_bit, c_bit, out_bit, err_bit }) {
+        //     wire->start_offset = bit;
+        //     wire->upto = true;
+        // }
 
         // connect a, b, c, out, err to input wires
         // TODO

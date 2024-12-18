@@ -128,8 +128,8 @@ void replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *module) {
 void connect(RTLIL::Module *module, const RTLILAnyPtr &replica, RTLIL::Wire *voter) {
     // Impl note: This could also be part of voter_builder, but I decided to keep it here because I want all
     // of the RTLILAnyPtr crap to be contained within this file.
-    nonNull(module);
-    nonNull(voter);
+    NOTNULL(module);
+    NOTNULL(voter);
 
     CellTypes cellTypes(module->design);
 
