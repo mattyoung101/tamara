@@ -1,7 +1,7 @@
 # Test inserting one voter into a blank circuit
 
 plugin -i libtamara.so
-tamara_debug mkvoter
+tamara_debug mkvoter 1
 write_rtlil
 #write_verilog
 #write_cxxrtl

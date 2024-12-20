@@ -122,25 +122,30 @@ void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::
     for (int bit = 0; bit < bits; bit++) {
         log("Adding voter for bit %d\n", bit);
 
-        // extract bits from wire
-        auto *a_bit = makeAsVoter(module->addWire(NEW_ID_SUFFIX("a_bit_" + std::to_string(bit))));
-        auto *b_bit = makeAsVoter(module->addWire(NEW_ID_SUFFIX("b_bit_" + std::to_string(bit))));
-        auto *c_bit = makeAsVoter(module->addWire(NEW_ID_SUFFIX("c_bit_" + std::to_string(bit))));
-        auto *out_bit = makeAsVoter(module->addWire(NEW_ID_SUFFIX("out_bit_" + std::to_string(bit))));
-        auto *err_bit = makeAsVoter(module->addWire(NEW_ID_SUFFIX("err_bit_" + std::to_string(bit))));
+        // build SigChunks (these select bits from the wires)
+        RTLIL::SigChunk chunk_a(a, bit, 1);
+        RTLIL::SigChunk chunk_b(b, bit, 1);
+        RTLIL::SigChunk chunk_c(c, bit, 1);
+        RTLIL::SigChunk chunk_out(out, bit, 1);
 
-        // TODO we need to use RTLIL::SigChunk, which we should add as a port to the voter in buildOne
+        // create wire bits
+        auto *a = makeAsVoter(module->addWire(NEW_ID_SUFFIX("A")));
+        auto *b = makeAsVoter(module->addWire(NEW_ID_SUFFIX("B")));
+        auto *c = makeAsVoter(module->addWire(NEW_ID_SUFFIX("C")));
+        auto *out = makeAsVoter(module->addWire(NEW_ID_SUFFIX("OUT")));
+        auto *err = makeAsVoter(module->addWire(NEW_ID_SUFFIX("ERR")));
 
-        // select bits from wires
-        // for (auto *wire : { a_bit, b_bit, c_bit, out_bit, err_bit }) {
-        //     wire->start_offset = bit;
-        //     wire->upto = true;
-        // }
+        // attach SigChunks to voter wires
+        module->connect(a, chunk_a);
+        module->connect(b, chunk_b);
+        module->connect(c, chunk_c);
+        module->connect(chunk_out, out);
 
-        // connect a, b, c, out, err to input wires
-        // TODO
+        // construct voter
+        buildOne(module, a, b, c, out, err);
 
-        buildOne(module, a_bit, b_bit, c_bit, out_bit, err_bit);
+        // TODO add err signal to bus
+
         size++;
     }
 
