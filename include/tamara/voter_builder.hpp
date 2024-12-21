@@ -33,8 +33,7 @@ public:
 private:
     RTLIL::Module *module;
     size_t size = 0;
-
-    // TODO hashmap for all modules into their intermediate errors
+    std::vector<RTLIL::Wire*> reductions;
 };
 
 }; // namespace tamara

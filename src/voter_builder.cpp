@@ -39,8 +39,8 @@ namespace {
 
 //! Inserts one voter. This also takes an error signal, which should be eventually routed through a $reduce_or
 //! cell.
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-void buildOne(RTLIL::Module *module, RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::Wire *out,
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters) This is just required
+void build(RTLIL::Module *module, RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::Wire *out,
     RTLIL::Wire *err) {
     // N.B. This is all based on the Logisim design (tests/manual_tests/simple_tmr.circ)
 
@@ -100,20 +100,23 @@ void buildOne(RTLIL::Module *module, RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire
 
 }; // namespace
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity) Sorry, this function is just complicated
 void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::Wire *out) {
     NOTNULL(module);
     NOTNULL(a);
     NOTNULL(b);
     NOTNULL(c);
     NOTNULL(out);
-    log_assert((a->width == b->width && a->width == c->width && b->width == c->width) && "Mismatch between input wire sizes");
+    log_assert((a->width == b->width && a->width == c->width && b->width == c->width)
+        && "Mismatch between input wire sizes");
 
     auto bits = a->width;
     log_assert(out->width == bits && "Output wire size mismatch");
 
     // the ERROR wire is as wide as the number of input bits, we'll $reduce_or this down later; and then later
     // route it to the global module error signal
-    auto *err = module->addWire(NEW_ID_SUFFIX("ERR"), bits);
+    // make an intermediate signal
+    auto *err_intermediate = module->addWire(NEW_ID_SUFFIX("ERR_INTERMEDIATE"), bits);
 
     log("Inserting voter in module %s for a: %s, b: %s, c: %s\n", log_id(module->name), log_id(a->name),
         log_id(b->name), log_id(c->name));
@@ -127,34 +130,40 @@ void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::
         RTLIL::SigChunk chunk_b(b, bit, 1);
         RTLIL::SigChunk chunk_c(c, bit, 1);
         RTLIL::SigChunk chunk_out(out, bit, 1);
+        RTLIL::SigChunk chunk_err(err_intermediate, bit, 1);
 
         // create wire bits
-        auto *a = makeAsVoter(module->addWire(NEW_ID_SUFFIX("A")));
-        auto *b = makeAsVoter(module->addWire(NEW_ID_SUFFIX("B")));
-        auto *c = makeAsVoter(module->addWire(NEW_ID_SUFFIX("C")));
-        auto *out = makeAsVoter(module->addWire(NEW_ID_SUFFIX("OUT")));
-        auto *err = makeAsVoter(module->addWire(NEW_ID_SUFFIX("ERR")));
+        auto *w_a = makeAsVoter(module->addWire(NEW_ID_SUFFIX("A")));
+        auto *w_b = makeAsVoter(module->addWire(NEW_ID_SUFFIX("B")));
+        auto *w_c = makeAsVoter(module->addWire(NEW_ID_SUFFIX("C")));
+        auto *w_out = makeAsVoter(module->addWire(NEW_ID_SUFFIX("OUT")));
+        auto *w_err = makeAsVoter(module->addWire(NEW_ID_SUFFIX("ERR")));
 
         // attach SigChunks to voter wires
-        module->connect(a, chunk_a);
-        module->connect(b, chunk_b);
-        module->connect(c, chunk_c);
-        module->connect(chunk_out, out);
+        module->connect(w_a, chunk_a);
+        module->connect(w_b, chunk_b);
+        module->connect(w_c, chunk_c);
+        module->connect(chunk_out, w_out);
+        module->connect(chunk_err, w_err);
 
         // construct voter
-        buildOne(module, a, b, c, out, err);
-
-        // TODO add err signal to bus
-
+        ::build(module, w_a, w_b, w_c, w_out, w_err);
         size++;
     }
 
-    // insert $reduce_or reduction to OR every err bit in the voter
+    // now what we do is reduce the error signal for this cone ONLY down to a single bit using the $reduce_or
+    // cell;
+    // later, we will then take each chunk's $reduce_or and reduce THAT down to a single bit value again by
+    // OR'ing them all together, but that happens in finalise()
 
-    // TODO we need to reconsider how the error signal is going to work, we need to sink the error into an
-    // internal buffer and then AND them all together
-    // ---
-    // I think we need a $reduce_or cell somewhere (maybe instead of the last $or cell?)
+    // output from the intermediate
+    auto *err_intermediate_out = makeAsVoter(module->addWire(NEW_ID_SUFFIX("ERR_INTER_OUT")));
+
+    // insert $reduce_or reduction to OR every err bit in the voter
+    makeAsVoter(module->addReduceOr(NEW_ID_SUFFIX("REDUCE"), err_intermediate, err_intermediate_out));
+
+    // store as a reduction that we'll access later in finalise
+    reductions.push_back(err_intermediate_out);
 
     module->check();
 }
@@ -164,4 +173,30 @@ void VoterBuilder::finalise(RTLIL::Wire *err) {
         log_error(
             "Voter error signal '%s' should be 1 bit. Yours is %d bits.", log_id(err->name), err->width);
     }
+
+    log("Finalising %zu $reduce_or voter reduction(s) in module %s\n", reductions.size(),
+        log_id(module->name));
+
+    // special case if there's only one reduction, we can just wire it directly to the output
+    if (reductions.size() == 1) {
+        log("Special case since reductions.size() == 1\n");
+        module->connect(err, reductions[0]);
+        module->check();
+        return;
+    }
+
+    Wire *prev = nullptr;
+    // we start at idx=1, so that we link idx 1 and idx 0; idx 0 has no previous reduction so doesn't need an
+    // OR chain
+    for (size_t i = 1; i < reductions.size(); i++) {
+        // auto *reduction = makeAsVoter(module->addOr(NEW_ID_SUFFIX("reduction_" + std::to_string(i)), const
+        // RTLIL::SigSpec &sig_a, const RTLIL::SigSpec &sig_b, const RTLIL::SigSpec &sig_y));
+        // TODO
+    }
+
+    // now link prev to the actual output
+    NOTNULL(prev);
+    module->connect(prev, err);
+
+    module->check();
 }

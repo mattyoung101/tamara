@@ -37,6 +37,7 @@ constexpr bool isDFF(const RTLIL::Cell *cell) {
         ID($dlatch), ID($adlatch));
 }
 
-#define NOTNULL(ptr) log_assert((ptr) != nullptr && "TaMaRa internal error: Unexpected null pointer '" #ptr "'!");
+//! Asserts the pointer is not null
+#define NOTNULL(ptr) log_assert(((ptr) != nullptr) && "TaMaRa internal error: Unexpected null pointer '" #ptr "'!");
 
 } // namespace tamara
