@@ -82,6 +82,12 @@ struct TamaraTMRPass : public Pass {
         auto successors = std::queue<LogicCone>();
 
         for (const auto &output : outputs) {
+            // don't consider ports marked (* tamara_error_sink *)
+            if (output->has_attribute(ERROR_SINK_ANNOTATION)) {
+                log("Skipping output '%s', marked as TaMaRa error sink\n\n", log_id(output->name));
+                continue;
+            }
+
             log("Searching from output port %s\n", log_id(output->name));
             auto cone = LogicCone(output);
 
@@ -197,16 +203,7 @@ private:
             for (const auto &connection : cell->connections()) {
                 const auto &[name, signal] = connection;
 
-                Wire *wire = nullptr;
-                if (signal.is_wire()) {
-                    wire = signal.as_wire();
-                } else if (signal.is_bit()) {
-                    wire = signal.as_bit().wire;
-                } else if (!signal.chunks().empty()) {
-                    // FIXME this is somewhat questionable and should be tested on more designs
-                    wire = signal.chunks().front().wire;
-                }
-
+                Wire *wire = sigSpecToWire(signal);
                 if (wire == nullptr) {
                     log_warning("Trouble accessing wire from connection '%s'\n", log_id(name));
                     continue;

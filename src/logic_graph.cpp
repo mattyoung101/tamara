@@ -238,6 +238,7 @@ std::vector<RTLILAnyPtr> rtlilInverseLookup(RTLILWireConnections &connections, W
 //! Taking an RTLILAnyPtr that came from a call to replicate(), returns the relevant output wire associated
 //! with it
 // TODO do we even want the output wire???
+// FIXME what about cells with multiple outputs?
 RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
     return std::visit(
         [](auto &&arg) {
@@ -249,23 +250,17 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
                 for (const auto &connection : cell->connections()) {
                     const auto &[name, signal] = connection;
 
-                    // FIXME this is basically identical to TamaraTMRPass::analyseConnections
-                    // we should rip it out and put it in utils
+                    // is this the output wire?
                     if (cellTypes.cell_output(cell->type, name)) {
-                        if (signal.is_wire()) {
-                            return signal.as_wire();
+                        Wire *wire = sigSpecToWire(signal);
+                        if (wire == nullptr) {
+                            log_error("TaMaRa internal error: Failed to extract output wire for '%s'\n",
+                                log_id(name));
                         }
-                        if (signal.is_chunk()) {
-                            return signal.as_chunk().wire;
-                        }
-                        log_error(
-                            "TaMaRa internal error: Failed to extract output wire for '%s'\n", log_id(name));
+                        return wire;
                     }
                 }
                 log_error("TaMaRa internal error: Failed to locate output wire\n");
-
-                // this never runs, log_error calls abort(), the below is just to make it compile
-                return static_cast<RTLIL::Wire *>(nullptr);
             }
             if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
                 // if it's just a wire, we can return that
