@@ -156,7 +156,7 @@ void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::
     // later, we will then take each chunk's $reduce_or and reduce THAT down to a single bit value again by
     // OR'ing them all together, but that happens in finalise()
 
-    // output from the intermediate
+    // output from the intermediate (will be used in the OR)
     auto *err_intermediate_out = makeAsVoter(module->addWire(NEW_ID_SUFFIX("ERR_INTER_OUT")));
 
     // insert $reduce_or reduction to OR every err bit in the voter
@@ -179,7 +179,7 @@ void VoterBuilder::finalise(RTLIL::Wire *err) {
 
     // special case if there's only one reduction, we can just wire it directly to the output
     if (reductions.size() == 1) {
-        log("Special case since reductions.size() == 1\n");
+        log("Special case (direct wiring) since reductions.size() == 1\n");
         module->connect(err, reductions[0]);
         module->check();
         return;
@@ -189,14 +189,21 @@ void VoterBuilder::finalise(RTLIL::Wire *err) {
     // we start at idx=1, so that we link idx 1 and idx 0; idx 0 has no previous reduction so doesn't need an
     // OR chain
     for (size_t i = 1; i < reductions.size(); i++) {
-        // auto *reduction = makeAsVoter(module->addOr(NEW_ID_SUFFIX("reduction_" + std::to_string(i)), const
-        // RTLIL::SigSpec &sig_a, const RTLIL::SigSpec &sig_b, const RTLIL::SigSpec &sig_y));
-        // TODO
+        if (prev == nullptr) {
+            // initially, start off by OR'ing together reductions[0] and reductions[1], and storing this
+            auto *orOut = makeAsVoter(module->addWire(NEW_ID_SUFFIX("initial_or_out")));
+            makeAsVoter(module->addLogicOr(NEW_ID_SUFFIX("initial_or"), reductions[0], reductions[1], orOut));
+            prev = orOut;
+        } else {
+            // otherwise, continue the OR chain by building an OR that takes prev and cur
+            auto *orOut = makeAsVoter(module->addWire(NEW_ID_SUFFIX("or_tree_" + std::to_string(i) + "_out")));
+            makeAsVoter(module->addLogicOr(NEW_ID_SUFFIX("or_tree_" + std::to_string(i)), prev, reductions[i], orOut));
+            prev = orOut;
+        }
     }
 
     // now link prev to the actual output
     NOTNULL(prev);
     module->connect(prev, err);
-
     module->check();
 }

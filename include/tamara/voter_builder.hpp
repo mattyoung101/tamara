@@ -17,7 +17,9 @@ namespace tamara {
 class VoterBuilder {
 public:
     //! Instantiates a new voter builder for the specified module
-    VoterBuilder(RTLIL::Module *module) : module(module) {}
+    VoterBuilder(RTLIL::Module *module)
+        : module(module) {
+    }
 
     //! Insert one voter into the design. The voter will use the number of bits in the input wires.
     //! You specify the `a, b` and `c` wires, as well as the output wire.
@@ -28,12 +30,14 @@ public:
     void finalise(RTLIL::Wire *err);
 
     //! Returns the number of inserted voters
-    size_t getSize();
+    [[nodiscard]] size_t getSize() const {
+        return size;
+    }
 
 private:
     RTLIL::Module *module;
     size_t size = 0;
-    std::vector<RTLIL::Wire*> reductions;
+    std::vector<RTLIL::Wire *> reductions;
 };
 
 }; // namespace tamara

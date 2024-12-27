@@ -1,0 +1,8 @@
+# Test inserting one 4-bit voter into a blank circuit
+
+plugin -i libtamara.so
+tamara_debug mkvoter 4
+write_rtlil
+check
+show -colors 420
+

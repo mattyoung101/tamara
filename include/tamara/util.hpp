@@ -40,4 +40,7 @@ constexpr bool isDFF(const RTLIL::Cell *cell) {
 //! Asserts the pointer is not null
 #define NOTNULL(ptr) log_assert(((ptr) != nullptr) && "TaMaRa internal error: Unexpected null pointer '" #ptr "'!");
 
+//! Crashes the application, indicating that the feature is not yet implemented
+#define TODO log_error("TaMaRa internal error: Feature not yet implemented!\n");
+
 } // namespace tamara

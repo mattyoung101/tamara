@@ -235,6 +235,46 @@ std::vector<RTLILAnyPtr> rtlilInverseLookup(RTLILWireConnections &connections, W
     return out;
 }
 
+//! Taking an RTLILAnyPtr that came from a call to replicate(), returns the relevant output wire associated
+//! with it
+// TODO do we even want the output wire???
+RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
+    return std::visit(
+        [](auto &&arg) {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
+                RTLIL::Cell *cell = arg; // this is for the benefit of clangd
+
+                CellTypes cellTypes(cell->module->design);
+                for (const auto &connection : cell->connections()) {
+                    const auto &[name, signal] = connection;
+
+                    // FIXME this is basically identical to TamaraTMRPass::analyseConnections
+                    // we should rip it out and put it in utils
+                    if (cellTypes.cell_output(cell->type, name)) {
+                        if (signal.is_wire()) {
+                            return signal.as_wire();
+                        }
+                        if (signal.is_chunk()) {
+                            return signal.as_chunk().wire;
+                        }
+                        log_error(
+                            "TaMaRa internal error: Failed to extract output wire for '%s'\n", log_id(name));
+                    }
+                }
+                log_error("TaMaRa internal error: Failed to locate output wire\n");
+
+                // this never runs, log_error calls abort(), the below is just to make it compile
+                return static_cast<RTLIL::Wire *>(nullptr);
+            }
+            if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
+                // if it's just a wire, we can return that
+                return dynamic_cast<RTLIL::Wire *>(arg);
+            }
+        },
+        ptr);
+}
+
 } // namespace
 
 TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(
@@ -469,8 +509,11 @@ void LogicCone::insertVoter(
     log("Going to splice voter between LogicCone output %s and cut point %s\n", logRTLILName(outputNode),
         logRTLILName(voterCutPoint));
 
-    // FIXME
-    // builder.build(replicas[0], replicas[1], replicas[2], outputNode->getRTLILObjPtr());
+    auto *a_w = extractReplicaWire(replicas[0]);
+    auto *b_w = extractReplicaWire(replicas[1]);
+    auto *c_w = extractReplicaWire(replicas[2]);
+    auto *out_w = extractReplicaWire(outputNode->getRTLILObjPtr());
+    builder.build(a_w, b_w, c_w, out_w);
 }
 
 void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
@@ -494,11 +537,6 @@ void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
 
     // handle voter insertion
     insertVoter(module, builder, replicas);
-
-    // FIXME below:
-
-    // now, wire the cone's output node to the voter's OUT connection
-    // connect(module, outputNode->getRTLILObjPtr(), voter->out);
 
     // fix up replicated wires (complicated)
     // fixUpReplicatedWires(module, connections);
