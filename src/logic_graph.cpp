@@ -7,7 +7,9 @@
 #include "tamara/logic_graph.hpp"
 #include "kernel/celltypes.h"
 #include "kernel/log.h"
+#include "kernel/register.h"
 #include "kernel/rtlil.h"
+#include "kernel/yosys.h"
 #include "kernel/yosys_common.h"
 #include "tamara/termcolour.hpp"
 #include "tamara/util.hpp"
@@ -238,29 +240,39 @@ std::vector<RTLILAnyPtr> rtlilInverseLookup(RTLILWireConnections &connections, W
 //! Taking an RTLILAnyPtr that came from a call to replicate(), returns the relevant output wire associated
 //! with it
 // TODO do we even want the output wire???
-// FIXME what about cells with multiple outputs?
 RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
     return std::visit(
         [](auto &&arg) {
             using T = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
                 RTLIL::Cell *cell = arg; // this is for the benefit of clangd
+                log("Locating output wire for %s\n", log_id(cell->name));
 
                 CellTypes cellTypes(cell->module->design);
+
                 for (const auto &connection : cell->connections()) {
                     const auto &[name, signal] = connection;
 
                     // is this the output wire?
                     if (cellTypes.cell_output(cell->type, name)) {
-                        Wire *wire = sigSpecToWire(signal);
-                        if (wire == nullptr) {
-                            log_error("TaMaRa internal error: Failed to extract output wire for '%s'\n",
-                                log_id(name));
-                        }
+                        // find the wire it's connected to
+                        auto *conn = sigSpecToWire(signal);
+                        NOTNULL(conn);
+                        // FIXME what about cells with multiple outputs?
+
+                        // Now what we should do is make a new wire, which will be our output
+                        // then rip up the existing wire and redirect it
+                        // then return this wire
+                        auto *wire = cell->module->addWire(NEW_ID_SUFFIX("extractReplicaWire"), conn->width);
+
+                        // rip up the existing wire, and add our own
+                        cell->setPort(name, wire);
+
                         return wire;
                     }
                 }
-                log_error("TaMaRa internal error: Failed to locate output wire\n");
+                log_error("TaMaRa internal error: Failed to locate output wire for cell '%s'\n",
+                    log_id(cell->name));
             }
             if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
                 // if it's just a wire, we can return that
@@ -504,11 +516,13 @@ void LogicCone::insertVoter(
     log("Going to splice voter between LogicCone output %s and cut point %s\n", logRTLILName(outputNode),
         logRTLILName(voterCutPoint));
 
+    // YS_DEBUGTRAP_IF_DEBUGGING;
     auto *a_w = extractReplicaWire(replicas[0]);
     auto *b_w = extractReplicaWire(replicas[1]);
     auto *c_w = extractReplicaWire(replicas[2]);
-    auto *out_w = extractReplicaWire(outputNode->getRTLILObjPtr());
+    auto *out_w = extractReplicaWire(voterCutPoint->get()->getRTLILObjPtr());
     builder.build(a_w, b_w, c_w, out_w);
+    // Yosys::run_pass("show -colors 420 -pause");
 }
 
 void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,

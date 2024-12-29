@@ -143,6 +143,11 @@ void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::
         module->connect(w_a, chunk_a);
         module->connect(w_b, chunk_b);
         module->connect(w_c, chunk_c);
+        // FIXME I think this is not getting wired correctly, the chunk is not being correctly wired up
+        YS_DEBUGTRAP_IF_DEBUGGING;
+        DUMP_RTLIL;
+        DUMP;
+
         module->connect(chunk_out, w_out);
         module->connect(chunk_err, w_err);
 
@@ -196,8 +201,10 @@ void VoterBuilder::finalise(RTLIL::Wire *err) {
             prev = orOut;
         } else {
             // otherwise, continue the OR chain by building an OR that takes prev and cur
-            auto *orOut = makeAsVoter(module->addWire(NEW_ID_SUFFIX("or_tree_" + std::to_string(i) + "_out")));
-            makeAsVoter(module->addLogicOr(NEW_ID_SUFFIX("or_tree_" + std::to_string(i)), prev, reductions[i], orOut));
+            auto *orOut
+                = makeAsVoter(module->addWire(NEW_ID_SUFFIX("or_tree_" + std::to_string(i) + "_out")));
+            makeAsVoter(module->addLogicOr(
+                NEW_ID_SUFFIX("or_tree_" + std::to_string(i)), prev, reductions[i], orOut));
             prev = orOut;
         }
     }

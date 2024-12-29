@@ -62,4 +62,10 @@ constexpr RTLIL::Wire *sigSpecToWire(const RTLIL::SigSpec &sigSpec) {
 //! Crashes the application, indicating that the feature is not yet implemented
 #define TODO log_error("TaMaRa internal error: Feature not yet implemented!\n");
 
+//! Debug command to dump the graph of the design
+#define DUMP Yosys::run_pass("show -colors 420 -pause -long");
+
+//! Debug command to dump the RTLIL of the design
+#define DUMP_RTLIL Yosys::run_pass("write_rtlil");
+
 } // namespace tamara
