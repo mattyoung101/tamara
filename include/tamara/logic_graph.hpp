@@ -12,7 +12,6 @@
 #include <cstdint>
 #include <optional>
 #include <queue>
-#include <stdexcept>
 
 USING_YOSYS_NAMESPACE;
 
@@ -270,44 +269,40 @@ public:
     void replicate(RTLIL::Module *module);
 
     //! Wires up the replicated components and the module, and inserts a voter
-    void wire(RTLIL::Module *module, std::optional<Wire*> errorSink, RTLILWireConnections &connections, VoterBuilder &builder);
+    void wire(RTLIL::Module *module, std::optional<Wire *> errorSink, RTLILWireConnections &connections,
+        VoterBuilder &builder);
 
     //! Builds a new logic cone that will continue the search onwards, or none if we're already at the input
     std::vector<LogicCone> buildSuccessors(RTLILWireConnections &connections);
 
 private:
-    // this is the list of terminals: the list of IO nodes or FF nodes that we end up on through our backwards
-    // BFS. when we reach a terminal, we try and finalise the search by not adding any more nodes from that
-    // terminal. however, we could still encounter multiple terminals, hence the list.
+    /// this is the list of terminals: the list of IO nodes or FF nodes that we end up on through our
+    /// backwards ! BFS. when we reach a terminal, we try and finalise the search by not adding any more nodes
+    /// from that ! terminal. however, we could still encounter multiple terminals, hence the list.
     std::vector<TMRGraphNode::Ptr> inputNodes;
 
-    // a cone has only one output (so far)
+    /// a cone has only one output (so far)
     TMRGraphNode::Ptr outputNode;
 
-    // list of logic cone elements, to be replicated (does not include terminals)
+    /// list of logic cone elements, to be replicated (does not include terminals)
     std::vector<TMRGraphNode::Ptr> cone;
 
-    // voter cut point (i.e. where to wire the voter), this is the first node found on the backwards BFS
+    /// voter cut point (i.e. where to wire the voter), this is the first node found on the backwards BFS
     std::optional<TMRGraphNode::Ptr> voterCutPoint;
 
-    // BFS frontier
+    /// BFS frontier
     std::queue<TMRGraphNode::Ptr> frontier;
 
-    // logic cone ID, mostly used to identify this cone for debug
+    /// logic cone ID, mostly used to identify this cone for debug
     uint32_t id;
 
     //! Verifies all terminals in LogicCone::search are legal.
     void verifyInputNodes() const;
 
-    //! Returns a list of replicas for the given RTLIL. This is expensive because it traverses the entire
-    //! cone.
-    std::vector<RTLILAnyPtr> collectReplicasRTLIL(const RTLILAnyPtr &obj);
-
-    //! Tracks down and re-wires those wires which we replicated (currently, they will have multiple drivers)
-    void fixUpReplicatedWires(RTLIL::Module *module, RTLILWireConnections &connections);
-
-    //! Inserts voter into the cone.
-    void insertVoter(RTLIL::Module *module, VoterBuilder &builder, const std::vector<RTLILAnyPtr> &replicas);
+    //! From a node under consideration, inserts a voter into the cone.
+    //! @param replicas Replicas for this node, should be of length 3 (includes the node itself).
+    //! @returns The output wire, or none if no voter was inserted.
+    std::optional<RTLIL::Wire *> insertVoter(VoterBuilder &builder, const std::vector<RTLILAnyPtr> &replicas);
 
     // Based on this idea: https://stackoverflow.com/a/2978575
     // We don't thread, so no mutex required
