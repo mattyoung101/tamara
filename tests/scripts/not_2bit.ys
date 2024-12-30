@@ -14,4 +14,4 @@ tamara_tmr
 check
 write_rtlil
 write_verilog
-show -colors 420
+show -colors 420 -long

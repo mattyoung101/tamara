@@ -7,7 +7,9 @@
 #include "tamara/logic_graph.hpp"
 #include "kernel/celltypes.h"
 #include "kernel/log.h"
+#include "kernel/register.h"
 #include "kernel/rtlil.h"
+#include "kernel/yosys.h"
 #include "kernel/yosys_common.h"
 #include "tamara/termcolour.hpp"
 #include "tamara/util.hpp"
@@ -124,113 +126,54 @@ void replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *module) {
     }
 }
 
-//! Connects the given replica port to the voter port, in the context of the module.
-void connect(RTLIL::Module *module, const RTLILAnyPtr &replica, RTLIL::Wire *voter) {
-    // Impl note: This could also be part of voter_builder, but I decided to keep it here because I want all
-    // of the RTLILAnyPtr crap to be contained within this file.
-
-    CellTypes cellTypes(module->design);
-
-    std::visit(
-        [&, cellTypes](auto &&arg) {
+//! Taking an RTLILAnyPtr that came from a call to replicate(), returns the relevant output wire associated
+//! with it
+// TODO do we even want the output wire???
+RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
+    log("extractReplicaWire(%s)\n", logRTLILName(ptr));
+    return std::visit(
+        [](auto &&arg) {
             using T = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
-                // this re-declaration is mainly for the benefit of clangd
-                RTLIL::Cell *cell = arg;
+                RTLIL::Cell *cell = arg; // this is for the benefit of clangd
+                // log("Locating output wire for %s\n", log_id(cell->name));
 
-                // locate output port
-                bool foundOutput = false;
+                CellTypes cellTypes(cell->module->design);
+
                 for (const auto &connection : cell->connections()) {
-                    auto [idString, sigSpec] = connection;
+                    const auto &[name, signal] = connection;
 
-                    // determine if output port
-                    if (cellTypes.cell_output(cell->type, idString)) {
-                        // found it
-                        if (foundOutput) {
-                            log_error("Cell %s has multiple output ports! Connection may not be handled "
-                                      "correctly!\n",
-                                log_id(cell->name));
-                        }
-                        foundOutput = true;
+                    // is this the output wire?
+                    if (cellTypes.cell_output(cell->type, name)) {
+                        // find the wire it's connected to
+                        auto *conn = sigSpecToWire(signal);
+                        NOTNULL(conn);
 
-                        log("connect: Changing output connection %s\n in RTLILAnyPtr(Wire*) %s\n to voter "
-                            "wire "
-                            "%s\n",
-                            log_id(idString), log_id(cell->name), log_id(voter->name));
-                        cell->setPort(idString, voter);
-                        cell->check();
+                        // FIXME what about cells with multiple outputs?
+
+                        // Now what we should do is make a new wire, which will be our output
+                        // then rip up the existing wire and redirect it
+                        // then return this wire
+                        auto *wire = cell->module->addWire(NEW_ID_SUFFIX("extractReplicaWire"), conn->width);
+
+                        // rip up the existing wire, and add our own
+                        cell->setPort(name, wire);
+
+                        log("Generated replacement wire '%s' for cell '%s'\n", log_id(wire->name),
+                            log_id(cell->name));
+
+                        return wire;
                     }
                 }
-
-                if (!foundOutput) {
-                    log_error("Could not find output port for cell %s\n", log_id(cell->name));
-                }
+                log_error("TaMaRa internal error: Failed to locate output wire for cell '%s'\n",
+                    log_id(cell->name));
             }
             if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
-                // this re-declaration is mainly for the benefit of clangd
-                RTLIL::Wire *wire = arg;
-                log("connect: Creating connection between wire %s -> voter %s\n", log_id(wire->name),
-                    log_id(voter->name));
-                // FIXME this seems to break shit
-                // this is because it doesn't handle wires of different sizes
-                log("wire width: %d, voter width: %d\n", wire->width, voter->width);
-                module->connect(wire, voter);
+                // if it's just a wire, we can return that
+                return dynamic_cast<RTLIL::Wire *>(arg);
             }
         },
-        replica);
-
-    module->check();
-}
-
-//! Changes the input port of the cell "cell" to point to the wire "wire".
-//! Does not currently support cells with multiple input ports.
-void changeInput(RTLIL::Module *module, RTLIL::Cell *cell, RTLIL::Wire *wire) {
-    CellTypes cellTypes(module->design);
-
-    // locate input port
-    bool foundInput = false;
-    for (const auto &connection : cell->connections()) {
-        auto [idString, sigSpec] = connection;
-        if (cellTypes.cell_input(cell->type, idString)) {
-            if (foundInput) {
-                log_error(
-                    "Cell %s has multiple input ports (this one is %s). This is currently unsupported.\n",
-                    log_id(cell->name), log_id(idString));
-            }
-
-            log("changeInput: Changing input port '%s' to point to wire %s\n", log_id(idString),
-                log_id(wire->name));
-            cell->setPort(idString, wire);
-
-            foundInput = true;
-        }
-    }
-
-    if (!foundInput) {
-        log_error("Could not find input port for cell %s\n", log_id(cell->name));
-    }
-
-    module->check();
-}
-
-//! RTLILWireConnections maps a -> (b, c, d, e); but what this function does is find "a" given say b, or c, or
-//! d. Returns empty list if no results found.
-//! PERF: This is REALLY expensive currently on the order of O(n^2).
-std::vector<RTLILAnyPtr> rtlilInverseLookup(RTLILWireConnections &connections, Wire *target) {
-    log("Performing inverse lookup for wire %s\n", log_id(target->name));
-    std::vector<RTLILAnyPtr> out;
-    for (const auto &pair : connections) {
-        const auto &[key, value] = pair;
-
-        for (const auto &item : value) {
-            // log("Check mapping %s -> %s\n", logRTLILName(key), logRTLILName(item));
-
-            if (getRTLILName(item) == target->name) {
-                out.push_back(key);
-            }
-        }
-    }
-    return out;
+        ptr);
 }
 
 } // namespace
@@ -345,27 +288,6 @@ void LogicCone::verifyInputNodes() const {
     }
 }
 
-std::vector<RTLILAnyPtr> LogicCone::collectReplicasRTLIL(const RTLILAnyPtr &obj) {
-    std::vector<TMRGraphNode::Ptr> allObjects;
-    allObjects.reserve(cone.size() + inputNodes.size());
-    for (const auto &element : cone) {
-        allObjects.push_back(element);
-    }
-    for (const auto &element : inputNodes) {
-        allObjects.push_back(element);
-    }
-    allObjects.push_back(outputNode);
-
-    for (const auto &element : allObjects) {
-        // log("check if %s == %s\n", logRTLILName(element), logRTLILName(obj));
-        if (getRTLILName(element) == getRTLILName(obj)) {
-            return element->getReplicas();
-        }
-    }
-    log_error("TaMaRa internal error: Unable to find any replicas for RTLIL object %s in cone %d!\n",
-        logRTLILName(obj), id);
-}
-
 void LogicCone::search(RTLIL::Module *module, RTLILWireConnections &connections) {
     // check that we're starting the search from scratch on this cone
     log_assert(frontier.empty());
@@ -455,24 +377,35 @@ void LogicCone::replicate(RTLIL::Module *module) {
     replicateIfNotIO(outputNode, module);
 }
 
-std::optional<Voter> LogicCone::insertVoter(RTLIL::Module *module) {
+std::optional<RTLIL::Wire *> LogicCone::insertVoter(
+    VoterBuilder &builder, const std::vector<RTLILAnyPtr> &replicas) {
     log("%sInserting voter into logic cone %u%s\n", COLOUR(Blue), id, RESET());
-    log_assert(!voter.has_value() && "Cone already has a voter!");
     if (cone.empty()) {
         log("%sSkipping voter insertion into cone %u - internal elements empty%s\n", COLOUR(Red), id,
             RESET());
         return std::nullopt;
     }
 
-    auto width = outputNode->getWidth();
-    log("Voter width: %d bits\n", width);
+    log("Going to splice voter between LogicCone output %s and cut point %s\n", logRTLILName(outputNode),
+        logRTLILName(voterCutPoint));
 
-    voter = VoterBuilder::build(module, width);
-    return voter;
+    log("out_w voterCutPoint\n");
+    // NOTE: It is VERY important that out_w runs first, otherwise the wires are not connected correctly (c
+    // gets overwritten basically)
+    auto *out_w = extractReplicaWire(voterCutPoint->get()->getRTLILObjPtr());
+    log("a_w replicas[0]\n");
+    auto *a_w = extractReplicaWire(replicas.at(0));
+    log("b_w replicas[1]\n");
+    auto *b_w = extractReplicaWire(replicas.at(1));
+    log("c_w replicas[2]\n");
+    auto *c_w = extractReplicaWire(replicas.at(2));
+    builder.build(a_w, b_w, c_w, out_w);
+
+    return out_w;
 }
 
-void LogicCone::wire(
-    RTLIL::Module *module, std::optional<Wire *> errorSink, RTLILWireConnections &connections) {
+void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
+    RTLILWireConnections &connections, VoterBuilder &builder) {
     log("%sWiring logic cone %u%s\n", COLOUR(Blue), id, RESET());
     if (cone.empty()) {
         // TODO in this case, we probably will have wiring to do, just not to the voter
@@ -481,12 +414,7 @@ void LogicCone::wire(
     }
 
     // connect voter between output and firstReplicated
-    log_assert(voter.has_value() && "Voter not yet inserted!");
     log_assert(voterCutPoint.has_value() && "Voter cut point not set!");
-
-    log("Going to splice voter between LogicCone output %s and cut point %s\n", logRTLILName(outputNode),
-        logRTLILName(voterCutPoint));
-
     auto replicas = voterCutPoint->get()->getReplicas();
     log_assert(replicas.size() == 2 && "Unexpected replica size");
 
@@ -495,129 +423,16 @@ void LogicCone::wire(
     // this is a little bit confusing for the terminology since it's not _technically_ a replica
     replicas.push_back(voterCutPoint->get()->getRTLILObjPtr());
 
-    int i = 0;
-    for (const auto &replica : replicas) {
-        log("%sConnecting voter port %s %s %s to replica %s %s\n", COLOUR(Yellow), RESET(),
-            log_id(voter.value()[i]->name), COLOUR(Yellow), RESET(), logRTLILName(replica));
-        connect(module, replica, voter.value()[i]);
-        i++;
-    }
-    module->check();
+    // handle voter insertion
+    auto outWire = insertVoter(builder, replicas);
 
-    // now, wire the cone's output node to the voter's OUT connection
-    connect(module, outputNode->getRTLILObjPtr(), voter->out);
-
-    // fix up replicated wires (complicated)
-    fixUpReplicatedWires(module, connections);
-}
-
-void LogicCone::fixUpReplicatedWires(RTLIL::Module *module, RTLILWireConnections &connections) {
-    // now, we need to track down and re-wire those wires which we replicated (currently, they will have
-    // multiple drivers)
-    log("%sFixing up wires we replicated (that will now have multiple drivers)%s\n", COLOUR(Cyan), RESET());
-    for (const auto &element : cone) {
-        auto wirePtr = std::dynamic_pointer_cast<ElementWireNode>(element);
-        if (wirePtr == nullptr) {
-            // not a wire
-            continue;
-        }
-
-        // let's determine if this wire is actually connected to something we've replicated
-        // we've already checked it's a wire, so this std::get is safe to do
-        auto *wire = std::get<Wire *>(wirePtr->getRTLILObjPtr());
-        auto connectedNodes = connections[wire];
-
-        for (const auto &connected : connectedNodes) {
-            // this is a cell which is connected to that wire
-            const auto *attrObject = toAttrObject(connected);
-
-            // if the cell has a (* tamara_cone *) annotation, it's been touched by replicate()
-            if (attrObject->has_attribute(CONE_ANNOTATION)) {
-                log("Found replicated cell '%s' connected to wire node '%s'\n", logRTLILName(connected),
-                    log_id(wire->name));
-
-                // now we can collect replicas for the cell, and replicas for the wire, and tie them together!
-                auto cellReplicas = collectReplicasRTLIL(connected);
-                auto wireReplicas = element->getReplicas();
-
-                log_assert(cellReplicas.size() == wireReplicas.size()
-                    && "Cannot pair cell replicas with wire replicas!");
-
-                // remember we just asserted that cellReplicas == wireReplicas size
-                for (size_t j = 0; j < cellReplicas.size(); j++) {
-                    auto *cellReplica = std::get<Cell *>(cellReplicas[j]);
-                    auto *wireReplica = std::get<Wire *>(wireReplicas[j]);
-                    log("Connect %s to %s\n", log_id(cellReplica->name), log_id(wireReplica->name));
-
-                    connect(module, cellReplica, wireReplica);
-                    cellReplica->check();
-                }
-            } else {
-                log_warning("Cell '%s' was not replicated, but perhaps should have been? (LogicCone::wire "
-                            "fix up pass)\n",
-                    logRTLILName(connected));
-            }
-        }
-
-        // now, we also need to do the reverse to connect up the other side
-        // that is, currently we have, for example:
-        //
-        // DFF -> $6
-        // DFF -> $7
-        // DFF -> ff -> (not, not, not)
-        //
-        // whereas, instead, we would like:
-        //
-        // DFF -> $6 -> not
-        // DFF -> $7 -> not
-        // DFF -> ff -> not
-        //
-        // In other words, previously, we handled connecting the LHS (the DFF to the replicated wire), but now
-        // we also need to handle the RHS (the wire to the not)
-        log("%sLooking for cells that connect to %s (reverse lookup)%s\n", COLOUR(Cyan), log_id(wire->name),
-            RESET());
-        auto reverses = rtlilInverseLookup(connections, wire);
-        for (const auto &reverse : reverses) {
-            log("Reverse for %s: %s\n", log_id(wire->name), logRTLILName(reverse));
-
-            // now, find the replicas for the reverse (if it's been replicated)
-            const auto *attrObject = toAttrObject(reverse);
-            if (attrObject->has_attribute(CONE_ANNOTATION)) {
-                // now track down the replicas for the cell and for us
-                auto cellReplicas = collectReplicasRTLIL(reverse);
-                auto wireReplicas = element->getReplicas();
-
-                log_assert(cellReplicas.size() == wireReplicas.size()
-                    && "Cannot pair cell replicas with wire replicas!");
-
-                // remember we just asserted that cellReplicas == wireReplicas size
-                for (size_t j = 0; j < cellReplicas.size(); j++) {
-                    // log("cellReplica: %s  wireReplica: %s\n", logRTLILName(cellReplicas[j]),
-                    // logRTLILName(wireReplicas[j]));
-
-                    auto *thisCell = std::get<RTLIL::Cell *>(cellReplicas[j]);
-                    auto *thisWire = std::get<RTLIL::Wire *>(wireReplicas[j]);
-
-                    log("Going to connect input port of cell %s to our wire %s\n", log_id(thisCell->name),
-                        log_id(thisWire->name));
-
-                    changeInput(module, thisCell, thisWire);
-
-                    // FIXME now I think we need a SPECIAL connect() that connects the INPUT of cellReplica to
-                    // the wire
-                    //
-                    // FIXME and of course what do we do if the cell has multiple inputs???
-                    // perhaps a better way to handle this is to go back and rewrite how we replicate wires
-                    // more carefully
-                }
-            } else {
-                log_warning("Cell '%s' was not replicated, but perhaps should have been? (LogicCone::wire "
-                            "fix up *inverse* pass)\n",
-                    logRTLILName(reverse));
-            }
-        }
-
-        module->check();
+    // connected output wire
+    if (outWire.has_value()) {
+        log("Connecting cone output '%s' to voter output '%s'\n", logRTLILName(outputNode), log_id(outWire.value()->name));
+        // FIXME sketchy
+        module->connect(std::get<Wire *>(outputNode->getRTLILObjPtr()), outWire.value());
+    } else {
+        log("No voter inserted (cone probably empty), skipping output connection\n");
     }
 }
 

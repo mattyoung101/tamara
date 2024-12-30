@@ -1,7 +1,7 @@
 # Test inserting one 2-bit voter into a blank circuit
 
 plugin -i libtamara.so
-tamara_debug mkMultiVoter
+tamara_debug mkvoter 2
 write_rtlil
 check
 show -colors 420

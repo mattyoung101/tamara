@@ -6,6 +6,7 @@ project(tamara
     HOMEPAGE_URL "https://github.com/mattyoung101/tamara"
 )
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_C_STANDARD 11) # C11
 set(CMAKE_CXX_STANDARD 20) # C++20
 include(GNUInstallDirs)
@@ -54,6 +55,9 @@ target_include_directories(tamara PRIVATE include lib/yosys)
 target_compile_options(tamara PRIVATE "-Wall" "-Wextra" "-Wno-unused-parameter" "-ggdb"
                                       "-fdiagnostics-color=always")
 # note on diagnostic colour: https://stackoverflow.com/a/73349744/5007892
+
+# HACK
+target_include_directories(tamara PRIVATE /usr/include/tcl8.6)
 
 # these based on `yosys-config` on Arch
 target_compile_definitions(tamara PRIVATE -DYOSYS_ENABLE_READLINE -DYOSYS_ENABLE_PLUGINS
