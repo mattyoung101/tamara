@@ -56,6 +56,9 @@ target_compile_options(tamara PRIVATE "-Wall" "-Wextra" "-Wno-unused-parameter" 
                                       "-fdiagnostics-color=always")
 # note on diagnostic colour: https://stackoverflow.com/a/73349744/5007892
 
+# HACK
+target_include_directories(tamara PRIVATE /usr/include/tcl8.6)
+
 # these based on `yosys-config` on Arch
 target_compile_definitions(tamara PRIVATE -DYOSYS_ENABLE_READLINE -DYOSYS_ENABLE_PLUGINS
     -DYOSYS_ENABLE_GLOB -DYOSYS_ENABLE_ZLIB -DYOSYS_ENABLE_TCL -DYOSYS_ENABLE_ABC -DYOSYS_ENABLE_COVER

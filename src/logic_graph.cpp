@@ -241,12 +241,13 @@ std::vector<RTLILAnyPtr> rtlilInverseLookup(RTLILWireConnections &connections, W
 //! with it
 // TODO do we even want the output wire???
 RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
+    log("extractReplicaWire(%s)\n", logRTLILName(ptr));
     return std::visit(
         [](auto &&arg) {
             using T = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
                 RTLIL::Cell *cell = arg; // this is for the benefit of clangd
-                log("Locating output wire for %s\n", log_id(cell->name));
+                // log("Locating output wire for %s\n", log_id(cell->name));
 
                 CellTypes cellTypes(cell->module->design);
 
@@ -267,6 +268,8 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
 
                         // rip up the existing wire, and add our own
                         cell->setPort(name, wire);
+
+                        log("Generated replacement wire '%s' for cell '%s'\n", log_id(wire->name), log_id(cell->name));
 
                         return wire;
                     }
@@ -516,13 +519,17 @@ void LogicCone::insertVoter(
     log("Going to splice voter between LogicCone output %s and cut point %s\n", logRTLILName(outputNode),
         logRTLILName(voterCutPoint));
 
-    // YS_DEBUGTRAP_IF_DEBUGGING;
-    auto *a_w = extractReplicaWire(replicas[0]);
-    auto *b_w = extractReplicaWire(replicas[1]);
-    auto *c_w = extractReplicaWire(replicas[2]);
+    log("out_w voterCutPoint\n");
+    // NOTE: It is VERY important that out_w runs first, otherwise the wires are not connected correctly (c
+    // gets overwritten basically)
     auto *out_w = extractReplicaWire(voterCutPoint->get()->getRTLILObjPtr());
+    log("a_w replicas[0]\n");
+    auto *a_w = extractReplicaWire(replicas.at(0));
+    log("b_w replicas[1]\n");
+    auto *b_w = extractReplicaWire(replicas.at(1));
+    log("c_w replicas[2]\n");
+    auto *c_w = extractReplicaWire(replicas.at(2));
     builder.build(a_w, b_w, c_w, out_w);
-    // Yosys::run_pass("show -colors 420 -pause");
 }
 
 void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
