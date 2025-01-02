@@ -142,13 +142,14 @@ void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::
         // attach SigChunks to voter wires
         module->connect(w_a, chunk_a);
         module->connect(w_b, chunk_b);
-        // log("Connect %s -> %s\n", log_id(w_c->name), log_id(c->name));
         module->connect(w_c, chunk_c);
         module->connect(chunk_out, w_out);
         module->connect(chunk_err, w_err);
+        module->check();
 
         // construct voter
         ::build(module, w_a, w_b, w_c, w_out, w_err);
+        module->check();
         size++;
     }
 

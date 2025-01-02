@@ -34,8 +34,9 @@ namespace {
 const char *const NONE_MESSAGE = "None";
 
 //! An IO is simply a wire at the edge of the circuit
-constexpr bool isWireIO(RTLIL::Wire *wire, RTLILWireConnections &connections) {
-    return connections[wire].empty() || wire->port_input || wire->port_output;
+constexpr bool isWireIO(RTLIL::Wire *wire, const RTLILWireConnections &connections) {
+    return (connections.contains(wire) && connections.at(wire).empty()) || wire->port_input
+        || wire->port_output;
 }
 
 //! Returns the RTLIL ID for a RTLILAnyPtr
@@ -179,7 +180,7 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
 } // namespace
 
 TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(
-    const RTLILAnyPtr &ptr, RTLILWireConnections &connections) {
+    const RTLILAnyPtr &ptr, const RTLILWireConnections &connections) {
     // based on example 3 of https://en.cppreference.com/w/cpp/utility/variant/visit
     auto localId = id;
     auto selfPtr = getSelfPtr();
@@ -264,10 +265,9 @@ void IONode::replicate([[maybe_unused]] RTLIL::Module *module) {
     log_error("TaMaRa internal error: Cannot replicate IO node!\n");
 }
 
-std::vector<TMRGraphNode::Ptr> TMRGraphNode::computeNeighbours(
-    RTLIL::Module *module, RTLILWireConnections &connections) {
+std::vector<TMRGraphNode::Ptr> TMRGraphNode::computeNeighbours(const RTLILWireConnections &connections) {
     auto obj = getRTLILObjPtr();
-    auto neighbours = connections[obj];
+    auto neighbours = connections.at(obj);
     log("    %s '%s' has %zu neighbours\n", identify().c_str(), log_id(getRTLILName(obj)), neighbours.size());
 
     // now, construct Yosys types into our logic graph types
@@ -288,7 +288,7 @@ void LogicCone::verifyInputNodes() const {
     }
 }
 
-void LogicCone::search(RTLIL::Module *module, RTLILWireConnections &connections) {
+void LogicCone::search(const RTLILWireConnections &connections) {
     // check that we're starting the search from scratch on this cone
     log_assert(frontier.empty());
     log_assert(cone.empty()); // NOLINT(bugprone-unused-return-value)
@@ -309,7 +309,7 @@ void LogicCone::search(RTLIL::Module *module, RTLILWireConnections &connections)
 
         if (shouldAddNeighbours(node) || first) {
             // locate neighbours and add to BFS queue
-            auto neighbours = node->computeNeighbours(module, connections);
+            auto neighbours = node->computeNeighbours(connections);
             for (const auto &neighbour : neighbours) {
                 frontier.push(neighbour);
             }
@@ -428,7 +428,8 @@ void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
 
     // connected output wire
     if (outWire.has_value()) {
-        log("Connecting cone output '%s' to voter output '%s'\n", logRTLILName(outputNode), log_id(outWire.value()->name));
+        log("Connecting cone output '%s' to voter output '%s'\n", logRTLILName(outputNode),
+            log_id(outWire.value()->name));
         // FIXME sketchy
         module->connect(std::get<Wire *>(outputNode->getRTLILObjPtr()), outWire.value());
     } else {
@@ -436,7 +437,7 @@ void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
     }
 }
 
-std::vector<LogicCone> LogicCone::buildSuccessors(RTLILWireConnections &connections) {
+std::vector<LogicCone> LogicCone::buildSuccessors(const RTLILWireConnections &connections) {
     log("%sConsidering potential successors for cone %u%s\n", COLOUR(Blue), id, RESET());
     std::vector<LogicCone> out {};
     for (const auto &node : inputNodes) {
@@ -444,7 +445,8 @@ std::vector<LogicCone> LogicCone::buildSuccessors(RTLILWireConnections &connecti
             log_id(getRTLILName(node)));
 
         // check if it has a neighbour
-        if (connections[node->getRTLILObjPtr()].size() > 0) {
+        if (connections.contains(node->getRTLILObjPtr())
+            && connections.at(node->getRTLILObjPtr()).size() > 0) {
             // we have neighbours, this is a valid successor
             log("%sConfirmed.%s\n", COLOUR(Green), RESET());
             out.push_back(newLogicCone(node->getRTLILObjPtr()));

@@ -55,8 +55,7 @@ public:
     }
 
     //! Compute neighbours of this node for the backwards BFS
-    [[nodiscard]] std::vector<TMRGraphNode::Ptr> computeNeighbours(
-        RTLIL::Module *module, RTLILWireConnections &connections);
+    [[nodiscard]] std::vector<TMRGraphNode::Ptr> computeNeighbours(const RTLILWireConnections &connections);
 
     //! Gets a pointer to the underlying RTLIL object
     virtual RTLILAnyPtr getRTLILObjPtr() = 0;
@@ -76,7 +75,7 @@ public:
     //! During LogicCone::computeNeighbours, this call turns an RTLIL neighbour (ptr) into a new logic graph
     //! node, with the parent correctly set to this TMRGraphNode using getSelfPtr().
     [[nodiscard]] TMRGraphNode::Ptr newLogicGraphNeighbour(
-        const RTLILAnyPtr &ptr, RTLILWireConnections &connections);
+        const RTLILAnyPtr &ptr, const RTLILWireConnections &connections);
 
     //! Returns a shared ptr to self
     [[nodiscard]] TMRGraphNode::Ptr getSelfPtr() {
@@ -263,7 +262,7 @@ public:
     }
 
     //! Builds a logic cone by tracing backwards from outputNode to either a DFF or other IO.
-    void search(RTLIL::Module *module, RTLILWireConnections &connections);
+    void search(const RTLILWireConnections &connections);
 
     //! Replicates the RTLIL components in a logic cone
     void replicate(RTLIL::Module *module);
@@ -273,7 +272,7 @@ public:
         VoterBuilder &builder);
 
     //! Builds a new logic cone that will continue the search onwards, or none if we're already at the input
-    std::vector<LogicCone> buildSuccessors(RTLILWireConnections &connections);
+    std::vector<LogicCone> buildSuccessors(const RTLILWireConnections &connections);
 
 private:
     /// this is the list of terminals: the list of IO nodes or FF nodes that we end up on through our
