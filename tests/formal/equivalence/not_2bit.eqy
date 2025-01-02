@@ -1,0 +1,27 @@
+# Tests that checks the inverter in "not_tmr.sv" circuit, which is a simple NOT gate, is equivalent
+# before/after TaMaRa TMR
+
+[gold]
+read_verilog -sv ../tests/verilog/not_2bit.sv
+prep -top inverter
+rename -top design
+splitcells
+splitnets
+
+[gate]
+plugin -i libtamara.so
+read_verilog -DTAMARA -sv ../tests/verilog/not_2bit.sv
+prep -top inverter
+rename -top design
+splitcells
+splitnets
+tamara_tmr
+
+[strategy sby]
+use sby
+depth 2
+engine smtbmc yices
+
+# [strategy sat]
+# use sat
+# depth 15

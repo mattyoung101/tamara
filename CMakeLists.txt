@@ -50,6 +50,7 @@ add_library(tamara SHARED
     src/tamara_debug.cpp
     src/voter_builder.cpp
     src/logic_graph.cpp
+    src/fix_walker.cpp
 )
 target_include_directories(tamara PRIVATE include lib/yosys)
 target_compile_options(tamara PRIVATE "-Wall" "-Wextra" "-Wno-unused-parameter" "-ggdb"

@@ -160,7 +160,7 @@ For the proposal and proposal draft, build the Gantt charts by running `just`.
 The thesis uses [uqthesis_eecs_hons](https://github.com/mattyoung101/uqthesis_eecs_hons) Typst template.
 
 ## Licence
-Copyright (c) 2024 Matt Young.
+Copyright (c) 2024-2025 Matt Young.
 
 Code and tests are available under the **Mozilla Public License v2.0**, see the file LICENSE.code.
 
