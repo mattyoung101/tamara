@@ -7,9 +7,7 @@
 #include "tamara/logic_graph.hpp"
 #include "kernel/celltypes.h"
 #include "kernel/log.h"
-#include "kernel/register.h"
 #include "kernel/rtlil.h"
-#include "kernel/yosys.h"
 #include "kernel/yosys_common.h"
 #include "tamara/termcolour.hpp"
 #include "tamara/util.hpp"
@@ -78,21 +76,6 @@ const char *logRTLILName(const RTLILAnyPtr &ptr) {
     return log_id(getRTLILName(ptr));
 }
 
-//! Casts a RTLILAnyPtr to an RTLIL::AttrObject
-const RTLIL::AttrObject *toAttrObject(const RTLILAnyPtr &ptr) {
-    return std::visit(
-        [](auto &&arg) {
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
-                return dynamic_cast<RTLIL::AttrObject *>(arg);
-            }
-            if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
-                return dynamic_cast<RTLIL::AttrObject *>(arg);
-            }
-        },
-        ptr);
-}
-
 //! Instantiates a new logic cone from the RTLILAnyPtr.
 LogicCone newLogicCone(const RTLILAnyPtr &ptr) {
     return std::visit(
@@ -129,7 +112,6 @@ void replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *module) {
 
 //! Taking an RTLILAnyPtr that came from a call to replicate(), returns the relevant output wire associated
 //! with it
-// TODO do we even want the output wire???
 RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
     log("extractReplicaWire(%s)\n", logRTLILName(ptr));
     return std::visit(
@@ -437,6 +419,7 @@ void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
     }
 
     // now, clean up by running the FixWalkers
+    log("\n%sFixing up wiring%s\n", COLOUR(Blue), RESET());
     fixWalkers.execute(module);
 }
 

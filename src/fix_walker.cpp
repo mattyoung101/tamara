@@ -14,8 +14,11 @@
 USING_YOSYS_NAMESPACE;
 
 namespace {
-dict<RTLIL::SigBit, int> computeWireDriversCount(RTLIL::Module *module) {
-    dict<RTLIL::SigBit, int> wireDriversCount; // this has to be a dict, SigBit isn't hashable in std
+
+/// Computes the number of wires that either drive, or are driving, another wire in the module.
+/// @param isOutput true if we're considering output wires, false if input wires (TODO is this the right?)
+dict<RTLIL::SigBit, int> computeWireIOCount(RTLIL::Module *module, bool isOutput) {
+    dict<RTLIL::SigBit, int> count; // this has to be a dict, SigBit isn't hashable in std
 
     // first, pre-calculate the wireDriversCount lookup
     // this logic is borrowed from Yosys check.cc
@@ -27,13 +30,14 @@ dict<RTLIL::SigBit, int> computeWireDriversCount(RTLIL::Module *module) {
             bool output = cell->output(conn.first);
 
             for (auto bit : sig) {
-                if (output && !input && (bit.wire != nullptr)) {
-                    wireDriversCount[bit]++;
+                bool shouldConsider = isOutput ? (output && !input) : (input && !output);
+                if (shouldConsider && (bit.wire != nullptr)) {
+                    count[bit]++;
                 }
             }
         }
     }
-    return wireDriversCount;
+    return count;
 }
 } // namespace
 
@@ -44,11 +48,14 @@ void FixWalkerManager::add(const std::shared_ptr<FixWalker> &walker) {
 }
 
 void FixWalkerManager::execute(RTLIL::Module *module) {
-    auto wireDriversCount = computeWireDriversCount(module);
+    // TODO also note we may have this the wrong way around ("drivers" vs "driven by")
+    auto wireDriversCount = computeWireIOCount(module, true);
+    auto wireDrivenByCount = computeWireIOCount(module, false);
 
     for (auto &walker : walkers) {
         log("Running FixWalker %s\n", walker->name().c_str());
 
+        // avoid processing things twice
         std::unordered_set<RTLIL::AttrObject *> processed;
 
         walker->processModule(module);
@@ -62,7 +69,7 @@ void FixWalkerManager::execute(RTLIL::Module *module) {
                     auto *wire = sigSpecToWire(signal);
 
                     if (wire != nullptr && !processed.contains(wire)) {
-                        walker->processWire(wire, wireDriversCount[wire]);
+                        walker->processWire(wire, wireDriversCount[wire], wireDrivenByCount[wire]);
                         processed.insert(wire);
                     }
                 }
@@ -70,7 +77,7 @@ void FixWalkerManager::execute(RTLIL::Module *module) {
         }
         for (auto *wire : module->wires()) {
             if (!processed.contains(wire)) {
-                walker->processWire(wire, wireDriversCount[wire]);
+                walker->processWire(wire, wireDriversCount[wire], wireDrivenByCount[wire]);
                 processed.insert(wire);
             }
         }
@@ -79,12 +86,16 @@ void FixWalkerManager::execute(RTLIL::Module *module) {
     }
 }
 
-void MultiDriverFixer::processWire(RTLIL::Wire *wire, int driverCount) {
-    if (driverCount == 3) {
+void MultiDriverFixer::processWire(RTLIL::Wire *wire, int driverCount, int drivenCount) {
+    // this wire must have exactly 3 inputs and exactly 3 outputs (we aim to resolve this)
+    if (driverCount == 3 && drivenCount == 3) {
         log("Found potential candidate for MultiDriverFixer: '%s'. Checking further.\n", log_id(wire->name));
 
-        // must have exactly 3 inputs and exactly 3 outputs
-        // all inputs and outputs must be TMR replicas
+        // TODO now we need a way to locate our inputs and outputs!
+        // either we run analyseWireConnections again, or we use the logic from check.cc in yosys
+
+        // all inputs and outputs must be TMR replicas (so should all have the "tamara_cone" attribute and be
+        // from the same cone)
         // all inputs must be of the same cell type
         // all outputs must be of the same cell type
     }

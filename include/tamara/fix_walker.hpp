@@ -33,7 +33,7 @@ public:
     virtual void processCell(RTLIL::Cell *cell) { };
 
     /// Processes the given wire in a module.
-    virtual void processWire(RTLIL::Wire *wire, int driverCount) { };
+    virtual void processWire(RTLIL::Wire *wire, int driverCount, int drivenCount) { };
 
     virtual std::string name() {
         return "ERROR";
@@ -61,7 +61,7 @@ class MultiDriverFixer : public FixWalker {
 public:
     MultiDriverFixer() = default;
 
-    void processWire(RTLIL::Wire *wire, int driverCount) override;
+    void processWire(RTLIL::Wire *wire, int driverCount, int drivenCount) override;
 
     std::string name() override {
         return "MultiDriverFixer";

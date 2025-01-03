@@ -307,6 +307,7 @@ private:
     std::optional<RTLIL::Wire *> insertVoter(VoterBuilder &builder, const std::vector<RTLILAnyPtr> &replicas);
 
     FixWalkerManager fixWalkers;
+    // PERF This might be a little non-optimal, should be static
     void insertFixWalkers() {
         fixWalkers.add(std::make_shared<MultiDriverFixer>());
     }
