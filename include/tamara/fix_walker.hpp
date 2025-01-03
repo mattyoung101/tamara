@@ -5,7 +5,11 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL
 // was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #pragma once
+#include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
+#include <memory>
+#include <string>
+#include <vector>
 
 USING_YOSYS_NAMESPACE;
 
@@ -15,6 +19,7 @@ namespace tamara {
 /// and applies fix-ups to make it valid.
 class FixWalker {
 public:
+    FixWalker() = default;
     FixWalker(const FixWalker &) = default;
     FixWalker(FixWalker &&) = delete;
     FixWalker &operator=(const FixWalker &) = default;
@@ -28,14 +33,39 @@ public:
     virtual void processCell(RTLIL::Cell *cell) { };
 
     /// Processes the given wire in a module.
-    virtual void processWire(RTLIL::Wire *wire) { };
+    virtual void processWire(RTLIL::Wire *wire, int driverCount) { };
+
+    virtual std::string name() {
+        return "ERROR";
+    };
+};
+
+/// A manager for executing a list of @ref FixWalker instances on a design.
+class FixWalkerManager {
+public:
+    FixWalkerManager() = default;
+
+    /// Adds a @ref FixWalker to be executed
+    void add(const std::shared_ptr<FixWalker> &walker);
+
+    /// Executes all added @ref FixWalkers on a design.
+    void execute(RTLIL::Module *module);
+
+private:
+    std::vector<std::shared_ptr<FixWalker>> walkers;
 };
 
 /// A @ref FixWalker that looks for wires with multiple drivers; where the inputs are replicated nodes, and
 /// the outputs are voters.
 class MultiDriverFixer : public FixWalker {
 public:
-    void processWire(RTLIL::Wire *wire) override;
+    MultiDriverFixer() = default;
+
+    void processWire(RTLIL::Wire *wire, int driverCount) override;
+
+    std::string name() override {
+        return "MultiDriverFixer";
+    }
 };
 
 }; // namespace tamara

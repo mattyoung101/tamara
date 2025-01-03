@@ -435,6 +435,9 @@ void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
     } else {
         log("No voter inserted (cone probably empty), skipping output connection\n");
     }
+
+    // now, clean up by running the FixWalkers
+    fixWalkers.execute(module);
 }
 
 std::vector<LogicCone> LogicCone::buildSuccessors(const RTLILWireConnections &connections) {

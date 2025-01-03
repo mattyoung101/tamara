@@ -7,6 +7,7 @@
 #pragma once
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
+#include "tamara/fix_walker.hpp"
 #include "tamara/util.hpp"
 #include "tamara/voter_builder.hpp"
 #include <cstdint>
@@ -253,12 +254,14 @@ public:
     explicit LogicCone(RTLIL::Wire *io)
         : outputNode(std::make_shared<IONode>(io, nextID()))
         , id(outputNode->getConeID()) {
+        insertFixWalkers();
     }
 
     // FIXME check that cell really is a FF when we instantiate
     LogicCone(RTLIL::Cell *ff)
         : outputNode(std::make_shared<FFNode>(ff, nextID()))
         , id(outputNode->getConeID()) {
+        insertFixWalkers();
     }
 
     //! Builds a logic cone by tracing backwards from outputNode to either a DFF or other IO.
@@ -302,6 +305,11 @@ private:
     //! @param replicas Replicas for this node, should be of length 3 (includes the node itself).
     //! @returns The output wire, or none if no voter was inserted.
     std::optional<RTLIL::Wire *> insertVoter(VoterBuilder &builder, const std::vector<RTLILAnyPtr> &replicas);
+
+    FixWalkerManager fixWalkers;
+    void insertFixWalkers() {
+        fixWalkers.add(std::make_shared<MultiDriverFixer>());
+    }
 
     // Based on this idea: https://stackoverflow.com/a/2978575
     // We don't thread, so no mutex required
