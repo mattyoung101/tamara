@@ -7,6 +7,7 @@
 #pragma once
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
+#include "tamara/util.hpp"
 #include <memory>
 #include <string>
 #include <vector>
@@ -33,7 +34,7 @@ public:
     virtual void processCell(RTLIL::Cell *cell) { };
 
     /// Processes the given wire in a module.
-    virtual void processWire(RTLIL::Wire *wire, int driverCount, int drivenCount) { };
+    virtual void processWire(RTLIL::Wire *wire, int driverCount, int drivenCount, const RTLILWireConnections &connections) { };
 
     virtual std::string name() {
         return "ERROR";
@@ -61,7 +62,7 @@ class MultiDriverFixer : public FixWalker {
 public:
     MultiDriverFixer() = default;
 
-    void processWire(RTLIL::Wire *wire, int driverCount, int drivenCount) override;
+    void processWire(RTLIL::Wire *wire, int driverCount, int drivenCount, const RTLILWireConnections &connections) override;
 
     std::string name() override {
         return "MultiDriverFixer";

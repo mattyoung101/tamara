@@ -37,29 +37,14 @@ constexpr bool isWireIO(RTLIL::Wire *wire, const RTLILWireConnections &connectio
         || wire->port_output;
 }
 
-//! Returns the RTLIL ID for a RTLILAnyPtr
-RTLIL::IdString getRTLILName(const RTLILAnyPtr &ptr) {
-    return std::visit(
-        [](auto &&arg) {
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
-                return arg->name;
-            }
-            if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
-                return arg->name;
-            }
-        },
-        ptr);
-}
-
 //! Returns the RTLIL ID for a TMRGraphNode::Ptr
-RTLIL::IdString getRTLILName(const TMRGraphNode::Ptr &ptr) {
+RTLIL::IdString getNodeName(const TMRGraphNode::Ptr &ptr) {
     return getRTLILName(ptr->getRTLILObjPtr());
 }
 
 //! Override of getRTLILName that returns a char* through log_id
 const char *logRTLILName(const TMRGraphNode::Ptr &ptr) {
-    return log_id(getRTLILName(ptr));
+    return log_id(getNodeName(ptr));
 }
 
 //! Override of getRTLILName that returns a char* through log_id. If the optional is not present, returns
@@ -68,7 +53,7 @@ const char *logRTLILName(const std::optional<TMRGraphNode::Ptr> &optional) {
     if (!optional.has_value()) {
         return NONE_MESSAGE;
     }
-    return log_id(getRTLILName(*optional));
+    return log_id(getNodeName(*optional));
 }
 
 //! Override for getRTLILName that returns a char* through log_id
@@ -103,10 +88,10 @@ inline bool shouldAddNeighbours(const TMRGraphNode::Ptr &node) {
 //! circuit.
 void replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *module) {
     if (dynamic_pointer_cast<IONode>(node) == nullptr) {
-        log("Input node %s is not IONode, replicating it\n", log_id(getRTLILName(node)));
+        log("Input node %s is not IONode, replicating it\n", log_id(getNodeName(node)));
         node->replicate(module);
     } else {
-        log("Input node %s is IONode, it will NOT be replicated\n", log_id(getRTLILName(node)));
+        log("Input node %s is IONode, it will NOT be replicated\n", log_id(getNodeName(node)));
     }
 }
 
@@ -265,7 +250,7 @@ void LogicCone::verifyInputNodes() const {
         if (dynamic_pointer_cast<IONode>(node) == nullptr && dynamic_pointer_cast<FFNode>(node) == nullptr) {
             log_error("TaMaRa internal error: Logic cone input node should be either IONode or FFNode, but "
                       "instead it was %s %s!\n",
-                node->identify().c_str(), log_id(getRTLILName(node)));
+                node->identify().c_str(), log_id(getNodeName(node)));
         }
     }
 }
@@ -287,7 +272,7 @@ void LogicCone::search(const RTLILWireConnections &connections) {
         auto node = frontier.front();
         frontier.pop();
         log("    Consider %s '%s' in cone %u (%zu items remain)\n", node->identify().c_str(),
-            log_id(getRTLILName(node)), id, frontier.size());
+            log_id(getNodeName(node)), id, frontier.size());
 
         if (shouldAddNeighbours(node) || first) {
             // locate neighbours and add to BFS queue
@@ -320,7 +305,7 @@ void LogicCone::search(const RTLILWireConnections &connections) {
             // found terminal, start wrapping up search -> don't add neighbours, and don't add elements to
             // cone
             log("    %s%s %s is a terminal, wrapping up search%s\n", COLOUR(Yellow), node->identify().c_str(),
-                log_id(getRTLILName(node)), RESET());
+                log_id(getNodeName(node)), RESET());
         }
 
         if (!frontier.empty()) {
@@ -428,7 +413,7 @@ std::vector<LogicCone> LogicCone::buildSuccessors(const RTLILWireConnections &co
     std::vector<LogicCone> out {};
     for (const auto &node : inputNodes) {
         log("Considering %s %s as a successor cone... ", node->identify().c_str(),
-            log_id(getRTLILName(node)));
+            log_id(getNodeName(node)));
 
         // check if it has a neighbour
         if (connections.contains(node->getRTLILObjPtr())

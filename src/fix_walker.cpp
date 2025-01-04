@@ -52,6 +52,9 @@ void FixWalkerManager::execute(RTLIL::Module *module) {
     auto wireDriversCount = computeWireIOCount(module, true);
     auto wireDrivenByCount = computeWireIOCount(module, false);
 
+    // also pre-compute another copy of RTLILWireConnections
+    auto connections = analyseConnections(module);
+
     for (auto &walker : walkers) {
         log("Running FixWalker %s\n", walker->name().c_str());
 
@@ -69,7 +72,8 @@ void FixWalkerManager::execute(RTLIL::Module *module) {
                     auto *wire = sigSpecToWire(signal);
 
                     if (wire != nullptr && !processed.contains(wire)) {
-                        walker->processWire(wire, wireDriversCount[wire], wireDrivenByCount[wire]);
+                        walker->processWire(
+                            wire, wireDriversCount[wire], wireDrivenByCount[wire], connections);
                         processed.insert(wire);
                     }
                 }
@@ -77,7 +81,7 @@ void FixWalkerManager::execute(RTLIL::Module *module) {
         }
         for (auto *wire : module->wires()) {
             if (!processed.contains(wire)) {
-                walker->processWire(wire, wireDriversCount[wire], wireDrivenByCount[wire]);
+                walker->processWire(wire, wireDriversCount[wire], wireDrivenByCount[wire], connections);
                 processed.insert(wire);
             }
         }
@@ -86,18 +90,38 @@ void FixWalkerManager::execute(RTLIL::Module *module) {
     }
 }
 
-void MultiDriverFixer::processWire(RTLIL::Wire *wire, int driverCount, int drivenCount) {
+void MultiDriverFixer::processWire(
+    RTLIL::Wire *wire, int driverCount, int drivenCount, const RTLILWireConnections &connections) {
     // this wire must have exactly 3 inputs and exactly 3 outputs (we aim to resolve this)
     if (driverCount == 3 && drivenCount == 3) {
-        log("Found potential candidate for MultiDriverFixer: '%s'. Checking further.\n", log_id(wire->name));
+        log("Found potential candidate for MultiDriverFixer: '%s'. Checking further... ", log_id(wire->name));
 
         // TODO now we need a way to locate our inputs and outputs!
         // either we run analyseWireConnections again, or we use the logic from check.cc in yosys
 
         // all inputs and outputs must be TMR replicas (so should all have the "tamara_cone" attribute and be
         // from the same cone)
-        // all inputs must be of the same cell type
-        // all outputs must be of the same cell type
+        // all inputs must be of the same cell type (OPTIONAL, do later)
+        // all outputs must be of the same cell type (OPTIONAL, do later)
+
+        if (!connections.contains(wire)) {
+            log("Not present in RTLILWireConnections\n");
+            return;
+        }
+
+        // all inputs must be TMR replicas
+        for (const auto &conn : connections.at(wire)) {
+            auto *attr = toAttrObject(conn);
+            if (!attr->has_attribute(CONE_ANNOTATION)) {
+                log("Missing cone annotation.\n");
+                return;
+            }
+        }
+
+        // all outputs must be TMR replicas
+        // TODO think we need to do inverse lookup again
+
+        log("Confirmed.\n");
     }
 }
 

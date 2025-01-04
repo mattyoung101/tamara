@@ -14,7 +14,21 @@
 
 USING_YOSYS_NAMESPACE;
 
+//! The main TaMaRa namespace
 namespace tamara {
+
+//! Asserts the pointer is not null
+#define NOTNULL(ptr)                                                                                         \
+    log_assert(((ptr) != nullptr) && "TaMaRa internal error: Unexpected null pointer '" #ptr "'!");
+
+//! Crashes the application, indicating that the feature is not yet implemented
+#define TODO log_error("TaMaRa internal error: Feature not yet implemented!\n");
+
+//! Debug command to dump the graph of the design
+#define DUMP Yosys::run_pass("show -colors 420 -pause -long");
+
+//! Debug command to dump the RTLIL of the design
+#define DUMP_RTLIL Yosys::run_pass("write_rtlil");
 
 const auto TRIPLICATE_ANNOTATION = ID(tamara_triplicate);
 const auto IGNORE_ANNOTATION = ID(tamara_ignore);
@@ -37,8 +51,7 @@ constexpr bool isDFF(const RTLIL::Cell *cell) {
         ID($dlatch), ID($adlatch));
 }
 
-//! Converts a SigSpec to a wire, if possible, otherwise returns nullptr
-//! WARNING: MAY RETURN NULLPTR! BE CAREFUL. This is so it works better with legacy code.
+//! Converts a SigSpec to a wire, if possible, <b>otherwise returns nullptr.</b>
 constexpr RTLIL::Wire *sigSpecToWire(const RTLIL::SigSpec &sigSpec) {
     if (sigSpec.is_wire()) {
         return sigSpec.as_wire();
@@ -55,17 +68,29 @@ constexpr RTLIL::Wire *sigSpecToWire(const RTLIL::SigSpec &sigSpec) {
     return nullptr;
 }
 
-//! Asserts the pointer is not null
-#define NOTNULL(ptr)                                                                                         \
-    log_assert(((ptr) != nullptr) && "TaMaRa internal error: Unexpected null pointer '" #ptr "'!");
+//! Casts an RTLILAnyPtr to an RTLIL::AttrObject
+constexpr RTLIL::AttrObject *toAttrObject(const RTLILAnyPtr &ptr) {
+    return std::visit(
+        [](auto &&arg) {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
+                return dynamic_cast<RTLIL::AttrObject *>(arg);
+            }
+            if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
+                return dynamic_cast<RTLIL::AttrObject *>(arg);
+            }
+        },
+        ptr);
+}
 
-//! Crashes the application, indicating that the feature is not yet implemented
-#define TODO log_error("TaMaRa internal error: Feature not yet implemented!\n");
+//! Returns the RTLIL ID for a RTLILAnyPtr
+RTLIL::IdString getRTLILName(const RTLILAnyPtr &ptr);
 
-//! Debug command to dump the graph of the design
-#define DUMP Yosys::run_pass("show -colors 420 -pause -long");
+//! Analyses connections betweens wires and the other wires or cells they're connected to
+RTLILWireConnections analyseConnections(const RTLIL::Module *module);
 
-//! Debug command to dump the RTLIL of the design
-#define DUMP_RTLIL Yosys::run_pass("write_rtlil");
+//! RTLILWireConnections maps a -> (b, c, d, e); but what this function does is find "a" given say b, or c, or
+//! d. Returns empty list if no results found.
+std::vector<RTLILAnyPtr> rtlilInverseLookup(const RTLILWireConnections &connections, Wire *target);
 
 } // namespace tamara

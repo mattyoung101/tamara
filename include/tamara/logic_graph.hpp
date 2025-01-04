@@ -73,11 +73,6 @@ public:
     //! Returns the width of the wire if this makes sense, otherwise throws an error
     virtual int getWidth() = 0;
 
-    //! During LogicCone::computeNeighbours, this call turns an RTLIL neighbour (ptr) into a new logic graph
-    //! node, with the parent correctly set to this TMRGraphNode using getSelfPtr().
-    [[nodiscard]] TMRGraphNode::Ptr newLogicGraphNeighbour(
-        const RTLILAnyPtr &ptr, const RTLILWireConnections &connections);
-
     //! Returns a shared ptr to self
     [[nodiscard]] TMRGraphNode::Ptr getSelfPtr() {
         // reference:
@@ -92,6 +87,11 @@ private:
 
     //! ID of the cone that this TMRGraphNode belongs to
     uint32_t id;
+
+    //! During LogicCone::computeNeighbours, this call turns an RTLIL neighbour (ptr) into a new logic graph
+    //! node, with the parent correctly set to this TMRGraphNode using getSelfPtr().
+    [[nodiscard]] TMRGraphNode::Ptr newLogicGraphNeighbour(
+        const RTLILAnyPtr &ptr, const RTLILWireConnections &connections);
 };
 
 //! Logic element in the graph, between an FFNode and/or an IONode
@@ -257,6 +257,7 @@ public:
         insertFixWalkers();
     }
 
+    //! Instantiates a new logic cone from the intermediate flip-flop cell.
     // FIXME check that cell really is a FF when we instantiate
     LogicCone(RTLIL::Cell *ff)
         : outputNode(std::make_shared<FFNode>(ff, nextID()))
