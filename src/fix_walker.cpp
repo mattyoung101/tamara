@@ -96,9 +96,6 @@ void MultiDriverFixer::processWire(
     if (driverCount == 3 && drivenCount == 3) {
         log("Found potential candidate for MultiDriverFixer: '%s'. Checking further... ", log_id(wire->name));
 
-        // TODO now we need a way to locate our inputs and outputs!
-        // either we run analyseWireConnections again, or we use the logic from check.cc in yosys
-
         // all inputs and outputs must be TMR replicas (so should all have the "tamara_cone" attribute and be
         // from the same cone)
         // all inputs must be of the same cell type (OPTIONAL, do later)
@@ -118,11 +115,25 @@ void MultiDriverFixer::processWire(
             }
         }
 
-        // all outputs must be TMR replicas
-        // TODO think we need to do inverse lookup again
+        // all outputs must be TMR replicas; we can find this out by doing an inverse lookup
+        auto inverse = rtlilInverseLookup(connections, wire);
+        for (const auto &node : inverse) {
+            auto *attr = toAttrObject(node);
+            if (!attr->has_attribute(CONE_ANNOTATION)) {
+                log("Missing cone annotation.\n");
+                return;
+            }
+        }
 
         log("Confirmed.\n");
+
+        // confirmed it, so now we need to apply our re-wiring logic
+        rewire(wire, connections);
     }
+}
+
+void MultiDriverFixer::rewire(RTLIL::Wire *wire, const RTLILWireConnections &connections) {
+    // TODO
 }
 
 } // namespace tamara

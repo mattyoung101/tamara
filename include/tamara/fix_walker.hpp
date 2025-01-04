@@ -67,6 +67,9 @@ public:
     std::string name() override {
         return "MultiDriverFixer";
     }
+
+private:
+    void rewire(RTLIL::Wire *wire, const RTLILWireConnections &connections);
 };
 
 }; // namespace tamara
