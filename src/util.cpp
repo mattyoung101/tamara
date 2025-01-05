@@ -7,12 +7,9 @@
 #include "tamara/util.hpp"
 #include "kernel/celltypes.h"
 #include "kernel/log.h"
-#include "kernel/register.h"
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
-#include "tamara/logic_graph.hpp"
 #include "tamara/termcolour.hpp"
-#include "tamara/voter_builder.hpp"
 #include <cmath>
 #include <unordered_set>
 #include <vector>
@@ -80,15 +77,14 @@ RTLILWireConnections tamara::analyseConnections(const RTLIL::Module *module) {
     }
 
     // also add global connections
-    // TODO check if this is actually required or not
     log("Checking global module connections\n");
     for (const auto &connection : module->connections()) {
         const auto &[lhs, rhs] = connection;
 
-        // FIXME it seems like this never triggers
-        if (rhs.is_wire() && lhs.is_wire()) {
-            auto *const lhsWire = lhs.as_wire();
-            auto *const rhsWire = rhs.as_wire();
+        auto *lhsWire = sigSpecToWire(lhs);
+        auto *rhsWire = sigSpecToWire(rhs);
+
+        if (lhsWire != nullptr && rhsWire != nullptr) {
             if (shouldConsiderForTMR(lhsWire) && shouldConsiderForTMR(rhsWire)) {
                 log("[neighbour] %s --> %s\n", log_id(lhsWire->name), log_id(rhsWire->name));
 
@@ -97,8 +93,8 @@ RTLILWireConnections tamara::analyseConnections(const RTLIL::Module *module) {
                 addConnection(connections, lhsWire, rhsWire);
             }
         } else {
-            // TODO get name, if possible?
-            log("Either RHS or LHS SigSpec is not a wire, skipping\n");
+            log("Either RHS(%s) or LHS(%s) SigSpec is not a wire, skipping\n", log_signal(rhs),
+                log_signal(lhs));
         }
     }
 
