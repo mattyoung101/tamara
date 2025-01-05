@@ -70,6 +70,10 @@ public:
 
 private:
     void rewire(RTLIL::Wire *wire, const RTLILWireConnections &connections);
+
+    /// Disconnects the ports that point to the problematic wire, "target", given a set of input nodes that
+    /// are connected to this wire (the variable "inputs")
+    void disconnectProblematicWires(RTLIL::Wire *target, const std::unordered_set<RTLILAnyPtr> &inputs);
 };
 
 }; // namespace tamara

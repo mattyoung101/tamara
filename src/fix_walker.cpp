@@ -5,6 +5,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL
 // was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #include "tamara/fix_walker.hpp"
+#include "kernel/celltypes.h"
 #include "kernel/log.h"
 #include "kernel/rtlil.h"
 #include "kernel/sigtools.h"
@@ -51,6 +52,8 @@ void FixWalkerManager::execute(RTLIL::Module *module) {
     // TODO also note we may have this the wrong way around ("drivers" vs "driven by")
     auto wireDriversCount = computeWireIOCount(module, true);
     auto wireDrivenByCount = computeWireIOCount(module, false);
+    log("Wire drivers count: %zu  Wire driven by count: %zu\n", wireDriversCount.size(),
+        wireDrivenByCount.size());
 
     // also pre-compute another copy of RTLILWireConnections
     auto connections = analyseConnections(module);
@@ -58,7 +61,7 @@ void FixWalkerManager::execute(RTLIL::Module *module) {
     for (auto &walker : walkers) {
         log("Running FixWalker %s\n", walker->name().c_str());
 
-        // avoid processing things twice
+        // avoid processing things twice (for each walker)
         std::unordered_set<RTLIL::AttrObject *> processed;
 
         walker->processModule(module);
@@ -72,6 +75,11 @@ void FixWalkerManager::execute(RTLIL::Module *module) {
                     auto *wire = sigSpecToWire(signal);
 
                     if (wire != nullptr && !processed.contains(wire)) {
+                        // FIXME this implicitly calls a constructor that causes an assert failure because the
+                        // width is 2; it doesn't want to let us construct a SigBit I suspect it's a problem
+                        // with multi-bit designs
+                        // This might be an issue with how we iterate over the connections, we might need to
+                        // iterate over each bit in the connections
                         walker->processWire(
                             wire, wireDriversCount[wire], wireDrivenByCount[wire], connections);
                         processed.insert(wire);
@@ -81,6 +89,7 @@ void FixWalkerManager::execute(RTLIL::Module *module) {
         }
         for (auto *wire : module->wires()) {
             if (!processed.contains(wire)) {
+                // FIXME this will also likely explode
                 walker->processWire(wire, wireDriversCount[wire], wireDrivenByCount[wire], connections);
                 processed.insert(wire);
             }
@@ -98,8 +107,8 @@ void MultiDriverFixer::processWire(
 
         // all inputs and outputs must be TMR replicas (so should all have the "tamara_cone" attribute and be
         // from the same cone)
-        // all inputs must be of the same cell type (OPTIONAL, do later)
-        // all outputs must be of the same cell type (OPTIONAL, do later)
+        // all inputs must be of the same cell type (OPTIONAL, TODO do later)
+        // all outputs must be of the same cell type (OPTIONAL, TODO do later)
 
         if (!connections.contains(wire)) {
             log("Not present in RTLILWireConnections\n");
@@ -132,8 +141,54 @@ void MultiDriverFixer::processWire(
     }
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static) We prefer to keep this as a member func.
 void MultiDriverFixer::rewire(RTLIL::Wire *wire, const RTLILWireConnections &connections) {
-    // TODO
+    // compute our inputs and outputs
+    auto inputs = connections.at(wire);
+    // PERF We should re-use this from processWire since rtlilInverseLookup is O(n^2)
+    auto outputs = rtlilInverseLookup(connections, wire);
+    log_assert(inputs.size() == outputs.size() && !inputs.empty() && !outputs.empty());
+
+    // first, for each input, we need to find the port that is connected to the problematic wire (the variable
+    // "wire") and disconnect it
+    disconnectProblematicWires(wire, inputs);
+}
+
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static) We prefer to keep this as a member func.
+void MultiDriverFixer::disconnectProblematicWires(
+    RTLIL::Wire *target, const std::unordered_set<RTLILAnyPtr> &inputs) {
+
+    CellTypes cellTypes(target->module->design);
+
+    // find the port in the cell that is connected to the problematic wire
+    // so input is basically going to be a cell that has an output going into our wire
+    for (const auto &input : inputs) {
+        // FIXME potentially sketchy - can we really be sure this is a cell?
+        auto *cell = std::get<RTLIL::Cell *>(input);
+
+        for (const auto &connection : cell->connections()) {
+            const auto &[name, signal] = connection;
+            auto *connWire = sigSpecToWire(signal);
+
+            if (cellTypes.cell_output(cell->type, name) && connWire == target) {
+                // found it, now disconnect
+                //
+                // cell->connections_.erase(name);
+                // cell->check();
+                // DUMP;
+                // TODO we don't want to erase the connection entirely, we just want to get rid of the RHS
+                // YS_DEBUGTRAP;
+
+                // we can safely return, we don't have to worry about multiple ports like in the last
+                // iteration of this code because we know there can only be one connection between this cell
+                // and the problematic wire; and this is the one (we checked connWire == target)
+                return;
+            }
+        }
+    }
+
+    log_error("TaMaRa internal error: Could not find problematic target wire '%s' from %zu inputs\n",
+        log_id(target->name), inputs.size());
 }
 
 } // namespace tamara
