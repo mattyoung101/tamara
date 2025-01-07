@@ -6,7 +6,7 @@ prep -top voter
 
 [gate]
 plugin -i libtamara.so
-tamara_debug mkvoter
+tamara_debug mkvoter 1
 rename -top voter
 prep -top voter
 

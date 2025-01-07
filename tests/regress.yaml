@@ -1,0 +1,20 @@
+# This document contains a list of tests that should be run as regression tests
+# These are basically whitelisted tests that we know should work, even during development
+
+# Equivalence checks (from the formal/equivalence directory with .eqy extensions)
+eqy:
+  - not_2bit
+  - not_tmr
+  - voter
+
+# Yosys scripts (from the scripts directory with .ys extension)
+scripts:
+  - bug7
+  - gen_2bit_voter
+  - gen_4bit_voter
+  - gen_voter
+  - not_2bit
+  - not_dff_tmr
+  - not_tmr
+  - not_voter
+
