@@ -60,15 +60,18 @@ RTLILAnyPtr findByApproxName(const T &cells, const std::string &name) {
         cells.size());
 }
 
-/// Locates the input port of the cell "cell" connected to the wire "target". Throws an error if not found.
-RTLIL::SigSpec locateInputPortConnectedToTarget(
+/// Locates the input port name of the cell "cell" connected to the wire "target". Throws an error if not
+/// found.
+RTLIL::IdString locateInputPortConnectedToTarget(
     RTLIL::Wire *target, RTLIL::Cell *cell, const CellTypes &cellTypes) {
     for (const auto &connection : cell->connections()) {
         const auto &[name, signal] = connection;
         auto *connWire = sigSpecToWire(signal);
 
         if (cellTypes.cell_input(cell->type, name) && connWire == target) {
-            return signal;
+            // YS_DEBUGTRAP;
+            // return cell->getPort(name);
+            return name;
         }
     }
 
@@ -193,14 +196,16 @@ void MultiDriverFixer::rewire(RTLIL::Wire *wire, const RTLILWireConnections &con
     //      LHS_orig     -> wireOrig -> RHS_orig
 
     auto lhsReplica1 = findByApproxName(inputs, "replica1");
-    auto rhsReplica1 = findByApproxName(outputs, "replica2");
+    auto rhsReplica1 = findByApproxName(outputs, "replica1");
 
     auto lhsReplica2 = findByApproxName(inputs, "replica2");
     auto rhsReplica2 = findByApproxName(outputs, "replica2");
 
+    // TODO is this std::get ok?? can we be sure it's a cell??
     reconnect(wire, std::get<RTLIL::Cell *>(lhsReplica1), std::get<RTLIL::Cell *>(rhsReplica1));
+    reconnect(wire, std::get<RTLIL::Cell *>(lhsReplica2), std::get<RTLIL::Cell *>(rhsReplica2));
 
-    // TODO how do we find orig? it'll be the only index left we assume?
+    // TODO how do we find orig? it'll be the only index left we assume? I guess technically we don't need to?
 }
 
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static, bugprone-easily-swappable-parameters)
@@ -217,12 +222,25 @@ void MultiDriverFixer::reconnect(RTLIL::Wire *target, Cell *input, Cell *output)
         if (cellTypes.cell_output(input->type, name) && connWire == target) {
             // ok, now we need to find the opposite: for the output cell, which input port is connected
             // to the problematic wire?
+            // FIXME I think this is outputting the wrong SigSpec! maybe we want to return the port name?
             auto outputCellPort = locateInputPortConnectedToTarget(target, output, cellTypes);
 
+            // we need to apparently make an intermediary wire too
+            // TODO is the width on this correct?
+            auto *wire = input->module->addWire(NEW_ID_SUFFIX("MultiDriverFixer"));
+
             // finalise the connection
-            input->setPort(name, outputCellPort);
-            log("Set port '%s' in input cell '%s' to port '%s' in output cell '%s'\n", log_signal(signal),
-                log_id(input->name), log_signal(outputCellPort), log_id(output->name));
+            input->setPort(name, wire);
+            // log("Set port '%s' in input cell '%s' to port '%s' in output cell '%s'\n", log_id(name),
+            //     log_id(input->name), log_signal(outputCellPort), log_id(output->name));
+            output->setPort(outputCellPort, wire);
+
+            input->check();
+            output->check();
+            input->module->check();
+
+            // and now connect the intermediary to the RHS
+            // input->module->connect(wire, outputCellPort);
 
             // we can safely return, we don't have to worry about multiple ports like in the last
             // iteration of this code because we know there can only be one connection between this
