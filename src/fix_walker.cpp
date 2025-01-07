@@ -11,10 +11,14 @@
 #include "kernel/sigtools.h"
 #include "kernel/yosys_common.h"
 #include "tamara/util.hpp"
+#include <algorithm>
+#include <string>
 
 USING_YOSYS_NAMESPACE;
 
 namespace {
+
+using namespace tamara;
 
 /// Computes the number of wires that either drive, or are driving, another wire in the module.
 /// @param isOutput true if we're considering output wires, false if input wires (TODO is this the right?)
@@ -40,6 +44,38 @@ dict<RTLIL::SigBit, int> computeWireIOCount(RTLIL::Module *module, bool isOutput
     }
     return count;
 }
+
+/// Finds the RTLILAnyPtr object in the collection that has the partial contents of the string "name". If not
+/// found, crashes.
+template <std::ranges::range T>
+RTLILAnyPtr findByApproxName(const T &cells, const std::string &name) {
+    for (const auto &cell : cells) {
+        auto cellName = std::string(getRTLILName(cell).c_str());
+        if (cellName.find(name) != std::string::npos) {
+            // found it
+            return cell;
+        }
+    }
+    log_error("TaMaRa internal error: Could not find partial name '%s' in list of size %zu\n", name.c_str(),
+        cells.size());
+}
+
+/// Locates the input port of the cell "cell" connected to the wire "target". Throws an error if not found.
+RTLIL::SigSpec locateInputPortConnectedToTarget(
+    RTLIL::Wire *target, RTLIL::Cell *cell, const CellTypes &cellTypes) {
+    for (const auto &connection : cell->connections()) {
+        const auto &[name, signal] = connection;
+        auto *connWire = sigSpecToWire(signal);
+
+        if (cellTypes.cell_input(cell->type, name) && connWire == target) {
+            return signal;
+        }
+    }
+
+    log_error("TaMaRa internal error: Could not find input port connected to wire '%s' in cell '%s'\n",
+        log_id(target->name), log_id(cell->name));
+}
+
 } // namespace
 
 namespace tamara {
@@ -144,51 +180,60 @@ void MultiDriverFixer::processWire(
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static) We prefer to keep this as a member func.
 void MultiDriverFixer::rewire(RTLIL::Wire *wire, const RTLILWireConnections &connections) {
     // compute our inputs and outputs
-    auto inputs = connections.at(wire);
+    std::unordered_set<RTLILAnyPtr> inputs = connections.at(wire);
     // PERF We should re-use this from processWire since rtlilInverseLookup is O(n^2)
     auto outputs = rtlilInverseLookup(connections, wire);
     log_assert(inputs.size() == outputs.size() && !inputs.empty() && !outputs.empty());
+    log_assert(inputs.size() == 3 && outputs.size() == 3);
 
-    // first, for each input, we need to find the port that is connected to the problematic wire (the variable
-    // "wire") and disconnect it
-    disconnectProblematicWires(wire, inputs);
+    // ok, so we're gonna have 3 nodes: the original, replica1, and replica2 on either side
+    // our mission is to link:
+    //      LHS_replica1 -> wire1    -> RHS_replica1
+    //      LHS_replica2 -> wire2    -> RHS_replica2
+    //      LHS_orig     -> wireOrig -> RHS_orig
+
+    auto lhsReplica1 = findByApproxName(inputs, "replica1");
+    auto rhsReplica1 = findByApproxName(outputs, "replica2");
+
+    auto lhsReplica2 = findByApproxName(inputs, "replica2");
+    auto rhsReplica2 = findByApproxName(outputs, "replica2");
+
+    reconnect(wire, std::get<RTLIL::Cell *>(lhsReplica1), std::get<RTLIL::Cell *>(rhsReplica1));
+
+    // TODO how do we find orig? it'll be the only index left we assume?
 }
 
-// NOLINTNEXTLINE(readability-convert-member-functions-to-static) We prefer to keep this as a member func.
-void MultiDriverFixer::disconnectProblematicWires(
-    RTLIL::Wire *target, const std::unordered_set<RTLILAnyPtr> &inputs) {
-
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static, bugprone-easily-swappable-parameters)
+void MultiDriverFixer::reconnect(RTLIL::Wire *target, Cell *input, Cell *output) {
     CellTypes cellTypes(target->module->design);
 
     // find the port in the cell that is connected to the problematic wire
     // so input is basically going to be a cell that has an output going into our wire
-    for (const auto &input : inputs) {
-        // FIXME potentially sketchy - can we really be sure this is a cell?
-        auto *cell = std::get<RTLIL::Cell *>(input);
 
-        for (const auto &connection : cell->connections()) {
-            const auto &[name, signal] = connection;
-            auto *connWire = sigSpecToWire(signal);
+    for (const auto &connection : input->connections()) {
+        const auto &[name, signal] = connection;
+        auto *connWire = sigSpecToWire(signal);
 
-            if (cellTypes.cell_output(cell->type, name) && connWire == target) {
-                // found it, now disconnect
-                //
-                // cell->connections_.erase(name);
-                // cell->check();
-                // DUMP;
-                // TODO we don't want to erase the connection entirely, we just want to get rid of the RHS
-                // YS_DEBUGTRAP;
+        if (cellTypes.cell_output(input->type, name) && connWire == target) {
+            // ok, now we need to find the opposite: for the output cell, which input port is connected
+            // to the problematic wire?
+            auto outputCellPort = locateInputPortConnectedToTarget(target, output, cellTypes);
 
-                // we can safely return, we don't have to worry about multiple ports like in the last
-                // iteration of this code because we know there can only be one connection between this cell
-                // and the problematic wire; and this is the one (we checked connWire == target)
-                return;
-            }
+            // finalise the connection
+            input->setPort(name, outputCellPort);
+            log("Set port '%s' in input cell '%s' to port '%s' in output cell '%s'\n", log_signal(signal),
+                log_id(input->name), log_signal(outputCellPort), log_id(output->name));
+
+            // we can safely return, we don't have to worry about multiple ports like in the last
+            // iteration of this code because we know there can only be one connection between this
+            // cell and the problematic wire; and this is the one (we checked connWire == target)
+            return;
         }
     }
 
-    log_error("TaMaRa internal error: Could not find problematic target wire '%s' from %zu inputs\n",
-        log_id(target->name), inputs.size());
+    log_error("TaMaRa internal error: Could not find an output port from input cell '%s' that connects to "
+              "wire '%s'\n",
+        log_id(input->name), log_id(target->name));
 }
 
 } // namespace tamara

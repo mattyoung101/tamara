@@ -34,8 +34,10 @@ public:
     virtual void processCell(RTLIL::Cell *cell) { };
 
     /// Processes the given wire in a module.
+    // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
     virtual void processWire(RTLIL::Wire *wire, int driverCount, int drivenCount, const RTLILWireConnections &connections) { };
 
+    /// Returns the name of this @ref FixWalker. Implementers should override this.
     virtual std::string name() {
         return "ERROR";
     };
@@ -71,9 +73,7 @@ public:
 private:
     void rewire(RTLIL::Wire *wire, const RTLILWireConnections &connections);
 
-    /// Disconnects the ports that point to the problematic wire, "target", given a set of input nodes that
-    /// are connected to this wire (the variable "inputs")
-    void disconnectProblematicWires(RTLIL::Wire *target, const std::unordered_set<RTLILAnyPtr> &inputs);
+    void reconnect(RTLIL::Wire *target, Cell *input, Cell *output);
 };
 
 }; // namespace tamara
