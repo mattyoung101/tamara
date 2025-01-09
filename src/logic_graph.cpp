@@ -16,6 +16,7 @@
 #include <memory>
 #include <optional>
 #include <variant>
+#include <vector>
 
 USING_YOSYS_NAMESPACE;
 
@@ -30,6 +31,15 @@ namespace {
 
 //! Static message for when logRTLILName with an optional evaluates to none
 const char *const NONE_MESSAGE = "None";
+
+//! With the given map, either returns the existing value for the key "K", or the default value "def".
+template <class K, class V>
+constexpr V getOrDefault(const std::unordered_map<K, V> &map, const K &key, const V def) {
+    if (map.contains(key)) {
+        return map.at(key);
+    }
+    return def;
+}
 
 //! An IO is simply a wire at the edge of the circuit
 constexpr bool isWireIO(RTLIL::Wire *wire, const RTLILWireConnections &connections) {
@@ -80,7 +90,7 @@ LogicCone newLogicCone(const RTLILAnyPtr &ptr) {
 
 //! Determines if neighbours should be added to a node during backwards BFS.
 //! Currently we only add neighbours if it's NOT a IONode or FFNode (which are considered terminals).
-inline bool shouldAddNeighbours(const TMRGraphNode::Ptr &node) {
+bool shouldAddNeighbours(const TMRGraphNode::Ptr &node) {
     return dynamic_pointer_cast<IONode>(node) == nullptr && dynamic_pointer_cast<FFNode>(node) == nullptr;
 }
 
@@ -234,7 +244,7 @@ void IONode::replicate([[maybe_unused]] RTLIL::Module *module) {
 
 std::vector<TMRGraphNode::Ptr> TMRGraphNode::computeNeighbours(const RTLILWireConnections &connections) {
     auto obj = getRTLILObjPtr();
-    auto neighbours = connections.at(obj);
+    auto neighbours = getOrDefault(connections, obj, std::unordered_set<RTLILAnyPtr>());
     log("    %s '%s' has %zu neighbours\n", identify().c_str(), log_id(getRTLILName(obj)), neighbours.size());
 
     // now, construct Yosys types into our logic graph types
@@ -412,8 +422,7 @@ std::vector<LogicCone> LogicCone::buildSuccessors(const RTLILWireConnections &co
     log("%sConsidering potential successors for cone %u%s\n", COLOUR(Blue), id, RESET());
     std::vector<LogicCone> out {};
     for (const auto &node : inputNodes) {
-        log("Considering %s %s as a successor cone... ", node->identify().c_str(),
-            log_id(getNodeName(node)));
+        log("Considering %s %s as a successor cone... ", node->identify().c_str(), log_id(getNodeName(node)));
 
         // check if it has a neighbour
         if (connections.contains(node->getRTLILObjPtr())
