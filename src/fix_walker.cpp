@@ -97,6 +97,8 @@ void FixWalkerManager::execute(RTLIL::Module *module) {
     // also pre-compute another copy of RTLILWireConnections
     auto connections = analyseConnections(module);
 
+    SigMap sigmap(module);
+
     for (auto &walker : walkers) {
         log("Running FixWalker %s\n", walker->name().c_str());
 
@@ -111,14 +113,10 @@ void FixWalkerManager::execute(RTLIL::Module *module) {
 
                 for (const auto &connection : cell->connections()) {
                     const auto &[name, signal] = connection;
-                    auto *wire = sigSpecToWire(signal);
+                    SigSpec sig = sigmap(signal);
+                    auto *wire = sigSpecToWire(sig);
 
                     if (wire != nullptr && !processed.contains(wire)) {
-                        // FIXME this implicitly calls a constructor that causes an assert failure because the
-                        // width is 2; it doesn't want to let us construct a SigBit I suspect it's a problem
-                        // with multi-bit designs
-                        // This might be an issue with how we iterate over the connections, we might need to
-                        // iterate over each bit in the connections
                         walker->processWire(
                             wire, wireDriversCount[wire], wireDrivenByCount[wire], connections);
                         processed.insert(wire);
@@ -128,7 +126,6 @@ void FixWalkerManager::execute(RTLIL::Module *module) {
         }
         for (auto *wire : module->wires()) {
             if (!processed.contains(wire)) {
-                // FIXME this will also likely explode
                 walker->processWire(wire, wireDriversCount[wire], wireDrivenByCount[wire], connections);
                 processed.insert(wire);
             }

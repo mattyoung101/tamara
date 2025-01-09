@@ -145,6 +145,7 @@ void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::
         module->connect(w_c, chunk_c);
         module->connect(chunk_out, w_out);
         module->connect(chunk_err, w_err);
+        DUMP;
         module->check();
 
         // construct voter

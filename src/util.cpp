@@ -8,6 +8,7 @@
 #include "kernel/celltypes.h"
 #include "kernel/log.h"
 #include "kernel/rtlil.h"
+#include "kernel/sigtools.h"
 #include "kernel/yosys_common.h"
 #include "tamara/termcolour.hpp"
 #include <cmath>
@@ -21,9 +22,10 @@ using namespace tamara;
 namespace {
 
 //! Inserts a value into the hashmap, or adds it then inserts if not present
-constexpr void addConnection(RTLILWireConnections &connections, RTLILAnyPtr key, const RTLILAnyPtr &value) {
-    if (!connections.contains(key)) {
-        connections[key] = std::unordered_set<RTLILAnyPtr>();
+void addConnection(
+    RTLILSignalConnections &connections, const RTLIL::SigBit &key, const RTLIL::SigSpec &value) {
+    if (connections.find(key) == connections.end()) {
+        connections[key] = pool<RTLIL::SigSpec>();
     }
     connections[key].insert(value);
 }
@@ -35,11 +37,13 @@ constexpr bool shouldConsiderForTMR(const RTLIL::AttrObject *obj) {
 
 }; // namespace
 
-RTLILWireConnections tamara::analyseConnections(const RTLIL::Module *module) {
-    RTLILWireConnections connections {};
+RTLILSignalConnections tamara::analyseConnections(RTLIL::Module *module) {
+    RTLILSignalConnections connections {};
 
     // usage of CellTypes is based off Yosys' show command
+    // and parts of this is also based on Yosys' check command
     CellTypes cellTypes(module->design);
+    SigMap sigmap(module);
 
     for (const auto &cell : module->selected_cells()) {
         // cells that are ignored by TaMaRa should never be neighbours
@@ -54,58 +58,59 @@ RTLILWireConnections tamara::analyseConnections(const RTLIL::Module *module) {
         // find wires that this is connected to
         for (const auto &connection : cell->connections()) {
             const auto &[name, signal] = connection;
+            SigSpec sig = sigmap(signal);
+            bool input = cell->input(name);
+            bool output = cell->output(name);
+            auto destination = cell->getPort(name);
 
-            Wire *wire = sigSpecToWire(signal);
-            if (wire == nullptr) {
-                log_warning("Trouble accessing wire from connection '%s'\n", log_id(name));
-                continue;
+            for (auto bit : sig) {
+                // this is an output from the cell, so connect wire -> cell (remember we work backwards)
+                if (output) {
+                    addConnection(connections, bit, destination);
+                    log("[neighbour] %s --> %s\n", log_signal(sig), log_signal(destination));
+                }
+
+                // this is an input to the cell, so connect cell -> wire (remember we work backwards)
+                if (input) {
+                    addConnection(connections, bit, destination);
+                    log("[neighbour] %s --> %s\n", log_signal(sig), log_signal(destination));
+                }
             }
+            log("\n");
+        }
 
-            // this is an output from the cell, so connect wire -> cell (remember we work backwards)
-            if (cellTypes.cell_output(cell->type, name)) {
-                addConnection(connections, wire, cell);
-                log("[neighbour] wire %s --> cell %s\n", log_id(wire->name), log_id(cell->name));
-            }
+        // also add global connections
+        log("Checking global module connections\n");
+        for (const auto &connection : module->connections()) {
+            const auto &[lhs, rhs] = connection;
 
-            // this is an input to the cell, so connect cell -> wire (remember we work backwards)
-            if (cellTypes.cell_input(cell->type, name)) {
-                addConnection(connections, cell, wire);
-                log("[neighbour] cell %s --> wire %s\n", log_id(cell->name), log_id(wire->name));
+            auto *lhsWire = sigSpecToWire(lhs);
+            auto *rhsWire = sigSpecToWire(rhs);
+
+            if (lhsWire != nullptr && rhsWire != nullptr) {
+                if (shouldConsiderForTMR(lhsWire) && shouldConsiderForTMR(rhsWire)) {
+                    log("[neighbour] %s --> %s\n", log_id(lhsWire->name), log_id(rhsWire->name));
+
+                    // apparently we don't actually need to reverse this, we're ok to just map lhs -> rhs
+                    // despite doing backwards BFS
+                    addConnection(connections, lhs, rhs);
+                }
+            } else {
+                log("Either RHS(%s) or LHS(%s) SigSpec is not a wire, skipping\n", log_signal(rhs),
+                    log_signal(lhs));
             }
         }
-        log("\n");
+
+        log("\nDone, located %zu neighbours from %zu cells\n", connections.size(),
+            module->selected_cells().size());
+        // log_error("dump\n");
+
+        return connections;
     }
-
-    // also add global connections
-    log("Checking global module connections\n");
-    for (const auto &connection : module->connections()) {
-        const auto &[lhs, rhs] = connection;
-
-        auto *lhsWire = sigSpecToWire(lhs);
-        auto *rhsWire = sigSpecToWire(rhs);
-
-        if (lhsWire != nullptr && rhsWire != nullptr) {
-            if (shouldConsiderForTMR(lhsWire) && shouldConsiderForTMR(rhsWire)) {
-                log("[neighbour] %s --> %s\n", log_id(lhsWire->name), log_id(rhsWire->name));
-
-                // apparently we don't actually need to reverse this, we're ok to just map lhs -> rhs
-                // despite doing backwards BFS
-                addConnection(connections, lhsWire, rhsWire);
-            }
-        } else {
-            log("Either RHS(%s) or LHS(%s) SigSpec is not a wire, skipping\n", log_signal(rhs),
-                log_signal(lhs));
-        }
-    }
-
-    log("\nDone, located %zu neighbours from %zu cells\n", connections.size(),
-        module->selected_cells().size());
-    // log_error("dump\n");
-
-    return connections;
 }
 
-std::vector<RTLILAnyPtr> tamara::rtlilInverseLookup(const RTLILWireConnections &connections, Wire *target) {
+std::vector<RTLIL::SigBit> tamara::rtlilInverseLookup(
+    const RTLILSignalConnections &connections, const RTLIL::SigBit &target) {
     // PERF: This is REALLY expensive currently on the order of O(n^2).
     std::vector<RTLILAnyPtr> out;
     for (const auto &pair : connections) {

@@ -41,8 +41,8 @@ const auto ERROR_SINK_ANNOTATION = ID(tamara_error_sink);
 //! Pointer to an RTLIL wire or cell (not strictly "any", but for our use case it suffices)
 using RTLILAnyPtr = std::variant<RTLIL::Wire *, RTLIL::Cell *>;
 
-//! Mapping of connections between a wire and all RTLIL objects its connected to
-using RTLILWireConnections = std::unordered_map<RTLILAnyPtr, std::unordered_set<RTLILAnyPtr>>;
+//! Mapping of connections between an RTLIL::SigSpec and the other objects it's connected to
+using RTLILSignalConnections = dict<RTLIL::SigSpec, pool<RTLIL::SigSpec>>;
 
 //! Returns true if the cell is a DFF.
 constexpr bool isDFF(const RTLIL::Cell *cell) {
@@ -87,10 +87,10 @@ constexpr RTLIL::AttrObject *toAttrObject(const RTLILAnyPtr &ptr) {
 RTLIL::IdString getRTLILName(const RTLILAnyPtr &ptr);
 
 //! Analyses connections betweens wires and the other wires or cells they're connected to
-RTLILWireConnections analyseConnections(const RTLIL::Module *module);
+RTLILSignalConnections analyseConnections(RTLIL::Module *module);
 
 //! RTLILWireConnections maps a -> (b, c, d, e); but what this function does is find "a" given say b, or c, or
 //! d. Returns empty list if no results found.
-std::vector<RTLILAnyPtr> rtlilInverseLookup(const RTLILWireConnections &connections, Wire *target);
+std::vector<RTLIL::SigSpec> rtlilInverseLookup(const RTLILSignalConnections &connections, const RTLIL::SigBit &target);
 
 } // namespace tamara
