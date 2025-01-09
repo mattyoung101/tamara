@@ -20,31 +20,6 @@ namespace {
 
 using namespace tamara;
 
-/// Computes the number of wires that either drive, or are driving, another wire in the module.
-/// @param isOutput true if we're considering output wires, false if input wires (TODO is this the right?)
-dict<RTLIL::SigBit, int> computeWireIOCount(RTLIL::Module *module, bool isOutput) {
-    dict<RTLIL::SigBit, int> count; // this has to be a dict, SigBit isn't hashable in std
-
-    // first, pre-calculate the wireDriversCount lookup
-    // this logic is borrowed from Yosys check.cc
-    SigMap sigmap(module);
-    for (auto *cell : module->cells()) {
-        for (const auto &conn : cell->connections()) {
-            SigSpec sig = sigmap(conn.second);
-            bool input = cell->input(conn.first);
-            bool output = cell->output(conn.first);
-
-            for (auto bit : sig) {
-                bool shouldConsider = isOutput ? (output && !input) : (input && !output);
-                if (shouldConsider && (bit.wire != nullptr)) {
-                    count[bit]++;
-                }
-            }
-        }
-    }
-    return count;
-}
-
 /// Finds the RTLILAnyPtr object in the collection that has the partial contents of the string "name". If not
 /// found, crashes.
 template <std::ranges::range T>
@@ -88,12 +63,6 @@ void FixWalkerManager::add(const std::shared_ptr<FixWalker> &walker) {
 }
 
 void FixWalkerManager::execute(RTLIL::Module *module) {
-    // TODO also note we may have this the wrong way around ("drivers" vs "driven by")
-    auto wireDriversCount = computeWireIOCount(module, true);
-    auto wireDrivenByCount = computeWireIOCount(module, false);
-    log("Wire drivers count: %zu  Wire driven by count: %zu\n", wireDriversCount.size(),
-        wireDrivenByCount.size());
-
     // also pre-compute another copy of RTLILWireConnections
     auto connections = analyseConnections(module);
 
@@ -113,23 +82,20 @@ void FixWalkerManager::execute(RTLIL::Module *module) {
                     const auto &[name, signal] = connection;
                     auto *wire = sigSpecToWire(signal);
 
-                    if (wire != nullptr && !processed.contains(wire)) {
-                        // FIXME this implicitly calls a constructor that causes an assert failure because the
-                        // width is 2; it doesn't want to let us construct a SigBit I suspect it's a problem
-                        // with multi-bit designs
-                        // This might be an issue with how we iterate over the connections, we might need to
-                        // iterate over each bit in the connections
-                        walker->processWire(
-                            wire, wireDriversCount[wire], wireDrivenByCount[wire], connections);
+                    if (wire != nullptr && !processed.contains(wire) && connections.contains(wire)) {
+                        // PERF calling this repeatedly is very slow: O(n^3) !!
+                        auto inverse = rtlilInverseLookup(connections, wire);
+                        walker->processWire(wire, inverse.size(), connections.at(wire).size(), connections);
                         processed.insert(wire);
                     }
                 }
             }
         }
         for (auto *wire : module->wires()) {
-            if (!processed.contains(wire)) {
-                // FIXME this will also likely explode
-                walker->processWire(wire, wireDriversCount[wire], wireDrivenByCount[wire], connections);
+            if (!processed.contains(wire) && connections.contains(wire)) {
+                // PERF calling this repeatedly is very slow: O(n^3) !!
+                auto inverse = rtlilInverseLookup(connections, wire);
+                walker->processWire(wire, inverse.size(), connections.at(wire).size(), connections);
                 processed.insert(wire);
             }
         }
