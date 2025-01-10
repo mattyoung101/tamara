@@ -6,6 +6,6 @@ is Triple Modular Redundancy (TMR), which mitigates SEUs by triplicating key par
 voter circuits. Typically, this is manually implemented by designers at the Hardware Description Language
 (HDL) level, but this is error-prone and time-consuming. Leveraging the power and flexibility of the
 open-source Yosys Electronic Design Automation (EDA) tool, in this thesis I present *TaMaRa*: a novel
-fully automated TMR flow, implemented as a Yosys plugin. I provide a comprehensive review of relevant
-automated TMR literature, and provide a detailed plan of the TaMaRa project, including its design and
-verification.
+fully automated TMR flow, implemented as a Yosys plugin. I describe the design and implementation of the TaMaRa
+tool, and present extensive test results using a combination of manual tests, formal verification and RTL
+fuzzing techniques.

@@ -1,0 +1,11 @@
+- Strictly follow .clang-format and .clang-tidy guidelines (essentially, format and tidy on save)
+    - clangd LSP is highly recommended
+- `template <class T>` not `template <typename T>`
+- Use `log_assert` when something needs to be checked for debug, but is not likely to occur in production
+- Use `if (...) { log_error(...); }` when something needs to be checked in production too
+- Prefix `log_error` messages that are NOT due to user error with "TaMaRa internal error:"
+    - e.g. if a user makes the TaMaRa error sink a multi-bit wire, this is user error; but if a logic cone is
+    somehow created with a non-DFF `RTLIL::Cell` object as its output node, this is an internal error
+- Use `log_assert` early and often
+- After doing any major work, it's recommended to call `RTLIL::Cell::check()` and/or `RTLIL::Module::check()`
+    - This is very important for development, I may remove all these calls once the code is stabilised
