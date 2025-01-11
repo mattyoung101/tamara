@@ -22,3 +22,8 @@
 
     v(1em)
 }
+
+// Todo macro. Pass --input final=true to typst compile to hide these macros.
+#let TODO(msg) = if (not ("final" in sys.inputs.keys())) {
+  [#text(fill: red, weight: "bold", size: 12pt)[TODO #msg]]
+}

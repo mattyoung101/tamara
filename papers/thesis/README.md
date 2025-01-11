@@ -42,6 +42,11 @@ While editing, it's very helpful to use Typst's live reload feature:
 typst watch uqthesis.typ
 ```
 
+This is a multi-file project. To use this with Neovim using the [Tinymist
+LSP](https://github.com/Myriad-Dreamin/tinymist), you will need to follow my instructions on [this GitHub
+issue](https://github.com/Myriad-Dreamin/tinymist/issues/321). In VSCode, you should be able to use "Tinymist:
+Pin Main" on the `uqthesis.typ` file.
+
 ## Licence
 The template Typst code is available under the ISC licence (see LICENSE.txt), in addition to the following
 relevant note from the original LaTeX template:

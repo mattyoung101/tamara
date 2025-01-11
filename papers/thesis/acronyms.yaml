@@ -3,5 +3,20 @@ acronyms:
   - FPGA: Field Programmable Gate Array
   - ASIC: Application Specific Integrated Circuit
   - EDA: Electronic Design Automation
-  - Yosys: An open-source EDA tool
+  # - Yosys: An open-source EDA synthesis tool
+  - TMR: Triple Modular Redundancy
+  # - TaMaRa: The name of the TMR algorithm implemented for this thesis
+  - SEU: Single Event Upset
+  - HDL: Hardware Description Language
+  - SystemVerilog / SV: A specific hardware description language
+  - VHDL: A specific hardware description language
+  - LUT: Lookup Table, combinatorial logic primitives of FPGAs
+  - IC: Integrated Circuit
+  - RTL: Register Transfer Level
+  - CMOS: Complementary metal-oxide semiconductor
+  - PPA: Power, Performance and Area
+  # - FD-SOI: Fully Depleted Silicon on Insulator
+  - COTS: Commercial Off The Shelf
+  - PLL: Phase Locked Loop
+  - FF: D-Flip-Flop
 
