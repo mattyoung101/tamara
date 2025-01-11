@@ -105,7 +105,7 @@ void FixWalkerManager::execute(RTLIL::Module *module) {
 }
 
 void MultiDriverFixer::processWire(
-    RTLIL::Wire *wire, int driverCount, int drivenCount, const RTLILWireConnections &connections) {
+    RTLIL::Wire *wire, size_t driverCount, size_t drivenCount, const RTLILWireConnections &connections) {
     // this wire must have exactly 3 inputs and exactly 3 outputs (we aim to resolve this)
     if (driverCount == 3 && drivenCount == 3) {
         log("Found potential candidate for MultiDriverFixer: '%s'. Checking further... ", log_id(wire->name));
@@ -171,11 +171,12 @@ void MultiDriverFixer::rewire(RTLIL::Wire *wire, const RTLILWireConnections &con
     reconnect(wire, std::get<RTLIL::Cell *>(lhsReplica1), std::get<RTLIL::Cell *>(rhsReplica1));
     reconnect(wire, std::get<RTLIL::Cell *>(lhsReplica2), std::get<RTLIL::Cell *>(rhsReplica2));
 
-    // TODO how do we find orig? it'll be the only index left we assume? I guess technically we don't need to?
+    // technically, we don't need to connect orig, it can keep connecting via the incorrect wire; so just skip
+    // it
 }
 
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static, bugprone-easily-swappable-parameters)
-void MultiDriverFixer::reconnect(RTLIL::Wire *target, Cell *input, Cell *output) {
+void MultiDriverFixer::reconnect(RTLIL::Wire *target, RTLIL::Cell *input, RTLIL::Cell *output) {
     CellTypes cellTypes(target->module->design);
 
     // find the port in the cell that is connected to the problematic wire
@@ -188,25 +189,18 @@ void MultiDriverFixer::reconnect(RTLIL::Wire *target, Cell *input, Cell *output)
         if (cellTypes.cell_output(input->type, name) && connWire == target) {
             // ok, now we need to find the opposite: for the output cell, which input port is connected
             // to the problematic wire?
-            // FIXME I think this is outputting the wrong SigSpec! maybe we want to return the port name?
             auto outputCellPort = locateInputPortConnectedToTarget(target, output, cellTypes);
 
             // we need to apparently make an intermediary wire too
-            // TODO is the width on this correct?
-            auto *wire = input->module->addWire(NEW_ID_SUFFIX("MultiDriverFixer"));
+            auto *wire = input->module->addWire(NEW_ID_SUFFIX("MultiDriverFixer"), connWire->width);
 
             // finalise the connection
             input->setPort(name, wire);
-            // log("Set port '%s' in input cell '%s' to port '%s' in output cell '%s'\n", log_id(name),
-            //     log_id(input->name), log_signal(outputCellPort), log_id(output->name));
             output->setPort(outputCellPort, wire);
 
             input->check();
             output->check();
             input->module->check();
-
-            // and now connect the intermediary to the RHS
-            // input->module->connect(wire, outputCellPort);
 
             // we can safely return, we don't have to worry about multiple ports like in the last
             // iteration of this code because we know there can only be one connection between this

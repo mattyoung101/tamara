@@ -34,7 +34,7 @@ const char *const NONE_MESSAGE = "None";
 
 //! With the given map, either returns the existing value for the key "K", or the default value "def".
 template <class K, class V>
-constexpr V getOrDefault(const std::unordered_map<K, V> &map, const K &key, const V def) {
+constexpr V getOrDefault(const std::unordered_map<K, V> &map, const K &key, V def) {
     if (map.contains(key)) {
         return map.at(key);
     }
@@ -78,7 +78,10 @@ LogicCone newLogicCone(const RTLILAnyPtr &ptr) {
             using T = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
                 // make sure we have a DFF if it's an RTLIL::Cell
-                log_assert(isDFF(arg) && "Tried to instantiate logic cone with a non-DFF cell");
+                if (!isDFF(arg)) {
+                    log_error(
+                        "TaMaRa internal error: Tried to instantiate logic cone with a non-DFF RTLIL::Cell");
+                }
                 return LogicCone(arg);
             }
             if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
@@ -105,8 +108,8 @@ void replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *module) {
     }
 }
 
-//! Taking an RTLILAnyPtr that came from a call to replicate(), returns the relevant output wire associated
-//! with it
+/// Taking an RTLILAnyPtr that came from a call to replicate(), returns the relevant output wire associated
+/// with it
 RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
     log("extractReplicaWire(%s)\n", logRTLILName(ptr));
     return std::visit(
@@ -132,7 +135,7 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
                         // Now what we should do is make a new wire, which will be our output
                         // then rip up the existing wire and redirect it
                         // then return this wire
-                        auto *wire = cell->module->addWire(NEW_ID_SUFFIX("extractReplicaWire"), conn->width);
+                        auto *wire = cell->module->addWire(NEW_ID_SUFFIX("extractReplicaWire"), GetSize(signal));
 
                         // rip up the existing wire, and add our own
                         cell->setPort(name, wire);
@@ -249,6 +252,7 @@ std::vector<TMRGraphNode::Ptr> TMRGraphNode::computeNeighbours(const RTLILWireCo
 
     // now, construct Yosys types into our logic graph types
     std::vector<TMRGraphNode::Ptr> out {};
+    out.reserve(neighbours.size());
     for (const auto &neighbour : neighbours) {
         out.push_back(newLogicGraphNeighbour(neighbour, connections));
     }
@@ -393,7 +397,7 @@ void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
     // connect voter between output and firstReplicated
     log_assert(voterCutPoint.has_value() && "Voter cut point not set!");
     auto replicas = voterCutPoint->get()->getReplicas();
-    log_assert(replicas.size() == 2 && "Unexpected replica size");
+    log_assert(replicas.size() == 2 && "Expected 2 replicas");
 
     // we also add the original node to the list of replicas, so that we can connect it up to the voter
     // since we already have one original node, + 2 replicas, this is a total of 3 :)
@@ -407,11 +411,13 @@ void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
     if (outWire.has_value()) {
         log("Connecting cone output '%s' to voter output '%s'\n", logRTLILName(outputNode),
             log_id(outWire.value()->name));
-        // FIXME sketchy
+        // DUMP;
+        // FIXME sketchy std::get call
         module->connect(std::get<Wire *>(outputNode->getRTLILObjPtr()), outWire.value());
     } else {
         log("No voter inserted (cone probably empty), skipping output connection\n");
     }
+    module->check();
 
     // now, clean up by running the FixWalkers
     log("\n%sFixing up wiring%s\n", COLOUR(Blue), RESET());
@@ -421,6 +427,8 @@ void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
 std::vector<LogicCone> LogicCone::buildSuccessors(const RTLILWireConnections &connections) {
     log("%sConsidering potential successors for cone %u%s\n", COLOUR(Blue), id, RESET());
     std::vector<LogicCone> out {};
+    // reserve worst-case size, minor performance improvement?
+    out.reserve(inputNodes.size());
     for (const auto &node : inputNodes) {
         log("Considering %s %s as a successor cone... ", node->identify().c_str(), log_id(getNodeName(node)));
 

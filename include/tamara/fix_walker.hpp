@@ -35,7 +35,7 @@ public:
 
     /// Processes the given wire in a module.
     // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-    virtual void processWire(RTLIL::Wire *wire, int driverCount, int drivenCount, const RTLILWireConnections &connections) { };
+    virtual void processWire(RTLIL::Wire *wire, size_t driverCount, size_t drivenCount, const RTLILWireConnections &connections) { };
 
     /// Returns the name of this @ref FixWalker. Implementers should override this.
     virtual std::string name() {
@@ -64,7 +64,7 @@ class MultiDriverFixer : public FixWalker {
 public:
     MultiDriverFixer() = default;
 
-    void processWire(RTLIL::Wire *wire, int driverCount, int drivenCount, const RTLILWireConnections &connections) override;
+    void processWire(RTLIL::Wire *wire, size_t driverCount, size_t drivenCount, const RTLILWireConnections &connections) override;
 
     std::string name() override {
         return "MultiDriverFixer";
@@ -73,7 +73,7 @@ public:
 private:
     void rewire(RTLIL::Wire *wire, const RTLILWireConnections &connections);
 
-    void reconnect(RTLIL::Wire *target, Cell *input, Cell *output);
+    void reconnect(RTLIL::Wire *target, RTLIL::Cell *input, RTLIL::Cell *output);
 };
 
 }; // namespace tamara
