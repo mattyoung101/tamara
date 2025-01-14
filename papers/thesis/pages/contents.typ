@@ -43,6 +43,7 @@
         [*Abbreviation*], [*Meaning*],
     ),
 
+    // FIXME Sort this alphabetically
     ..for pair in acronyms.acronyms {
         let key = pair.keys().at(0);
         let value = pair.values().at(0);

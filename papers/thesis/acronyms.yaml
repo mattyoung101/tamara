@@ -19,4 +19,8 @@ acronyms:
   - COTS: Commercial Off The Shelf
   - PLL: Phase Locked Loop
   - FF: D-Flip-Flop
+  - P&R / PnR: Place and Route
+  - RTLIL: RTL Intermediate Language
+  - Fab: Fabrication facility used to produce ICs
+  - PDK: Process Design Kit
 
