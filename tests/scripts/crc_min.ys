@@ -1,0 +1,14 @@
+# Trying to reproduce the bugs in crc8 and crc2
+
+plugin -i libtamara.so
+
+read_verilog ../tests/verilog/crc_min.v
+hierarchy -top crc
+
+prep
+write_rtlil
+tamara_tmr
+check
+
+write_rtlil
+show -colors 420

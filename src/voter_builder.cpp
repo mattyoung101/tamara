@@ -25,7 +25,7 @@ namespace {
 
 //! Makes sure that the RTLIL object is marked as a voter. This is mainly for the benefit of fault injection
 //! testing, so that it doesn't flip the bits of voters.
-template <typename T>
+template <class T>
 constexpr T makeAsVoter(T obj) {
     // we don't explicitly add (* tamara_ignore *), in case we want to process the circuit multiple times
     // intentionally as a test
@@ -139,12 +139,15 @@ void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::
         auto *w_out = makeAsVoter(module->addWire(NEW_ID_SUFFIX("OUT")));
         auto *w_err = makeAsVoter(module->addWire(NEW_ID_SUFFIX("ERR")));
 
+        // DUMP;
+
         // attach SigChunks to voter wires
         module->connect(w_a, chunk_a);
         module->connect(w_b, chunk_b);
         module->connect(w_c, chunk_c);
         module->connect(chunk_out, w_out);
         module->connect(chunk_err, w_err);
+        // DUMP;
         module->check();
 
         // construct voter

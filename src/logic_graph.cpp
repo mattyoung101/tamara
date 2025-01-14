@@ -411,8 +411,9 @@ void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
     if (outWire.has_value()) {
         log("Connecting cone output '%s' to voter output '%s'\n", logRTLILName(outputNode),
             log_id(outWire.value()->name));
-        // DUMP;
+        DUMP;
         // FIXME sketchy std::get call
+        // FIXME we may need some better wiring logic for this with chunks possibly
         module->connect(std::get<Wire *>(outputNode->getRTLILObjPtr()), outWire.value());
     } else {
         log("No voter inserted (cone probably empty), skipping output connection\n");
