@@ -18,9 +18,32 @@ TMR logic. Yet, we also cannot operate after technology mapping, since TaMaRa vo
 using relatively high level circuit primitives (AND gates, NOT gates, etc) instead of vendor-specific FPGA
 primitives like LUTs. #TODO("whatever the solution for this is")
 
+Whilst TaMaRa aims to be compatible with all existing designs with minimal changes, some preconditions are
+necessary for the algorithm to process the circuit correctly.
+
+Since the algorithm wants to work with all possible circuits, it cannot predict what the end user wants to do
+with the voter error signal (if anything). As discussed in the literature review, the typical use case for the
+error signal is to perform configuration scrubbing when upsets are detected. This, however, is a highly
+vendor-specific process for FPGAs, and is not at all possible on ASICs. As TaMaRa targets FPGAs from any
+vendor, and ASICs as well, a more general approach is necessary. To solve this problem, TaMaRa does not aim to
+provide configuration scrubbing directly, instead leaving this for the end user. Instead, the end user can
+attach an HDL annotation to indicate an output port on a module that TaMaRa should wire a global voter error
+signal to. In SystemVerilog, this uses the `(* tamara_error_sink *)` annotation, as follows:
+
+```systemverilog
+module mod(
+    input logic a,
+    (* tamara_error_sink *)
+    output logic b
+);
+```
+
+End users are then free to implement configuration scrubbing using the tool and methodology appropriate to
+their platform.
+
 == Implementation
-Over the course of this thesis, TaMaRa was successfully implemented as a Yosys plugin. This novel plugin
-consists of around 2000 lines of C++20, and introduces one new command to Yosys: `tamara_tmr`.
+Over the course of this thesis, TaMaRa was successfully written from the ground up as a Yosys plugin. This
+plugin consists of around 2000 lines of C++20, and introduces one new command to Yosys: `tamara_tmr`.
 
 === Yosys background
 Yosys supports dynamically loading plugins at runtime. These plugins are compiled against the Yosys codebase,
@@ -33,20 +56,8 @@ implement their own plugins, under their own choice of licence, to extend Yosys 
 Comparatively, proprietary tools are limited to rather simple Tcl scripting, as was used by Benites
 @Benites2018.
 
-TaMaRa registers itself with Yosys by extending the `Yosys::Pass` interface, as the following snippet from
-`tamara_tmr_pass.cpp` shows:
-
-// TODO change verbatim size and make this a listing
-```cpp
-namespace tamara {
-
-//! This is the main TaMaRa TMR command, which starts the TMR process.
-struct TamaraTMRPass : public Pass {
-    ...
-};
-
-}; // namespace tamara
-```
+TaMaRa registers itself with Yosys by extending the `Yosys::Pass` interface, using a main
+`struct TamaraTMRPass` in `tamara_tmr_pass.cpp`.
 
 TaMaRa operates at the netlist level, which in the context of Yosys means operating on RTL Intermediate
 Language (RTLIL) circuits. In the Yosys hierarchy, RTLIL sits between the frontend and backend: it is
@@ -68,13 +79,6 @@ space, the whole `cpu_top` module needs to be triplicated. However, in the futur
 to be able to have finer grained control over the parts of the design are triplicated. This does unfortunately
 introduce some significant problems that will be elaborated on later.
 
-=== Design preconditions
-Whilst TaMaRa aims to be compatible with all existing designs with minimal changes, some preconditions are
-necessary for the algorithm to process the circuit correctly.
-
-Since the algorithm wants to work with all possible circuits, it cannot predict what the end user wants to do
-with the voter error signal (if anything).
-
 === TaMaRa TMR algorithm implementation
 #figure(
     image("../../diagrams/classdiagram.svg"),
@@ -82,7 +86,7 @@ with the voter error signal (if anything).
 ) <fig:classdiagram>
 
 TaMaRa consists of multiple C++ classes (@fig:classdiagram). Broadly speaking, these classes combine together
-to form the following algorithm:
+to form the following algorithm. This is also shown in @fig:algodiagram.
 
 1. Analyse the RTLIL netlist to generate `tamara::RTLILWireConnections` mapping; which is a mapping between an
     RTLIL Cell or Wire and the other Cells or Wires it may be connected to.
@@ -97,7 +101,10 @@ to form the following algorithm:
 4. Repeat step 2 but for each successor logic cone
 5. Continue until no more successors remain
 
-#TODO("diagram of flow")
+#figure(
+    image("../../diagrams/algorithm.svg", width: 85%),
+    caption: [ General overview of the TaMaRa TMR diagram ]
+) <fig:algodiagram>
 
 #TODO("need to cover what a logic cone actually is - or do we cover that enough earlier?")
 
