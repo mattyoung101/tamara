@@ -18,8 +18,7 @@ USING_YOSYS_NAMESPACE;
 namespace tamara {
 
 //! Asserts the pointer is not null
-#define NOTNULL(ptr)                                                                                         \
-    log_assert(((ptr) != nullptr) && "TaMaRa internal error: Unexpected null pointer '" #ptr "'!");
+#define NOTNULL(ptr) if ((ptr) == nullptr) { log_error("TaMaRa internal error: Unexpected null pointer '%s'!\n", #ptr); }
 
 //! Crashes the application, indicating that the feature is not yet implemented
 #define TODO log_error("TaMaRa internal error: Feature not yet implemented!\n");

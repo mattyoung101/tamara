@@ -1,0 +1,13 @@
+# Tests end to end TaMaRa for a small shift register
+
+plugin -i libtamara.so
+
+read_verilog -sv ../tests/verilog/shiftreg.sv
+hierarchy -top shiftreg
+
+prep
+write_rtlil
+tamara_tmr
+check
+
+write_rtlil

@@ -21,8 +21,9 @@ _BCompSc(Hons) thesis, University of Queensland, 2024-2025_
 <!-- mtoc-end -->
 
 ## Introduction
-TaMaRa is a plugin for Yosys that automatically adds Triple Modular Redundancy (TMR) to any circuit
-to improve its reliability in space and other safety-critical applications.
+TaMaRa is a plugin for Yosys that automatically adds Triple Modular Redundancy (TMR) to any circuit to improve
+its reliability in space and other harsh environments, particularly for safety critical applications like
+aerospace, medicine and defence.
 
 TODO: thesis abstract here
 
@@ -138,7 +139,10 @@ cabal build
 Now, you need to symlink the location of the `verismith` binary to `<TAMARA>/build/verismith`. The command
 `cabal list-bin verismith` will tell you where the binary is located.
 
-Finally, to run the pipeline, just go to the build directory and run `../tests/fuzz/verismith.sh`.
+Finally, to run the fuzzing suite, just go to the build directory and run `../tests/fuzz/verismith.sh`.
+
+To run the regression test suite, you will need the Python `pyyaml` and `colorama` packages. Then, from the
+build directory, invoke `../tests/regress.py`. The specific tests to run are defined in `tests/regress.yaml`.
 
 ## Compiling papers
 This repo also includes various papers including the proposal draft, presentation slides, and the actual
@@ -158,6 +162,9 @@ compile it once.
 For the proposal and proposal draft, build the Gantt charts by running `just`.
 
 The thesis uses [uqthesis_eecs_hons](https://github.com/mattyoung101/uqthesis_eecs_hons) Typst template.
+
+If you're using my [dotfiles](https://github.com/mattyoung101/dotfiles) (for some reason), you need to invoke
+`:PinThesisMain` in Neovim in order to have the Tinymist LSP handle cross-file references correctly.
 
 ## Licence
 Copyright (c) 2024-2025 Matt Young.

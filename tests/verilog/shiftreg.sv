@@ -1,6 +1,6 @@
 // 4-bit parallel in, serial out shift register
 (* tamara_triplicate *)
-module shiftreg_piso(
+module shiftreg(
     input logic clk,
     input logic rst,
     input logic load,

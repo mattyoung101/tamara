@@ -1,6 +1,6 @@
 // TaMaRa: An automated triple modular redundancy EDA flow for Yosys.
 //
-// Copyright (c) 2024 Matt Young.
+// Copyright (c) 2024-2025 Matt Young.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL
 // was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
@@ -12,6 +12,7 @@
 #include "tamara/termcolour.hpp"
 #include "tamara/util.hpp"
 #include "tamara/voter_builder.hpp"
+#include <algorithm>
 #include <cstdint>
 #include <memory>
 #include <optional>
@@ -135,7 +136,8 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
                         // Now what we should do is make a new wire, which will be our output
                         // then rip up the existing wire and redirect it
                         // then return this wire
-                        auto *wire = cell->module->addWire(NEW_ID_SUFFIX("extractReplicaWire"), GetSize(signal));
+                        auto *wire
+                            = cell->module->addWire(NEW_ID_SUFFIX("extractReplicaWire"), GetSize(signal));
 
                         // rip up the existing wire, and add our own
                         cell->setPort(name, wire);
@@ -155,6 +157,46 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
             }
         },
         ptr);
+}
+
+/// Returns true if the given RTLIL::Wire has a SigChunk attached to it; i.e. a SigChunk feeds into this wire
+bool hasAttachedSigChunk(RTLIL::Wire *wire) {
+    // first, let's check all global module connections
+    bool globalCheck = std::ranges::any_of(wire->module->connections(), [&wire](const RTLIL::SigSig &conn) {
+        const auto &[lhs, rhs] = conn;
+
+        if (lhs.is_chunk()) {
+            // we found that the LHS is a SigChunk, does it refer to this wire?
+            NOTNULL(lhs.as_chunk().wire);
+            if (lhs.as_chunk().wire == wire) {
+                return true;
+            }
+        }
+
+        return false;
+    });
+    if (globalCheck) {
+        return true;
+    }
+
+    // no luck with global module connections, we're going to need to check each cell individually
+    bool cellCheck = std::ranges::any_of(wire->module->cells(), [&wire](const RTLIL::Cell *cell) {
+        CellTypes cellTypes(wire->module->design);
+
+        for (const auto &conn : cell->connections()) {
+            const auto &[name, signal] = conn;
+
+            if (signal.is_chunk()) {
+                NOTNULL(signal.as_chunk().wire);
+                if (signal.as_chunk().wire == wire) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    });
+    return cellCheck;
 }
 
 } // namespace
@@ -411,10 +453,26 @@ void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
     if (outWire.has_value()) {
         log("Connecting cone output '%s' to voter output '%s'\n", logRTLILName(outputNode),
             log_id(outWire.value()->name));
+
+        // FIXME sketchy std::get call (this breaks in shiftreg.ys)
+        // specifically it seems to fail if there are multiple logic cones, so we need to think about what we
+        // do here (I'll probably track this on a ticket since this looks tricky)
+        auto *outNodeWire = std::get<Wire *>(outputNode->getRTLILObjPtr());
+        DUMP_RTLIL;
         DUMP;
-        // FIXME sketchy std::get call
-        // FIXME we may need some better wiring logic for this with chunks possibly
-        module->connect(std::get<Wire *>(outputNode->getRTLILObjPtr()), outWire.value());
+
+        // check if we have an attached SigChunk (see https://github.com/mattyoung101/tamara/issues/13)
+        // in that case, special wiring will be required
+        if (hasAttachedSigChunk(outNodeWire)) {
+            log("Special wiring required\n");
+            TODO;
+            // we need to figure out how exactly we're going to handle this though - idk atm
+            // I think the go is generally we want to find which bits are NOT taken by a SigBit
+            // (locateFreeSigBit) and then wire ourselves in??
+        } else {
+            log("Using regular wiring\n");
+            module->connect(outNodeWire, outWire.value());
+        }
     } else {
         log("No voter inserted (cone probably empty), skipping output connection\n");
     }
@@ -430,6 +488,7 @@ std::vector<LogicCone> LogicCone::buildSuccessors(const RTLILWireConnections &co
     std::vector<LogicCone> out {};
     // reserve worst-case size, minor performance improvement?
     out.reserve(inputNodes.size());
+
     for (const auto &node : inputNodes) {
         log("Considering %s %s as a successor cone... ", node->identify().c_str(), log_id(getNodeName(node)));
 

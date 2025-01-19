@@ -8,10 +8,8 @@
 #include "kernel/celltypes.h"
 #include "kernel/log.h"
 #include "kernel/rtlil.h"
-#include "kernel/sigtools.h"
 #include "kernel/yosys_common.h"
 #include "tamara/util.hpp"
-#include <algorithm>
 #include <string>
 
 USING_YOSYS_NAMESPACE;

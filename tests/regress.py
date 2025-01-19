@@ -19,10 +19,11 @@ import os
 
 passed = 0
 failed = 0
+failed_tests = []
 
 
 def invoke(cmd: List[str]):
-    global passed, failed
+    global passed, failed, failed_tests
     # Custom feature from my Yosys fork that silences all 'show' commands. Can easily be replicated through
     # this patch:
 
@@ -59,6 +60,7 @@ def invoke(cmd: List[str]):
         print(f"{Fore.RED}FAIL{Style.RESET_ALL}\nRan:"
               f"{shlex.join(cmd)}\n{result.stdout.decode('utf-8')}\n{result.stderr.decode('utf-8')}")
         failed += 1
+        failed_tests.append(shlex.join(cmd))
 
 
 def run_eqy_tests(tests: List[str]):
@@ -91,6 +93,11 @@ def main():
 
     print(f"{Fore.LIGHTGREEN_EX}{passed} passed{Style.RESET_ALL} {Fore.RED}{failed} failed{Style.RESET_ALL}")
     print(f"{Fore.CYAN}{int(round((passed / (passed + failed) * 100.0)))}% success{Style.RESET_ALL}")
+
+    if failed > 0:
+        print(f"\n{Fore.RED}Failed tests:{Style.RESET_ALL}")
+        for test in failed_tests:
+            print(f"- {test}")
 
 
 if __name__ == "__main__":
