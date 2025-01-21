@@ -5,12 +5,15 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL
 // was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #pragma once
+#include "kernel/log.h"
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
 #include "tamara/fix_walker.hpp"
 #include "tamara/util.hpp"
 #include "tamara/voter_builder.hpp"
+#include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <optional>
 #include <queue>
 
@@ -36,6 +39,9 @@ public:
 
     virtual ~TMRGraphNode() = default;
 
+    //! Equality operator for @ref TMRGraphNode::Ptr
+    // virtual bool operator==(const TMRGraphNode::Ptr &nodePtr) const = 0;
+
     //! Constructs a new default TMRGraphNode with the given ID. ID must be monotonically increasing.
     //! Each cone has a unique ID.
     explicit TMRGraphNode(uint32_t id)
@@ -47,10 +53,7 @@ public:
         , id(id) {
     }
 
-    [[nodiscard]] std::optional<TMRGraphNode::Ptr> getParent() {
-        return parent;
-    }
-
+    /// Returns the ID of the cone this @ref TMRGraphNode belongs to
     [[nodiscard]] uint32_t getConeID() const {
         return id;
     }
@@ -72,6 +75,9 @@ public:
 
     //! Returns the width of the wire if this makes sense, otherwise throws an error
     virtual int getWidth() = 0;
+
+    //! Hashes this TMRGraphNode instance. Child classes must override.
+    virtual size_t hash() const = 0;
 
     //! Returns a shared ptr to self
     [[nodiscard]] TMRGraphNode::Ptr getSelfPtr() {
@@ -136,6 +142,11 @@ public:
         log_error("TaMaRa internal error: Cannot get width of an ElementCellNode!\n");
     }
 
+    size_t hash() const override {
+        return std::hash<RTLIL::Cell *>()(cell);
+        // return std::hash<std::string>()(cell->name.c_str());
+    }
+
 private:
     RTLIL::Cell *cell;
     std::vector<RTLIL::Cell *> replicas;
@@ -179,6 +190,11 @@ public:
 
     int getWidth() override {
         return wire->width;
+    }
+
+    size_t hash() const override {
+        return std::hash<RTLIL::Wire *>()(wire);
+        // return std::hash<std::string>()(wire->name.c_str());
     }
 
 private:
@@ -243,6 +259,11 @@ public:
         return io->width;
     }
 
+    size_t hash() const override {
+        return std::hash<RTLIL::Wire *>()(io);
+        // return std::hash<std::string>()(io->name.c_str());
+    }
+
 private:
     RTLIL::Wire *io;
 };
@@ -258,10 +279,13 @@ public:
     }
 
     //! Instantiates a new logic cone from the intermediate flip-flop cell.
-    // FIXME check that cell really is a FF when we instantiate
     LogicCone(RTLIL::Cell *ff)
         : outputNode(std::make_shared<FFNode>(ff, nextID()))
         , id(outputNode->getConeID()) {
+        if (!isDFF(ff)) {
+            log_error("TaMaRa internal error: Tried to instantiate LogicCone with non-DFF cell '%s'!\n",
+                log_id(ff->name));
+        }
         insertFixWalkers();
     }
 
@@ -319,6 +343,29 @@ private:
     static uint32_t nextID() {
         return g_cone_ID++;
     }
+
+    /// Contains the names of starting nodes for cones we've already discovered in @ref
+    /// LogicCone::buildSuccessors. This is to stop us from infinite looping when we discover new successor
+    /// cones.
+    static std::unordered_set<std::string> exploredSuccessors;
 };
 
 } // namespace tamara
+
+namespace std {
+
+template <>
+struct hash<tamara::TMRGraphNode> {
+    std::size_t operator()(const tamara::TMRGraphNode &node) const {
+        return node.hash();
+    }
+};
+
+template <>
+struct hash<tamara::TMRGraphNode::Ptr> {
+    std::size_t operator()(const tamara::TMRGraphNode::Ptr &node) const {
+        return node->hash();
+    }
+};
+
+} // namespace std

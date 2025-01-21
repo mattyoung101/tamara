@@ -12,10 +12,10 @@
 #include "tamara/termcolour.hpp"
 #include "tamara/util.hpp"
 #include "tamara/voter_builder.hpp"
-#include <algorithm>
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <unordered_set>
 #include <variant>
 #include <vector>
 
@@ -27,6 +27,7 @@ using namespace tamara;
 #define RESET() (termcolour::reset().c_str())
 
 uint32_t LogicCone::g_cone_ID = 0;
+std::unordered_set<std::string> LogicCone::exploredSuccessors = {};
 
 namespace {
 
@@ -159,44 +160,43 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
         ptr);
 }
 
-/// Returns true if the given RTLIL::Wire has a SigChunk attached to it; i.e. a SigChunk feeds into this wire
-bool hasAttachedSigChunk(RTLIL::Wire *wire) {
+/// Locates all the RTLIL::SigChunks that may feed the given wire
+std::vector<RTLIL::SigChunk> findAttachedSigChunks(RTLIL::Wire *wire) {
+    std::vector<RTLIL::SigChunk> out;
+
     // first, let's check all global module connections
-    bool globalCheck = std::ranges::any_of(wire->module->connections(), [&wire](const RTLIL::SigSig &conn) {
+    for (const auto &conn : wire->module->connections()) {
         const auto &[lhs, rhs] = conn;
 
-        if (lhs.is_chunk()) {
+        // look for SigChunks, being careful that they're not const (otherwise the wire ptr is null)
+        if (lhs.is_chunk() && !lhs.is_fully_const()) {
             // we found that the LHS is a SigChunk, does it refer to this wire?
             NOTNULL(lhs.as_chunk().wire);
             if (lhs.as_chunk().wire == wire) {
-                return true;
+                // FIXME is this the correct side?
+                out.push_back(lhs.as_chunk());
             }
         }
-
-        return false;
-    });
-    if (globalCheck) {
-        return true;
     }
 
     // no luck with global module connections, we're going to need to check each cell individually
-    bool cellCheck = std::ranges::any_of(wire->module->cells(), [&wire](const RTLIL::Cell *cell) {
+    for (const auto &cell : wire->module->cells()) {
         CellTypes cellTypes(wire->module->design);
 
         for (const auto &conn : cell->connections()) {
             const auto &[name, signal] = conn;
 
-            if (signal.is_chunk()) {
+            // look for SigChunks, being careful that they're not const (otherwise the wire ptr is null)
+            if (signal.is_chunk() && !signal.is_fully_const()) {
                 NOTNULL(signal.as_chunk().wire);
                 if (signal.as_chunk().wire == wire) {
-                    return true;
+                    out.push_back(signal.as_chunk());
                 }
             }
         }
+    }
 
-        return false;
-    });
-    return cellCheck;
+    return out;
 }
 
 } // namespace
@@ -323,6 +323,8 @@ void LogicCone::search(const RTLILWireConnections &connections) {
     // normally wouldn't (because it's an FFNode/IONode)
     bool first = true;
 
+    std::unordered_set<std::string> visited;
+
     log("%sStarting search for cone %u%s\n", COLOUR(Blue), id, RESET());
     while (!frontier.empty()) {
         auto node = frontier.front();
@@ -334,7 +336,14 @@ void LogicCone::search(const RTLILWireConnections &connections) {
             // locate neighbours and add to BFS queue
             auto neighbours = node->computeNeighbours(connections);
             for (const auto &neighbour : neighbours) {
-                frontier.push(neighbour);
+                std::string name = getNodeName(node).c_str();
+
+                if (!visited.contains(name)) {
+                    frontier.push(neighbour);
+                    visited.insert(name);
+                    // log("    Neighbour %s '%s' hash 0x%zX\n", neighbour->identify().c_str(),
+                    //     log_id(getNodeName(neighbour)), std::hash<TMRGraphNode::Ptr>()(neighbour));
+                }
             }
 
             // since this is not a terminal node, we can go ahead and add it to the cone. remember, we don't
@@ -463,8 +472,10 @@ void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
 
         // check if we have an attached SigChunk (see https://github.com/mattyoung101/tamara/issues/13)
         // in that case, special wiring will be required
-        if (hasAttachedSigChunk(outNodeWire)) {
-            log("Special wiring required\n");
+        auto attachedSigChunks = findAttachedSigChunks(outNodeWire);
+        if (!attachedSigChunks.empty()) {
+            log("Special wiring required (outputNodeWire has %zu attached SigChunks)\n",
+                attachedSigChunks.size());
             TODO;
             // we need to figure out how exactly we're going to handle this though - idk atm
             // I think the go is generally we want to find which bits are NOT taken by a SigBit
@@ -490,14 +501,16 @@ std::vector<LogicCone> LogicCone::buildSuccessors(const RTLILWireConnections &co
     out.reserve(inputNodes.size());
 
     for (const auto &node : inputNodes) {
-        log("Considering %s %s as a successor cone... ", node->identify().c_str(), log_id(getNodeName(node)));
+        std::string name = getNodeName(node).c_str();
+        log("Considering %s %s as a successor cone... ", node->identify().c_str(), name.c_str());
 
-        // check if it has a neighbour
-        if (connections.contains(node->getRTLILObjPtr())
-            && connections.at(node->getRTLILObjPtr()).size() > 0) {
+        // check if it has a neighbour that we haven't already made a cone out of yet
+        if (connections.contains(node->getRTLILObjPtr()) && connections.at(node->getRTLILObjPtr()).size() > 0
+            && !exploredSuccessors.contains(name)) {
             // we have neighbours, this is a valid successor
             log("%sConfirmed.%s\n", COLOUR(Green), RESET());
             out.push_back(newLogicCone(node->getRTLILObjPtr()));
+            exploredSuccessors.insert(name);
         } else {
             log("%sHas no additional neighbours, not a valid successor.%s\n", COLOUR(Red), RESET());
         }
