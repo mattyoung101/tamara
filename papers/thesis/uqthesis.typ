@@ -1,5 +1,9 @@
 // Main thesis file.
 #import "util/macros.typ": *
+#import "@preview/codly:1.2.0": *
+#import "@preview/codly-languages:0.1.1": *
+#show: codly-init.with()
+#codly(languages: codly-languages)
 
 // Page layout
 #set page(
@@ -17,6 +21,7 @@
 #show footnote: set text(fill: blue)
 // Font size
 #set text(size: 12pt)
+#show raw: set text(size: 8pt)
 // Display
 #set list(indent: 12pt)
 #set math.equation(numbering: "(1)")
@@ -70,6 +75,9 @@
 #pagebreak()
 
 #include "pages/chapters/lit_review.typ"
+#pagebreak()
+
+#include "pages/chapters/method.typ"
 #pagebreak()
 
 #include "pages/chapters/results.typ"

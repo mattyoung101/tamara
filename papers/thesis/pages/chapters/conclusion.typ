@@ -1,2 +1,1 @@
 = Conclusion
-#lorem(300)
