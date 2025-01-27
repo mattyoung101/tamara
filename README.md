@@ -129,7 +129,7 @@ challenging to build, but I was able to get it to work on Arch as follows:
 2. Setup cabal 3.12.1.0 and GHC 9.6.4.
 3. Build verismith using cabal.
 
-```
+```bash
 ghcup install ghc --set 9.6.4
 ghcup install cabal --set 3.12.1.0
 cabal update

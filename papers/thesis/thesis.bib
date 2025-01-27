@@ -340,4 +340,143 @@ author = {Abdul Rafay Khatri and Ali Hayek and Josef Borcsok}
   url         = {https://docs.amd.com/v/u/en-US/xapp987},
 }
 
+@InProceedings{Holler2012,
+  author    = {Christian Holler and Kim Herzig and Andreas Zeller},
+  booktitle = {21st USENIX Security Symposium (USENIX Security 12)},
+  title     = {Fuzzing with Code Fragments},
+  year      = {2012},
+  address   = {Bellevue, WA},
+  month     = aug,
+  pages     = {445--458},
+  publisher = {USENIX Association},
+  isbn      = {978-931971-95-9},
+  url       = {https://www.usenix.org/conference/usenixsecurity12/technical-sessions/presentation/holler},
+}
+
+@InProceedings{Fioraldi2020,
+  author    = {Fioraldi, Andrea and Maier, Dominik and Ei\ss{}feldt, Heiko and Heuse, Marc},
+  booktitle = {Proceedings of the 14th USENIX Conference on Offensive Technologies},
+  title     = {AFL++: combining incremental steps of fuzzing research},
+  year      = {2020},
+  address   = {USA},
+  publisher = {USENIX Association},
+  series    = {WOOT'20},
+  abstract  = {In this paper, we present AFL++, a community-driven open-source tool that incorporates state-of-the-art fuzzing research, to make the research comparable, reproducible, combinable and--most importantly - useable. It offers a variety of novel features, for example its Custom Mutator API, able to extend the fuzzing process at many stages. With it, mutators for specific targets can also be written by experienced security testers. We hope for AFL++ to become a new baseline tool not only for current, but also for future research, as it allows to test new techniques quickly, and evaluate not only the effectiveness of the single technique versus the state-of-the-art, but also in combination with other techniques. The paper gives an evaluation of hand-picked fuzzing technologies -- shining light on the fact that while each novel fuzzing method can increase performance in some targets -- it decreases performance for other targets. This is an insight future fuzzing research should consider in their evaluations.},
+  articleno = {10},
+  numpages  = {1},
+}
+
+@InBook{Karp1972,
+  author    = {Karp, Richard M.},
+  editor    = {Miller, Raymond E. and Thatcher, James W. and Bohlinger, Jean D.},
+  pages     = {85--103},
+  publisher = {Springer US},
+  title     = {Reducibility among Combinatorial Problems},
+  year      = {1972},
+  address   = {Boston, MA},
+  isbn      = {978-1-4684-2001-2},
+  abstract  = {A large class of computational problems involve the determination of properties of graphs, digraphs, integers, arrays of integers, finite families of finite sets, boolean formulas and elements of other countable domains. Through simple encodings from such domains into the set of words over a finite alphabet these problems can be converted into language recognition problems, and we can inquire into their computational complexity. It is reasonable to consider such a problem satisfactorily solved when an algorithm for its solution is found which terminates within a number of steps bounded by a polynomial in the length of the input. We show that a large number of classic unsolved problems of covering, matching, packing, routing, assignment and sequencing are equivalent, in the sense that either each of them possesses a polynomial-bounded algorithm or none of them does.},
+  booktitle = {Complexity of Computer Computations: Proceedings of a symposium on the Complexity of Computer Computations, held March 20--22, 1972, at the IBM Thomas J. Watson Research Center, Yorktown Heights, New York, and sponsored by the Office of Naval Research, Mathematics Program, IBM World Trade Corporation, and the IBM Research Mathematical Sciences Department},
+  doi       = {10.1007/978-1-4684-2001-2_9},
+  url       = {https://doi.org/10.1007/978-1-4684-2001-2_9},
+}
+
+@Unpublished{Sorensson2005,
+  author = {Sorensson, Niklas and Een, Niklas},
+  title  = {Minisat v1.13 - A SAT solver with conflict-clause minimization},
+  year   = {2005},
+  url    = {http://minisat.se/downloads/MiniSat_v1.13_short.pdf},
+  urldate = {2025-01-26}
+}
+
+@Article{Audemard2018,
+  author    = {Audemard, Gilles and Simon, Laurent},
+  journal   = {International Journal on Artificial Intelligence Tools},
+  title     = {On the Glucose SAT solver},
+  year      = {2018},
+  number    = {01},
+  pages     = {1840001},
+  volume    = {27},
+  publisher = {World Scientific},
+}
+
+@InBook{Barrett2018,
+  author    = {Barrett, Clark and Tinelli, Cesare},
+  editor    = {Clarke, Edmund M. and Henzinger, Thomas A. and Veith, Helmut and Bloem, Roderick},
+  pages     = {305--343},
+  publisher = {Springer International Publishing},
+  title     = {Satisfiability Modulo Theories},
+  year      = {2018},
+  address   = {Cham},
+  isbn      = {978-3-319-10575-8},
+  abstract  = {Satisfiability Modulo Theories (SMT) refers to the problem of determining whether a first-order formula is satisfiable with respect to some logical theory. Solvers based on SMT are used as back-end engines in model-checking applications such as bounded, interpolation-based, and predicate-abstraction-based model checking. After a brief illustration of these uses, we survey the predominant techniques for solving SMT problems with an emphasis on the lazy approach, in which a propositional satisfiability (SAT) solver is combined with one or more theory solvers. We discuss the architecture of a lazy SMT solver, give examples of theory solvers, show how to combine such solvers modularly, and mention several extensions of the lazy approach. We also briefly describe the eager approach in which the SMT problem is reduced to a SAT problem. Finally, we discuss how the basic framework for determining satisfiability can be extended with additional functionality such as producing models, proofs, unsatisfiable cores, and interpolants.},
+  booktitle = {Handbook of Model Checking},
+  doi       = {10.1007/978-3-319-10575-8_11},
+  url       = {https://doi.org/10.1007/978-3-319-10575-8_11},
+}
+
+@InProceedings{Moura2008,
+  author    = {de Moura, Leonardo and Bj{\o}rner, Nikolaj},
+  booktitle = {Tools and Algorithms for the Construction and Analysis of Systems},
+  title     = {Z3: An Efficient SMT Solver},
+  year      = {2008},
+  address   = {Berlin, Heidelberg},
+  editor    = {Ramakrishnan, C. R. and Rehof, Jakob},
+  pages     = {337--340},
+  publisher = {Springer Berlin Heidelberg},
+  abstract  = {Satisfiability Modulo Theories (SMT) problem is a decision problem for logical first order formulas with respect to combinations of background theories such as: arithmetic, bit-vectors, arrays, and uninterpreted functions. Z3 is a new and efficient SMT Solver freely available from Microsoft Research. It is used in various software verification and analysis applications.},
+  isbn      = {978-3-540-78800-3},
+}
+
+@InProceedings{Niemetz2023,
+  author    = {Niemetz, Aina and Preiner, Mathias},
+  booktitle = {Computer Aided Verification},
+  title     = {Bitwuzla},
+  year      = {2023},
+  address   = {Cham},
+  editor    = {Enea, Constantin and Lal, Akash},
+  pages     = {3--17},
+  publisher = {Springer Nature Switzerland},
+  abstract  = {Bitwuzla is a new SMT solver for the quantifier-free and quantified theories of fixed-size bit-vectors, arrays, floating-point arithmetic, and uninterpreted functions. This paper serves as a comprehensive system description of its architecture and components. We evaluate Bitwuzla's performance on all benchmarks of supported logics in SMT-LIB and provide a comparison against other state-of-the-art SMT solvers.},
+  isbn      = {978-3-031-37703-7},
+}
+
+﻿
+@Article{Weber2019,
+  author    = {Weber, Tjark and Conchon, Sylvain and D{\'e}harbe, David and Heizmann, Matthias and Niemetz, Aina and Reger, Giles},
+  journal   = {Journal on Satisfiability, Boolean Modeling and Computation},
+  title     = {The SMT Competition 2015--2018},
+  year      = {2019},
+  issn      = {1574-0617},
+  note      = {1},
+  pages     = {221-259},
+  volume    = {11},
+  abstract  = {The International Satisfiability Modulo Theories Competition is an annual competition between Satisfiability Modulo Theories (SMT) solvers. The 2018 edition of the competition was part of the FLoC Olympic Games, which comprised 14 competitions in various areas of computational logic. We report on the design and selected results of the SMT Competition during the last FLoC Olympiad, from 2015 to 2018. These competitions set several new records regarding the number of participants, number of benchmarks used, and amount of computation performed.},
+  doi       = {10.3233/SAT190123},
+  keywords  = {SMT solver; SMT-COMP; SMT-LIB; Satisfiability Modulo Theories; competitions},
+  publisher = {IOS Press},
+  url       = {https://doi.org/10.3233/SAT190123},
+}
+
+@InProceedings{Dutertre2014,
+  author    = {Dutertre, Bruno},
+  booktitle = {Computer Aided Verification},
+  title     = {Yices 2.2},
+  year      = {2014},
+  address   = {Cham},
+  editor    = {Biere, Armin and Bloem, Roderick},
+  pages     = {737--744},
+  publisher = {Springer International Publishing},
+  abstract  = {Yices is an SMT solver developed by SRI International. The first version of Yices was released in 2006 and has been continuously updated since then. In 2007, we started a complete re-implementation of the solver to improve performance and increase modularity and flexibility. We describe the latest release of Yices, namely, Yices 2.2. We present the tool's architecture and discuss the algorithms it implements, and we describe recent developments such as support for the SMT-LIB 2.0 notation and various performance improvements.},
+  isbn      = {978-3-319-08867-9},
+}
+
+@Misc{mcyfault,
+    author = {Engelhardt, N},
+    title = {Using MCY for fault injection},
+    year = {2022},
+    urldate = {2025-01-26},
+    url = {https://github.com/nakengelhardt/faultinjection_mcy}
+}
+
 @Comment{jabref-meta: databaseType:bibtex;}

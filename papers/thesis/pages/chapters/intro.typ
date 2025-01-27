@@ -1,14 +1,15 @@
 = Introduction
-For safety-critical sectors such as aerospace and defence, both Application Specific Integrated Circuits
-(ASICs) and Field Programmable Gate Array (FPGA) gateware must be designed to be fault tolerant to prevent
-catastrophic malfunctions. In the context of digital electronics, _fault tolerant_ means that the design is
-able to gracefully recover and continue operating in the event of a fault, or upset. A Single Event Upset
-(SEU) occurs when ionising radiation strikes a transistor on a digital circuit, causing it to transition from
-a 1 to a 0, or vice versa. This type of upset is most common in space, where the Earth's magnetosphere is not
-present to dissipate the ionising particles @OBryan2021. On an unprotected system, an unlucky SEU may corrupt
-the system's state to such a severe degree that it may cause destruction or loss of life - particularly
-important given the safety-critical nature of most space-fairing systems (satellites, crew capsules, missiles,
-etc). Thus, fault tolerant computing is widely studied and applied for space-based computing systems.
+For safety-critical sectors such as aerospace, defence, and medicine, both Application Specific Integrated
+Circuits (ASICs) and Field Programmable Gate Array (FPGA) gateware must be designed to be fault tolerant to
+prevent catastrophic malfunctions. In the context of digital electronics, _fault tolerant_ means that the
+design is able to gracefully recover and continue operating in the event of a fault, or upset. A Single Event
+Upset (SEU) occurs when ionising radiation strikes a transistor on a digital circuit, causing it to transition
+from a 1 to a 0, or vice versa. This type of upset is most common in space, where the Earth's magnetosphere is
+not present to dissipate the ionising particles @OBryan2021. On an unprotected system, an unlucky SEU may
+corrupt the system's state to such a severe degree that it may cause destruction or loss of life -
+particularly important given the safety-critical nature of most space-fairing systems (satellites, crew
+capsules, missiles, etc). Thus, fault tolerant computing is widely studied and applied for space-based
+computing systems.
 
 One common fault-tolerant design technique is Triple Modular Redundancy (TMR), which mitigates SEUs by
 triplicating key parts of the design and using voter circuits to select a non-corrupted result if an SEU
