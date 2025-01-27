@@ -13,8 +13,10 @@
 #include "tamara/util.hpp"
 #include "tamara/voter_builder.hpp"
 #include <cstdint>
+#include <cstring>
 #include <memory>
 #include <optional>
+#include <tcl.h>
 #include <unordered_set>
 #include <variant>
 #include <vector>
@@ -197,6 +199,17 @@ std::vector<RTLIL::SigChunk> findAttachedSigChunks(RTLIL::Wire *wire) {
     }
 
     return out;
+}
+
+/// Determines which bit(s) are NOT connected to the wire by the given SigChunks, i.e. which bit(s) are free
+/// for us to use in TMR
+std::vector<RTLIL::SigBit> locateFreeSigBits(const std::vector<RTLIL::SigChunk> &chunks, RTLIL::Wire *wire) {
+    // TODO we need a way of converting from SigChunk to SigBit
+    for (const auto &chunk : chunks) {
+        // does this chunk connect directly to the wire? if so, mark it as reserved
+    }
+
+    return {};
 }
 
 } // namespace
@@ -456,12 +469,12 @@ void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
     replicas.push_back(voterCutPoint->get()->getRTLILObjPtr());
 
     // handle voter insertion
-    auto outWire = insertVoter(builder, replicas);
+    auto voterOutWire = insertVoter(builder, replicas);
 
     // connected output wire
-    if (outWire.has_value()) {
+    if (voterOutWire.has_value()) {
         log("Connecting cone output '%s' to voter output '%s'\n", logRTLILName(outputNode),
-            log_id(outWire.value()->name));
+            log_id(voterOutWire.value()->name));
 
         // FIXME sketchy std::get call (this breaks in shiftreg.ys)
         // specifically it seems to fail if there are multiple logic cones, so we need to think about what we
@@ -474,15 +487,29 @@ void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
         // in that case, special wiring will be required
         auto attachedSigChunks = findAttachedSigChunks(outNodeWire);
         if (!attachedSigChunks.empty()) {
-            log("Special wiring required (outputNodeWire has %zu attached SigChunks)\n",
-                attachedSigChunks.size());
-            TODO;
+            log("Special wiring required (outNodeWire '%s' has %zu attached SigChunks)\n",
+                log_id(outNodeWire->name), attachedSigChunks.size());
+
+            // TODO
             // we need to figure out how exactly we're going to handle this though - idk atm
             // I think the go is generally we want to find which bits are NOT taken by a SigBit
             // (locateFreeSigBit) and then wire ourselves in??
+
+            // next, determine which bits are free
+            auto freeBits = locateFreeSigBits(attachedSigChunks, outNodeWire);
+            if (freeBits.empty()) {
+                // this is an internal error, because the wires were able to be connected in the original
+                // design, so we should be able to connect TMR bits as well
+                log_error("TaMaRa internal error: Unable to locate any free SigBits for wire '%s'\n",
+                    log_id(outNodeWire->name));
+            } else if (freeBits.size() != static_cast<size_t>(voterOutWire.value()->width)) {
+                log_error(
+                    "TaMaRa internal error: Wire '%s' has %zu free SigBits, but voter output is %d bits\n",
+                    log_id(outNodeWire->name), freeBits.size(), voterOutWire.value()->width);
+            }
         } else {
             log("Using regular wiring\n");
-            module->connect(outNodeWire, outWire.value());
+            module->connect(outNodeWire, voterOutWire.value());
         }
     } else {
         log("No voter inserted (cone probably empty), skipping output connection\n");
