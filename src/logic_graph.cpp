@@ -16,7 +16,6 @@
 #include <cstring>
 #include <memory>
 #include <optional>
-#include <tcl.h>
 #include <unordered_set>
 #include <variant>
 #include <vector>
@@ -162,21 +161,21 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
         ptr);
 }
 
-/// Locates all the RTLIL::SigChunks that may feed the given wire
-std::vector<RTLIL::SigChunk> findAttachedSigChunks(RTLIL::Wire *wire) {
-    std::vector<RTLIL::SigChunk> out;
+/// Locates all the RTLIL::SigBits that may feed the given wire
+std::vector<RTLIL::SigBit> findAttachedSigBits(RTLIL::Wire *wire) {
+    std::vector<RTLIL::SigBit> out;
 
     // first, let's check all global module connections
     for (const auto &conn : wire->module->connections()) {
         const auto &[lhs, rhs] = conn;
 
-        // look for SigChunks, being careful that they're not const (otherwise the wire ptr is null)
-        if (lhs.is_chunk() && !lhs.is_fully_const()) {
-            // we found that the LHS is a SigChunk, does it refer to this wire?
-            NOTNULL(lhs.as_chunk().wire);
-            if (lhs.as_chunk().wire == wire) {
+        // look for SigBits, being careful that they're not const (otherwise the wire ptr is null)
+        if (lhs.is_bit() && !lhs.is_fully_const()) {
+            // we found that the LHS is a SigBit, does it refer to this wire?
+            NOTNULL(lhs.as_bit().wire);
+            if (lhs.as_bit().wire == wire) {
                 // FIXME is this the correct side?
-                out.push_back(lhs.as_chunk());
+                out.push_back(lhs.as_bit());
             }
         }
     }
@@ -188,11 +187,11 @@ std::vector<RTLIL::SigChunk> findAttachedSigChunks(RTLIL::Wire *wire) {
         for (const auto &conn : cell->connections()) {
             const auto &[name, signal] = conn;
 
-            // look for SigChunks, being careful that they're not const (otherwise the wire ptr is null)
-            if (signal.is_chunk() && !signal.is_fully_const()) {
-                NOTNULL(signal.as_chunk().wire);
-                if (signal.as_chunk().wire == wire) {
-                    out.push_back(signal.as_chunk());
+            // look for SigBit, being careful that they're not const (otherwise the wire ptr is null)
+            if (signal.is_bit() && !signal.is_fully_const()) {
+                NOTNULL(signal.as_bit().wire);
+                if (signal.as_bit().wire == wire) {
+                    out.push_back(signal.as_bit());
                 }
             }
         }
@@ -483,30 +482,29 @@ void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
         DUMP_RTLIL;
         DUMP;
 
-        // check if we have an attached SigChunk (see https://github.com/mattyoung101/tamara/issues/13)
+        // check if we have an attached SigBit (see https://github.com/mattyoung101/tamara/issues/13)
         // in that case, special wiring will be required
-        auto attachedSigChunks = findAttachedSigChunks(outNodeWire);
-        if (!attachedSigChunks.empty()) {
-            log("Special wiring required (outNodeWire '%s' has %zu attached SigChunks)\n",
-                log_id(outNodeWire->name), attachedSigChunks.size());
+        // FIXME maybe we should have this be SigChunk and just use one bit SigChunks ?
+        // that way we might be able to handle bug7 still
+        auto attachedSigBits = findAttachedSigBits(outNodeWire);
+        if (!attachedSigBits.empty()) {
+            log("Special wiring required (outNodeWire '%s' has %zu attached SigBits)\n",
+                log_id(outNodeWire->name), attachedSigBits.size());
 
-            // TODO
-            // we need to figure out how exactly we're going to handle this though - idk atm
-            // I think the go is generally we want to find which bits are NOT taken by a SigBit
-            // (locateFreeSigBit) and then wire ourselves in??
-
-            // next, determine which bits are free
-            auto freeBits = locateFreeSigBits(attachedSigChunks, outNodeWire);
-            if (freeBits.empty()) {
-                // this is an internal error, because the wires were able to be connected in the original
-                // design, so we should be able to connect TMR bits as well
-                log_error("TaMaRa internal error: Unable to locate any free SigBits for wire '%s'\n",
-                    log_id(outNodeWire->name));
-            } else if (freeBits.size() != static_cast<size_t>(voterOutWire.value()->width)) {
-                log_error(
-                    "TaMaRa internal error: Wire '%s' has %zu free SigBits, but voter output is %d bits\n",
-                    log_id(outNodeWire->name), freeBits.size(), voterOutWire.value()->width);
+            // now, we need to determine if we have enough free SigBits to wire in our voter signal
+            auto potentiallyFreeSigBits = outNodeWire->width - attachedSigBits.size();
+            if (potentiallyFreeSigBits != static_cast<size_t>(voterOutWire.value()->width)) {
+                log_error("TaMaRa internal error: Unable to find enough free SigBits to route voter signal "
+                          "to output wire '%s'. "
+                          "Required %d, but have %zu potentially free.\n",
+                    log_id(outNodeWire->name), voterOutWire.value()->width, potentiallyFreeSigBits);
             }
+
+            TODO;
+
+            // what we might be able to do is just to connect the voter signal to the bit which is NOT taken?
+            // how do we do that?
+
         } else {
             log("Using regular wiring\n");
             module->connect(outNodeWire, voterOutWire.value());
