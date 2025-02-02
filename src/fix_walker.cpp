@@ -103,7 +103,7 @@ void FixWalkerManager::execute(RTLIL::Module *module) {
 }
 
 void MultiDriverFixer::processWire(
-    RTLIL::Wire *wire, size_t driverCount, size_t drivenCount, const RTLILWireConnections &connections) {
+    RTLIL::Wire *wire, size_t driverCount, size_t drivenCount, const RTLILSignalConnections &connections) {
     // this wire must have exactly 3 inputs and exactly 3 outputs (we aim to resolve this)
     if (driverCount == 3 && drivenCount == 3) {
         log("Found potential candidate for MultiDriverFixer: '%s'. Checking further... ", log_id(wire->name));
@@ -145,7 +145,7 @@ void MultiDriverFixer::processWire(
 }
 
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static) We prefer to keep this as a member func.
-void MultiDriverFixer::rewire(RTLIL::Wire *wire, const RTLILWireConnections &connections) {
+void MultiDriverFixer::rewire(RTLIL::Wire *wire, const RTLILSignalConnections &connections) {
     // compute our inputs and outputs
     std::unordered_set<RTLILAnyPtr> inputs = connections.at(wire);
     // PERF We should re-use this from processWire since rtlilInverseLookup is O(n^2)

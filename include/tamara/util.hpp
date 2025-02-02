@@ -18,7 +18,10 @@ USING_YOSYS_NAMESPACE;
 namespace tamara {
 
 //! Asserts the pointer is not null
-#define NOTNULL(ptr) if ((ptr) == nullptr) { log_error("TaMaRa internal error: Unexpected null pointer '%s'!\n", #ptr); }
+#define NOTNULL(ptr)                                                                                         \
+    if ((ptr) == nullptr) {                                                                                  \
+        log_error("TaMaRa internal error: Unexpected null pointer '%s'!\n", #ptr);                           \
+    }
 
 //! Crashes the application, indicating that the feature is not yet implemented
 #define TODO log_error("TaMaRa internal error: Feature not yet implemented!\n");
@@ -41,7 +44,7 @@ const auto ERROR_SINK_ANNOTATION = ID(tamara_error_sink);
 using RTLILAnyPtr = std::variant<RTLIL::Wire *, RTLIL::Cell *>;
 
 //! Mapping of connections between a wire and all RTLIL objects its connected to
-using RTLILWireConnections = std::unordered_map<RTLILAnyPtr, std::unordered_set<RTLILAnyPtr>>;
+using RTLILSignalConnections = std::unordered_map<RTLIL::SigSpec, std::unordered_set<RTLIL::SigSpec>>;
 
 //! Returns true if the cell is a DFF.
 constexpr bool isDFF(const RTLIL::Cell *cell) {
@@ -86,10 +89,22 @@ constexpr RTLIL::AttrObject *toAttrObject(const RTLILAnyPtr &ptr) {
 RTLIL::IdString getRTLILName(const RTLILAnyPtr &ptr);
 
 //! Analyses connections betweens wires and the other wires or cells they're connected to
-RTLILWireConnections analyseConnections(const RTLIL::Module *module);
+RTLILSignalConnections analyseConnections(const RTLIL::Module *module);
 
 //! RTLILWireConnections maps a -> (b, c, d, e); but what this function does is find "a" given say b, or c, or
 //! d. Returns empty list if no results found.
-std::vector<RTLILAnyPtr> rtlilInverseLookup(const RTLILWireConnections &connections, Wire *target);
+std::vector<RTLIL::SigSpec> rtlilInverseLookup(
+    const RTLILSignalConnections &connections, const RTLIL::SigSpec &target);
 
 } // namespace tamara
+
+namespace std {
+template <>
+struct hash<RTLIL::SigSpec> {
+    std::size_t operator()(const RTLIL::SigSpec &k) const {
+        Hasher h;
+        h = k.hash_into(h);
+        return h.yield();
+    }
+};
+}; // namespace std

@@ -21,9 +21,10 @@ using namespace tamara;
 namespace {
 
 //! Inserts a value into the hashmap, or adds it then inserts if not present
-constexpr void addConnection(RTLILWireConnections &connections, RTLILAnyPtr key, const RTLILAnyPtr &value) {
+constexpr void addConnection(
+    RTLILSignalConnections &connections, const RTLIL::SigSpec &key, const RTLIL::SigSpec &value) {
     if (!connections.contains(key)) {
-        connections[key] = std::unordered_set<RTLILAnyPtr>();
+        connections[key] = std::unordered_set<RTLIL::SigSpec>();
     }
     connections[key].insert(value);
 }
@@ -33,10 +34,20 @@ constexpr bool shouldConsiderForTMR(const RTLIL::AttrObject *obj) {
     return !obj->has_attribute(IGNORE_ANNOTATION);
 }
 
+//! Determines if the cells annotations are suitable to triplicate
+constexpr bool shouldConsiderForTMR(const RTLIL::SigSpec &signal) {
+    auto *wire = sigSpecToWire(signal);
+    if (wire == nullptr) {
+        // TODO do we want this behaviour?
+        return false;
+    }
+    return !wire->has_attribute(IGNORE_ANNOTATION);
+}
+
 }; // namespace
 
-RTLILWireConnections tamara::analyseConnections(const RTLIL::Module *module) {
-    RTLILWireConnections connections {};
+RTLILSignalConnections tamara::analyseConnections(const RTLIL::Module *module) {
+    RTLILSignalConnections connections {};
 
     // usage of CellTypes is based off Yosys' show command
     CellTypes cellTypes(module->design);
@@ -54,23 +65,20 @@ RTLILWireConnections tamara::analyseConnections(const RTLIL::Module *module) {
         // find wires that this is connected to
         for (const auto &connection : cell->connections()) {
             const auto &[name, signal] = connection;
-
-            Wire *wire = sigSpecToWire(signal);
-            if (wire == nullptr) {
-                log_warning("Trouble accessing wire from connection '%s'\n", log_id(name));
-                continue;
-            }
+            auto cellPort = cell->getPort(name);
 
             // this is an output from the cell, so connect wire -> cell (remember we work backwards)
             if (cellTypes.cell_output(cell->type, name)) {
-                addConnection(connections, wire, cell);
-                log("[neighbour] wire %s --> cell %s\n", log_id(wire->name), log_id(cell->name));
+                addConnection(connections, signal, cellPort);
+                log("[neighbour] signal %s --> cell %s port %s\n", log_signal(signal), log_id(cell->name),
+                    log_signal(cellPort));
             }
 
             // this is an input to the cell, so connect cell -> wire (remember we work backwards)
             if (cellTypes.cell_input(cell->type, name)) {
-                addConnection(connections, cell, wire);
-                log("[neighbour] cell %s --> wire %s\n", log_id(cell->name), log_id(wire->name));
+                addConnection(connections, cellPort, signal);
+                log("[neighbour] cell %s port %s --> signal %s\n", log_id(cell->name), log_signal(cellPort),
+                    log_signal(signal));
             }
         }
         log("\n");
@@ -81,20 +89,12 @@ RTLILWireConnections tamara::analyseConnections(const RTLIL::Module *module) {
     for (const auto &connection : module->connections()) {
         const auto &[lhs, rhs] = connection;
 
-        auto *lhsWire = sigSpecToWire(lhs);
-        auto *rhsWire = sigSpecToWire(rhs);
+        if (shouldConsiderForTMR(lhs) && shouldConsiderForTMR(rhs)) {
+            log("[neighbour] %s --> %s\n", log_signal(lhs), log_signal(rhs));
 
-        if (lhsWire != nullptr && rhsWire != nullptr) {
-            if (shouldConsiderForTMR(lhsWire) && shouldConsiderForTMR(rhsWire)) {
-                log("[neighbour] %s --> %s\n", log_id(lhsWire->name), log_id(rhsWire->name));
-
-                // apparently we don't actually need to reverse this, we're ok to just map lhs -> rhs
-                // despite doing backwards BFS
-                addConnection(connections, lhsWire, rhsWire);
-            }
-        } else {
-            log("Either RHS(%s) or LHS(%s) SigSpec is not a wire, skipping\n", log_signal(rhs),
-                log_signal(lhs));
+            // apparently we don't actually need to reverse this, we're ok to just map lhs -> rhs
+            // despite doing backwards BFS
+            addConnection(connections, lhs, rhs);
         }
     }
 
@@ -105,14 +105,15 @@ RTLILWireConnections tamara::analyseConnections(const RTLIL::Module *module) {
     return connections;
 }
 
-std::vector<RTLILAnyPtr> tamara::rtlilInverseLookup(const RTLILWireConnections &connections, Wire *target) {
+std::vector<RTLIL::SigSpec> tamara::rtlilInverseLookup(const RTLILSignalConnections &connections, const RTLIL::SigSpec &target) {
     // PERF: This is REALLY expensive currently on the order of O(n^2).
-    std::vector<RTLILAnyPtr> out;
+    std::vector<RTLIL::SigSpec> out;
     for (const auto &pair : connections) {
         const auto &[key, value] = pair;
 
         for (const auto &item : value) {
-            if (getRTLILName(item) == target->name) {
+            // FIXME sketchy?
+            if (std::string(log_signal(item)) == std::string(log_signal(target))) {
                 out.push_back(key);
             }
         }

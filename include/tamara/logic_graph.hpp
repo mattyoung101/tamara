@@ -59,10 +59,10 @@ public:
     }
 
     //! Compute neighbours of this node for the backwards BFS
-    [[nodiscard]] std::vector<TMRGraphNode::Ptr> computeNeighbours(const RTLILWireConnections &connections);
+    [[nodiscard]] std::vector<TMRGraphNode::Ptr> computeNeighbours(const RTLILSignalConnections &connections);
 
-    //! Gets a pointer to the underlying RTLIL object
-    virtual RTLILAnyPtr getRTLILObjPtr() = 0;
+    //! Gets a pointer to the underlying SigSpec object
+    virtual RTLIL::SigSpec getSigSpec() = 0;
 
     //! Replicates the node in the RTLIL netlist
     virtual void replicate(RTLIL::Module *module) = 0;
@@ -71,7 +71,7 @@ public:
     virtual std::string identify() = 0;
 
     //! Returns replicas, if this is supported (not supported on IONode, which cannot be replicated).
-    virtual std::vector<RTLILAnyPtr> getReplicas() = 0;
+    virtual std::vector<RTLIL::SigSpec> getReplicas() = 0;
 
     //! Returns the width of the wire if this makes sense, otherwise throws an error
     virtual int getWidth() = 0;
@@ -97,7 +97,7 @@ private:
     //! During LogicCone::computeNeighbours, this call turns an RTLIL neighbour (ptr) into a new logic graph
     //! node, with the parent correctly set to this TMRGraphNode using getSelfPtr().
     [[nodiscard]] TMRGraphNode::Ptr newLogicGraphNeighbour(
-        const RTLILAnyPtr &ptr, const RTLILWireConnections &connections);
+        const RTLILAnyPtr &ptr, const RTLILSignalConnections &connections);
 };
 
 //! Logic element in the graph, between an FFNode and/or an IONode
@@ -125,11 +125,14 @@ public:
         return "ElementCellNode";
     }
 
-    RTLILAnyPtr getRTLILObjPtr() override {
+    RTLIL::SigSpec getSigSpec() override {
+        // FIXME we need to get the correct output cell somehow
+        // we're truly fucked if there's more than one output cell
         return cell;
     }
 
     std::vector<RTLILAnyPtr> getReplicas() override {
+        // FIXME how are we even going to handle this?
         std::vector<RTLILAnyPtr> out {};
         out.reserve(replicas.size());
         for (const auto &replica : replicas) {
@@ -290,17 +293,17 @@ public:
     }
 
     //! Builds a logic cone by tracing backwards from outputNode to either a DFF or other IO.
-    void search(const RTLILWireConnections &connections);
+    void search(const RTLILSignalConnections &connections);
 
     //! Replicates the RTLIL components in a logic cone
     void replicate(RTLIL::Module *module);
 
     //! Wires up the replicated components and the module, and inserts a voter
-    void wire(RTLIL::Module *module, std::optional<Wire *> errorSink, RTLILWireConnections &connections,
+    void wire(RTLIL::Module *module, std::optional<Wire *> errorSink, RTLILSignalConnections &connections,
         VoterBuilder &builder);
 
     //! Builds a new logic cone that will continue the search onwards, or none if we're already at the input
-    std::vector<LogicCone> buildSuccessors(const RTLILWireConnections &connections);
+    std::vector<LogicCone> buildSuccessors(const RTLILSignalConnections &connections);
 
 private:
     /// this is the list of terminals: the list of IO nodes or FF nodes that we end up on through our

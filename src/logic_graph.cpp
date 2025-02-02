@@ -45,7 +45,7 @@ constexpr V getOrDefault(const std::unordered_map<K, V> &map, const K &key, V de
 }
 
 //! An IO is simply a wire at the edge of the circuit
-constexpr bool isWireIO(RTLIL::Wire *wire, const RTLILWireConnections &connections) {
+constexpr bool isWireIO(RTLIL::Wire *wire, const RTLILSignalConnections &connections) {
     return (connections.contains(wire) && connections.at(wire).empty()) || wire->port_input
         || wire->port_output;
 }
@@ -203,7 +203,7 @@ std::vector<RTLIL::SigChunk> findAttachedSigChunks(RTLIL::Wire *wire) {
 } // namespace
 
 TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(
-    const RTLILAnyPtr &ptr, const RTLILWireConnections &connections) {
+    const RTLILAnyPtr &ptr, const RTLILSignalConnections &connections) {
     // based on example 3 of https://en.cppreference.com/w/cpp/utility/variant/visit
     auto localId = id;
     auto selfPtr = getSelfPtr();
@@ -288,9 +288,9 @@ void IONode::replicate([[maybe_unused]] RTLIL::Module *module) {
     log_error("TaMaRa internal error: Cannot replicate IO node!\n");
 }
 
-std::vector<TMRGraphNode::Ptr> TMRGraphNode::computeNeighbours(const RTLILWireConnections &connections) {
+std::vector<TMRGraphNode::Ptr> TMRGraphNode::computeNeighbours(const RTLILSignalConnections &connections) {
     auto obj = getRTLILObjPtr();
-    auto neighbours = getOrDefault(connections, obj, std::unordered_set<RTLILAnyPtr>());
+    auto neighbours = getOrDefault(connections, obj, std::unordered_set<RTLIL::SigSpec>());
     log("    %s '%s' has %zu neighbours\n", identify().c_str(), log_id(getRTLILName(obj)), neighbours.size());
 
     // now, construct Yosys types into our logic graph types
@@ -312,7 +312,7 @@ void LogicCone::verifyInputNodes() const {
     }
 }
 
-void LogicCone::search(const RTLILWireConnections &connections) {
+void LogicCone::search(const RTLILSignalConnections &connections) {
     // check that we're starting the search from scratch on this cone
     log_assert(frontier.empty());
     log_assert(cone.empty()); // NOLINT(bugprone-unused-return-value)
@@ -438,7 +438,7 @@ std::optional<RTLIL::Wire *> LogicCone::insertVoter(
 }
 
 void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
-    RTLILWireConnections &connections, VoterBuilder &builder) {
+    RTLILSignalConnections &connections, VoterBuilder &builder) {
     log("%sWiring logic cone %u%s\n", COLOUR(Blue), id, RESET());
     if (cone.empty()) {
         // TODO in this case, we probably will have wiring to do, just not to the voter
@@ -508,7 +508,7 @@ void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
     fixWalkers.execute(module);
 }
 
-std::vector<LogicCone> LogicCone::buildSuccessors(const RTLILWireConnections &connections) {
+std::vector<LogicCone> LogicCone::buildSuccessors(const RTLILSignalConnections &connections) {
     log("%sConsidering potential successors for cone %u%s\n", COLOUR(Blue), id, RESET());
     std::vector<LogicCone> out {};
     // reserve worst-case size, minor performance improvement?
