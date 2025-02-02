@@ -272,11 +272,12 @@ Engelhardt @mcyfault, we use `mcy`'s fault injection capabilities to
 In the software world, "fuzzing" refers to a process of randomly generating inputs designed to induce
 problematic behaviour in programs. Typically, fuzzing is started by referencing an initial corpus, and the
 program under test is then instrumented to add control flow tracking code. The goal of the fuzzer is to
-generate inputs such that the program reaches 100% branch coverage.
+generate inputs such that the program reaches 100% instrumented branch coverage once the fuzzing process is
+completed.
 
 While fuzzing is typically started from an initial corpus, there has also been interest in fuzzing languages
 directly without any initial examples, using information from the language's grammar. One example is Holler's
-LangFuzz @Holler2012, which uses a tree formed by a JavaScript grammar to generate random, but valid,
+LangFuzz @Holler2012, which uses a tree formed by the JavaScript grammar to generate random, but valid,
 JavaScript code. Mozilla developers have used LangFuzz successfully to find numerous bugs in their
 SpiderMonkey JavaScript engine. Generating code from the grammar directly also has the advantage of making the
 fuzzing process significantly more efficient, as the fuzzer tool has the _a priori_ knowledge necessary to
@@ -292,5 +293,5 @@ verification flow will involve using Verismith to generate small random Verilog 
 end-to-end on these designs. Initially, we will be looking for crashes, assert failures and memory errors
 using AddressSanitizer, but later we will also use Yosys' eqy tool to prove that the designs stay the same
 before and after TaMaRa runs. Using the GNU Parallel tool, this work can be trivially distributed across
-multiple cores, generating around running TaMaRa on 1000 designs in around 5 minutes on an AMD Ryzen 9 5950X
-workstation.
+multiple cores. Running TaMaRa with the Verismith fuzzer on 1000 designs takes around 5 minutes on an AMD
+Ryzen 9 5950X workstation.
