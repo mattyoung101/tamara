@@ -13,6 +13,8 @@ from colorama import Style
 import subprocess
 import shlex
 import os
+from yaspin import yaspin
+import time
 
 # This script runs a regression test, based on the scripts listed in regress.yaml
 # Must be run from the build dir, like: ../tests/regress.py
@@ -82,9 +84,9 @@ def main():
     colorama_init()
     print(f"{Fore.CYAN}Running TaMaRa regression pipeline{Style.RESET_ALL}\n")
 
-    print(f"{Fore.CYAN}Building... ", end="", flush=True)
-    invoke(["cmake", "--build", "."])
-    print("")
+    with yaspin(text="Building..."):
+        invoke(["cmake", "--build", "."])
+        print("")
 
     with open("../tests/regress.yaml") as f:
         doc = yaml.safe_load(f)

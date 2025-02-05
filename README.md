@@ -141,8 +141,9 @@ Now, you need to symlink the location of the `verismith` binary to `<TAMARA>/bui
 
 Finally, to run the fuzzing suite, just go to the build directory and run `../tests/fuzz/verismith.sh`.
 
-To run the regression test suite, you will need the Python `pyyaml` and `colorama` packages. Then, from the
-build directory, invoke `../tests/regress.py`. The specific tests to run are defined in `tests/regress.yaml`.
+To run the regression test suite, you will need the Python `pyyaml`, `colorama` and `yaspin` packages. Then,
+from the build directory, invoke `../tests/regress.py`. The specific tests to run are defined in
+`tests/regress.yaml`.
 
 ## Compiling papers
 This repo also includes various papers including the proposal draft, presentation slides, and the actual
