@@ -1,6 +1,6 @@
 // TaMaRa: An automated triple modular redundancy EDA flow for Yosys.
 //
-// Copyright (c) 2024 Matt Young.
+// Copyright (c) 2024-2025 Matt Young.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL
 // was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
@@ -14,15 +14,15 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <memory>
 #include <optional>
 #include <queue>
 
 USING_YOSYS_NAMESPACE;
 
-// FIXME I think we should remove all the parents stuff, it isn't necessary any more and doesn't make sense I
-// think
-
 namespace tamara {
+
+using SigSpecPtr = std::shared_ptr<RTLIL::SigSpec>;
 
 //! Base node class in the graph
 class TMRGraphNode : public std::enable_shared_from_this<TMRGraphNode> {
@@ -48,11 +48,6 @@ public:
         : id(id) {
     }
 
-    TMRGraphNode(const TMRGraphNode::Ptr &parent, uint32_t id)
-        : parent(parent)
-        , id(id) {
-    }
-
     /// Returns the ID of the cone this @ref TMRGraphNode belongs to
     [[nodiscard]] uint32_t getConeID() const {
         return id;
@@ -63,6 +58,9 @@ public:
 
     //! Gets a pointer to the underlying RTLIL object
     virtual RTLILAnyPtr getRTLILObjPtr() = 0;
+
+    //! Gets the underlying SigSpec, if relevant
+    virtual SigSpecPtr getSigSpec() = 0;
 
     //! Replicates the node in the RTLIL netlist
     virtual void replicate(RTLIL::Module *module) = 0;
@@ -88,16 +86,13 @@ public:
     }
 
 private:
-    //! Pointer to parent node, not present if root
-    std::optional<TMRGraphNode::Ptr> parent;
-
     //! ID of the cone that this TMRGraphNode belongs to
     uint32_t id;
 
     //! During LogicCone::computeNeighbours, this call turns an RTLIL neighbour (ptr) into a new logic graph
     //! node, with the parent correctly set to this TMRGraphNode using getSelfPtr().
     [[nodiscard]] TMRGraphNode::Ptr newLogicGraphNeighbour(
-        const RTLILAnyPtr &ptr, const RTLILWireConnections &connections);
+        const RTLILAnyPtr &ptr, const RTLILWireConnections &connections) const;
 };
 
 //! Logic element in the graph, between an FFNode and/or an IONode
@@ -110,9 +105,10 @@ public:
         , cell(cell) {
     }
 
-    ElementCellNode(RTLIL::Cell *cell, const TMRGraphNode::Ptr &parent, uint32_t id)
-        : TMRGraphNode(parent, id)
-        , cell(cell) {
+    ElementCellNode(RTLIL::Cell *cell, const RTLIL::SigSpec &spec, uint32_t id)
+        : TMRGraphNode(id)
+        , cell(cell)
+        , sigSpec(std::make_shared<RTLIL::SigSpec>(spec)) {
     }
 
     RTLIL::Cell *getElement() const {
@@ -127,6 +123,10 @@ public:
 
     RTLILAnyPtr getRTLILObjPtr() override {
         return cell;
+    }
+
+    SigSpecPtr getSigSpec() override {
+        return sigSpec;
     }
 
     std::vector<RTLILAnyPtr> getReplicas() override {
@@ -149,6 +149,7 @@ public:
 
 private:
     RTLIL::Cell *cell;
+    SigSpecPtr sigSpec;
     std::vector<RTLIL::Cell *> replicas;
 };
 
@@ -160,10 +161,8 @@ public:
         , wire(wire) {
     }
 
-    ElementWireNode(RTLIL::Wire *wire, const TMRGraphNode::Ptr &parent, uint32_t id)
-        : TMRGraphNode(parent, id)
-        , wire(wire) {
-    }
+    // ElementWireNode(RTLIL::Wire *wire, const RTLIL::SigSpec &sigSpec, const TMRGraphNode::Ptr &parent,
+    // uint32_t id) {}
 
     RTLIL::Wire *getWire() const {
         return wire;
@@ -177,6 +176,10 @@ public:
 
     RTLILAnyPtr getRTLILObjPtr() override {
         return wire;
+    }
+
+    SigSpecPtr getSigSpec() override {
+        return sigSpec;
     }
 
     std::vector<RTLILAnyPtr> getReplicas() override {
@@ -199,6 +202,7 @@ public:
 
 private:
     RTLIL::Wire *wire;
+    SigSpecPtr sigSpec;
     std::vector<RTLIL::Wire *> replicas;
 };
 
@@ -208,10 +212,6 @@ class FFNode : public ElementCellNode {
 public:
     explicit FFNode(RTLIL::Cell *cell, uint32_t id)
         : ElementCellNode(cell, id) {
-    }
-
-    FFNode(RTLIL::Cell *cell, const TMRGraphNode::Ptr &parent, uint32_t id)
-        : ElementCellNode(cell, parent, id) {
     }
 
     RTLIL::Cell *getFF() {
@@ -232,11 +232,6 @@ public:
         , io(io) {
     }
 
-    IONode(RTLIL::Wire *io, const TMRGraphNode::Ptr &parent, uint32_t id)
-        : TMRGraphNode(parent, id)
-        , io(io) {
-    }
-
     RTLIL::Wire *getIO() {
         return io;
     }
@@ -249,6 +244,10 @@ public:
 
     RTLILAnyPtr getRTLILObjPtr() override {
         return io;
+    }
+
+    SigSpecPtr getSigSpec() override {
+        return sigSpec;
     }
 
     std::vector<RTLILAnyPtr> getReplicas() override {
@@ -266,6 +265,7 @@ public:
 
 private:
     RTLIL::Wire *io;
+    SigSpecPtr sigSpec;
 };
 
 //! Encapsulates the logic elements between two FFs, or two IO ports, or an IO port and an FF

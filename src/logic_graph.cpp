@@ -203,29 +203,26 @@ std::vector<RTLIL::SigChunk> findAttachedSigChunks(RTLIL::Wire *wire) {
 } // namespace
 
 TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(
-    const RTLILAnyPtr &ptr, const RTLILWireConnections &connections) {
+    const RTLILAnyPtr &ptr, const RTLILWireConnections &connections) const {
     // based on example 3 of https://en.cppreference.com/w/cpp/utility/variant/visit
     auto localId = id;
-    auto selfPtr = getSelfPtr();
     return std::visit(
-        [&, localId, selfPtr](auto &&arg) {
+        [&, localId](auto &&arg) {
             using T = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
                 // my god this is ugly, we need to check if it's a DFF as well
                 if (isDFF(arg)) {
-                    return static_cast<TMRGraphNode::Ptr>(std::make_shared<FFNode>(arg, selfPtr, localId));
+                    return static_cast<TMRGraphNode::Ptr>(std::make_shared<FFNode>(arg, localId));
                 }
-                return static_cast<TMRGraphNode::Ptr>(
-                    std::make_shared<ElementCellNode>(arg, selfPtr, localId));
+                return static_cast<TMRGraphNode::Ptr>(std::make_shared<ElementCellNode>(arg, localId));
             }
             if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
                 if (isWireIO(arg, connections)) {
                     // this is actually an IO
-                    return static_cast<TMRGraphNode::Ptr>(std::make_shared<IONode>(arg, selfPtr, localId));
+                    return static_cast<TMRGraphNode::Ptr>(std::make_shared<IONode>(arg, localId));
                 }
                 // it's a wire, but just a regular element node -> not an IO
-                return static_cast<TMRGraphNode::Ptr>(
-                    std::make_shared<ElementWireNode>(arg, selfPtr, localId));
+                return static_cast<TMRGraphNode::Ptr>(std::make_shared<ElementWireNode>(arg, localId));
             }
         },
         ptr);
@@ -466,10 +463,14 @@ void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
 
         // FIXME sketchy std::get call (this breaks in shiftreg.ys)
         // specifically it seems to fail if there are multiple logic cones, so we need to think about what we
-        // do here (I'll probably track this on a ticket since this looks tricky)
+        // do here (tracked as #22)
         auto *outNodeWire = std::get<Wire *>(outputNode->getRTLILObjPtr());
         DUMP_RTLIL;
         DUMP;
+
+        // TODO what we need here is a copy of the original connection data
+        // maybe we DO need RTLILSignalConnections, but as an entirely separate thing?
+        // we need to know what bits were ORIGINALLY connected from, in crc_min, $xor -> out
 
         // check if we have an attached SigChunk (see https://github.com/mattyoung101/tamara/issues/13)
         // in that case, special wiring will be required
