@@ -39,6 +39,7 @@ top_module: ${top_module}")
     target_compile_options(${target_name} PRIVATE ${TESTBENCH_CXX_FLAGS} "-fsanitize=address")
     target_link_options(${target_name} PRIVATE "-flto" "-fsanitize=address")
     target_compile_definitions(${target_name} PRIVATE "VL_DEBUG")
+    target_link_libraries(${target_name} PRIVATE atomic)
 
     # Release flags
     # target_compile_options(${target_name} PRIVATE ${TESTBENCH_CXX_FLAGS} "-O3" "-march=native" "-mtune=native")
