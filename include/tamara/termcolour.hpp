@@ -17,23 +17,10 @@
 #include <string>
 #include <unistd.h>
 
-//! This can be set to "1" to please Americans (uses American spelling). Off by default.
-#define YANK_MODE 0
-
-#if YANK_MODE
-    #define _Colour Color
-    #define _colour color
-    #define _termcolour termcolor
-#else
-    #define _Colour Colour
-    #define _colour colour
-    #define _termcolour termcolour
-#endif
-
-namespace _termcolour {
+namespace termcolour {
 
 //! ANSI terminal colours
-enum class _Colour : uint8_t {
+enum class Colour : uint8_t {
     Black = 30,
     Red = 31,
     Green = 32,
@@ -51,16 +38,16 @@ inline bool isTTY() {
 }
 
 //! Returns a colour, unless this is not a TTY
-inline std::string _colour(_Colour _colour) {
+inline std::string colour(Colour colour) {
     if (isTTY()) {
-        return "\x1b[1;" + std::to_string(static_cast<uint8_t>(_colour)) + "m";
+        return "\x1b[1;" + std::to_string(static_cast<uint8_t>(colour)) + "m";
     }
     return "";
 }
 
 //! Resets colour, unless this is not a TTY
 inline std::string reset() {
-    return _colour(_Colour::Reset);
+    return colour(Colour::Reset);
 }
 
-} // namespace _termcolour
+} // namespace termcolour
