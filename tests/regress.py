@@ -14,7 +14,9 @@ import subprocess
 import shlex
 import os
 from yaspin import yaspin
-import time
+from datetime import datetime
+import json
+from pathlib import Path
 
 # This script runs a regression test, based on the scripts listed in regress.yaml
 # Must be run from the build dir, like: ../tests/regress.py
@@ -100,6 +102,41 @@ def main():
         print(f"\n{Fore.RED}Failed tests:{Style.RESET_ALL}")
         for test in failed_tests:
             print(f"- {test}")
+
+    # is there a prior result? if so, we can see if we regressed
+    try:
+        # load the prior result
+        with open("tamara-regress-latest.txt") as latest_f:
+            latest = latest_f.readline().strip()
+            with open(latest) as f:
+                prior_result = json.load(f)
+
+                # if it's the same number of tests, we can determine if there was a regression
+                if prior_result["passed"] + prior_result["failed"] == passed + failed:
+                    if failed > prior_result["failed"]:
+                        print(f"\n{Fore.RED + Style.BRIGHT}⚠️ ⚠️ YOU HAVE REGRESSED! ⚠️ ⚠️{Style.RESET_ALL}")
+                        print(f"\nTest {latest} had {prior_result['failed']} failed tests, which is"
+                              f" {failed - prior_result['failed']} less than you have now.\n")
+                    else:
+                        print(f"\n{Fore.GREEN}You have not regressed :){Style.RESET_ALL}")
+                else:
+                    print(f"\nA prior test, {latest}, could not be used because it has a differing test count"
+                          " to the current test suite.\n")
+    except FileNotFoundError:
+        print("\nNo prior regression test suite exists.\n")
+
+    # write result to disk
+    date = datetime.now().strftime("%Y-%d-%H-%M-%S.%f")
+    result = {
+        "passed": passed,
+        "failed": failed
+    }
+    with open(f"tamara-regress-{date}.json", "w") as f:
+        json.dump(result, f)
+
+    # update link to latest
+    with open("tamara-regress-latest.txt", "w") as f:
+        print(f"tamara-regress-{date}.json", file=f)
 
 
 if __name__ == "__main__":
