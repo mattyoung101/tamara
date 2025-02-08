@@ -45,7 +45,7 @@ constexpr V getOrDefault(const std::unordered_map<K, V> &map, const K &key, V de
 }
 
 //! An IO is simply a wire at the edge of the circuit
-constexpr bool isWireIO(RTLIL::Wire *wire, const RTLILWireConnections &connections) {
+bool isWireIO(RTLIL::Wire *wire, const RTLILWireConnections &connections) {
     return (connections.contains(wire) && connections.at(wire).empty()) || wire->port_input
         || wire->port_output;
 }
@@ -202,8 +202,8 @@ std::vector<RTLIL::SigChunk> findAttachedSigChunks(RTLIL::Wire *wire) {
 
 } // namespace
 
-TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(
-    const RTLILAnyPtr &ptr, const RTLILWireConnections &connections) const {
+TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(const RTLILAnyPtr &ptr,
+    const RTLILWireConnections &connections, const std::optional<RTLIL::SigSpec> &sigSpec) const {
     // based on example 3 of https://en.cppreference.com/w/cpp/utility/variant/visit
     auto localId = id;
     return std::visit(
@@ -217,6 +217,11 @@ TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(
                 return static_cast<TMRGraphNode::Ptr>(std::make_shared<ElementCellNode>(arg, localId));
             }
             if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
+                if (!sigSpec.has_value()) {
+                    log_warning("No SigSpec passed with wire '%s' to newLogicGraphNeighbour. This may cause "
+                                "problems later.\n",
+                        log_id(arg->name));
+                }
                 if (isWireIO(arg, connections)) {
                     // this is actually an IO
                     return static_cast<TMRGraphNode::Ptr>(std::make_shared<IONode>(arg, localId));
@@ -294,7 +299,8 @@ std::vector<TMRGraphNode::Ptr> TMRGraphNode::computeNeighbours(const RTLILWireCo
     std::vector<TMRGraphNode::Ptr> out {};
     out.reserve(neighbours.size());
     for (const auto &neighbour : neighbours) {
-        out.push_back(newLogicGraphNeighbour(neighbour, connections));
+        // we're passing nullopt here for the sigSpec, since we may not have an easy way of getting to it
+        out.push_back(newLogicGraphNeighbour(neighbour, connections, std::nullopt));
     }
     return out;
 }

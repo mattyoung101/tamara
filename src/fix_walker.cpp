@@ -62,7 +62,7 @@ void FixWalkerManager::add(const std::shared_ptr<FixWalker> &walker) {
 
 void FixWalkerManager::execute(RTLIL::Module *module) {
     // also pre-compute another copy of RTLILWireConnections
-    auto connections = analyseConnections(module);
+    auto [connections, signalConnections] = analyseConnections(module);
 
     for (auto &walker : walkers) {
         log("Running FixWalker %s\n", walker->name().c_str());

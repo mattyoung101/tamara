@@ -69,7 +69,7 @@ struct TamaraTMRPass : public Pass {
         // which _cells_ associated with them, but RTLIL will only tell us which _cells_ have which _wires_
         // associated with them.
         log_header(design, "Analysing wire connections\n");
-        auto neighbours = analyseConnections(module);
+        auto [neighbours, signalNeighbours] = analyseConnections(module);
 
         // figure out where our output ports are, these will be the start of the BFS
         log_header(design, "Computing initial logic graph\n");

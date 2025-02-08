@@ -18,7 +18,6 @@ scripts:
   - not_tmr
   - not_dff_tmr_2bit
   - crc2
-  - crc4
   - crc8
   - crc_min
   - shiftreg

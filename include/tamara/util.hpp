@@ -17,7 +17,10 @@ USING_YOSYS_NAMESPACE;
 namespace tamara {
 
 //! Asserts the pointer is not null
-#define NOTNULL(ptr) if ((ptr) == nullptr) { log_error("TaMaRa internal error: Unexpected null pointer '%s'!\n", #ptr); }
+#define NOTNULL(ptr)                                                                                         \
+    if ((ptr) == nullptr) {                                                                                  \
+        log_error("TaMaRa internal error: Unexpected null pointer '%s'!\n", #ptr);                           \
+    }
 
 //! Crashes the application, indicating that the feature is not yet implemented
 #define TODO log_error("TaMaRa internal error: Feature not yet implemented!\n");
@@ -42,29 +45,14 @@ using RTLILAnyPtr = std::variant<RTLIL::Wire *, RTLIL::Cell *>;
 //! Mapping of connections between a wire and all RTLIL objects its connected to
 using RTLILWireConnections = std::unordered_map<RTLILAnyPtr, std::unordered_set<RTLILAnyPtr>>;
 
+//! Mapping of connections between an RTLILAnyPtr and all the RTLIL SigSpecs it is connected to
+using RTLILAnySignalConnections = std::unordered_map<RTLILAnyPtr, std::unordered_set<RTLIL::SigSpec>>;
+
 //! Returns true if the cell is a DFF.
-constexpr bool isDFF(const RTLIL::Cell *cell) {
-    // this logic is borrowed from Yosys wreduce.cc
-    return cell->type.in(ID($dff), ID($dffe), ID($adff), ID($adffe), ID($sdff), ID($sdffe), ID($sdffce),
-        ID($dlatch), ID($adlatch));
-}
+bool isDFF(const RTLIL::Cell *cell);
 
 //! Converts a SigSpec to a wire, if possible, <b>otherwise returns nullptr.</b>
-constexpr RTLIL::Wire *sigSpecToWire(const RTLIL::SigSpec &sigSpec) {
-    if (sigSpec.is_wire()) {
-        return sigSpec.as_wire();
-    }
-    if (sigSpec.is_bit()) {
-        return sigSpec.as_bit().wire;
-    }
-    if (!sigSpec.chunks().empty()) {
-        // FIXME this is somewhat questionable and should be tested on more designs
-        return sigSpec.chunks().front().wire;
-    }
-
-    // unhandled!
-    return nullptr;
-}
+RTLIL::Wire *sigSpecToWire(const RTLIL::SigSpec &sigSpec);
 
 //! Casts an RTLILAnyPtr to an RTLIL::AttrObject
 constexpr RTLIL::AttrObject *toAttrObject(const RTLILAnyPtr &ptr) {
@@ -84,11 +72,25 @@ constexpr RTLIL::AttrObject *toAttrObject(const RTLILAnyPtr &ptr) {
 //! Returns the RTLIL ID for a RTLILAnyPtr
 RTLIL::IdString getRTLILName(const RTLILAnyPtr &ptr);
 
-//! Analyses connections betweens wires and the other wires or cells they're connected to
-RTLILWireConnections analyseConnections(const RTLIL::Module *module);
+//! Analyses connections betweens wires/cells and the other wires or cells they're connected to
+std::pair<RTLILWireConnections, RTLILAnySignalConnections> analyseConnections(const RTLIL::Module *module);
+
+//! Analyses connections betweens wires/cells and the signals they're connected to
+RTLILAnySignalConnections analyseSignalConnections(const RTLIL::Module *module);
 
 //! RTLILWireConnections maps a -> (b, c, d, e); but what this function does is find "a" given say b, or c, or
 //! d. Returns empty list if no results found.
 std::vector<RTLILAnyPtr> rtlilInverseLookup(const RTLILWireConnections &connections, Wire *target);
 
 } // namespace tamara
+
+namespace std {
+template <>
+struct hash<RTLIL::SigSpec> {
+    std::size_t operator()(const RTLIL::SigSpec &k) const {
+        Hasher h;
+        h = k.hash_into(h);
+        return h.yield();
+    }
+};
+}; // namespace std

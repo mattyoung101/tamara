@@ -91,8 +91,8 @@ private:
 
     //! During LogicCone::computeNeighbours, this call turns an RTLIL neighbour (ptr) into a new logic graph
     //! node, with the parent correctly set to this TMRGraphNode using getSelfPtr().
-    [[nodiscard]] TMRGraphNode::Ptr newLogicGraphNeighbour(
-        const RTLILAnyPtr &ptr, const RTLILWireConnections &connections) const;
+    [[nodiscard]] TMRGraphNode::Ptr newLogicGraphNeighbour(const RTLILAnyPtr &ptr,
+        const RTLILWireConnections &connections, const std::optional<RTLIL::SigSpec> &sigSpec) const;
 };
 
 //! Logic element in the graph, between an FFNode and/or an IONode
