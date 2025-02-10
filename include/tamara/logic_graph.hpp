@@ -54,13 +54,14 @@ public:
     }
 
     //! Compute neighbours of this node for the backwards BFS
-    [[nodiscard]] std::vector<TMRGraphNode::Ptr> computeNeighbours(const RTLILWireConnections &connections);
+    [[nodiscard]] std::vector<TMRGraphNode::Ptr> computeNeighbours(
+        const RTLILWireConnections &connections, const RTLILAnySignalConnections &signalConnections);
 
     //! Gets a pointer to the underlying RTLIL object
     virtual RTLILAnyPtr getRTLILObjPtr() = 0;
 
-    //! Gets the underlying SigSpec, if relevant
-    virtual SigSpecPtr getSigSpec() = 0;
+    //! Gets the underlying SigSpecs that may be attached to this node, if relevant
+    virtual std::vector<RTLIL::SigSpec> getSigSpecs() = 0;
 
     //! Replicates the node in the RTLIL netlist
     virtual void replicate(RTLIL::Module *module) = 0;
@@ -92,7 +93,8 @@ private:
     //! During LogicCone::computeNeighbours, this call turns an RTLIL neighbour (ptr) into a new logic graph
     //! node, with the parent correctly set to this TMRGraphNode using getSelfPtr().
     [[nodiscard]] TMRGraphNode::Ptr newLogicGraphNeighbour(const RTLILAnyPtr &ptr,
-        const RTLILWireConnections &connections, const std::optional<RTLIL::SigSpec> &sigSpec) const;
+        const RTLILWireConnections &wireConnections,
+        const RTLILAnySignalConnections &signalConnections) const;
 };
 
 //! Logic element in the graph, between an FFNode and/or an IONode
@@ -105,10 +107,12 @@ public:
         , cell(cell) {
     }
 
-    ElementCellNode(RTLIL::Cell *cell, const RTLIL::SigSpec &spec, uint32_t id)
+    ElementCellNode(RTLIL::Cell *cell, const std::vector<RTLIL::SigSpec> &spec, uint32_t id)
         : TMRGraphNode(id)
-        , cell(cell)
-        , sigSpec(std::make_shared<RTLIL::SigSpec>(spec)) {
+        , cell(cell) {
+        for (const auto &sig : spec) {
+            sigSpecs.push_back(sig);
+        }
     }
 
     RTLIL::Cell *getElement() const {
@@ -125,8 +129,8 @@ public:
         return cell;
     }
 
-    SigSpecPtr getSigSpec() override {
-        return sigSpec;
+    std::vector<RTLIL::SigSpec> getSigSpecs() override {
+        return sigSpecs;
     }
 
     std::vector<RTLILAnyPtr> getReplicas() override {
@@ -149,7 +153,7 @@ public:
 
 private:
     RTLIL::Cell *cell;
-    SigSpecPtr sigSpec;
+    std::vector<RTLIL::SigSpec> sigSpecs;
     std::vector<RTLIL::Cell *> replicas;
 };
 
@@ -161,8 +165,13 @@ public:
         , wire(wire) {
     }
 
-    // ElementWireNode(RTLIL::Wire *wire, const RTLIL::SigSpec &sigSpec, const TMRGraphNode::Ptr &parent,
-    // uint32_t id) {}
+    ElementWireNode(RTLIL::Wire *wire, const std::vector<RTLIL::SigSpec> &spec, uint32_t id)
+        : TMRGraphNode(id)
+        , wire(wire) {
+        for (const auto &sig : spec) {
+            sigSpecs.push_back(sig);
+        }
+    }
 
     RTLIL::Wire *getWire() const {
         return wire;
@@ -178,8 +187,8 @@ public:
         return wire;
     }
 
-    SigSpecPtr getSigSpec() override {
-        return sigSpec;
+    std::vector<RTLIL::SigSpec> getSigSpecs() override {
+        return sigSpecs;
     }
 
     std::vector<RTLILAnyPtr> getReplicas() override {
@@ -202,7 +211,7 @@ public:
 
 private:
     RTLIL::Wire *wire;
-    SigSpecPtr sigSpec;
+    std::vector<RTLIL::SigSpec> sigSpecs;
     std::vector<RTLIL::Wire *> replicas;
 };
 
@@ -232,6 +241,14 @@ public:
         , io(io) {
     }
 
+    IONode(RTLIL::Wire *io, const std::vector<RTLIL::SigSpec> &spec, uint32_t id)
+        : TMRGraphNode(id)
+        , io(io) {
+        for (const auto &sig : spec) {
+            sigSpecs.push_back(sig);
+        }
+    }
+
     RTLIL::Wire *getIO() {
         return io;
     }
@@ -246,8 +263,8 @@ public:
         return io;
     }
 
-    SigSpecPtr getSigSpec() override {
-        return sigSpec;
+    std::vector<RTLIL::SigSpec> getSigSpecs() override {
+        return sigSpecs;
     }
 
     std::vector<RTLILAnyPtr> getReplicas() override {
@@ -265,7 +282,7 @@ public:
 
 private:
     RTLIL::Wire *io;
-    SigSpecPtr sigSpec;
+    std::vector<RTLIL::SigSpec> sigSpecs;
 };
 
 //! Encapsulates the logic elements between two FFs, or two IO ports, or an IO port and an FF
@@ -290,7 +307,7 @@ public:
     }
 
     //! Builds a logic cone by tracing backwards from outputNode to either a DFF or other IO.
-    void search(const RTLILWireConnections &connections);
+    void search(const RTLILWireConnections &connections, const RTLILAnySignalConnections &signalConnections);
 
     //! Replicates the RTLIL components in a logic cone
     void replicate(RTLIL::Module *module);

@@ -7,7 +7,7 @@ hierarchy -top crc
 
 prep
 write_rtlil
-show -colors 420 -pause
+# show -colors 420 -pause
 
 tamara_tmr
 check

@@ -91,7 +91,7 @@ struct TamaraTMRPass : public Pass {
             auto cone = LogicCone(output);
 
             // start at the output port, do a BFS backwards to build up our logic cones
-            cone.search(neighbours);
+            cone.search(neighbours, signalNeighbours);
             log("\n");
 
             // cone is built, replicate items
@@ -116,7 +116,7 @@ struct TamaraTMRPass : public Pass {
             successors.pop();
 
             // start at the output port, do a BFS backwards to build up our logic cones
-            cone.search(neighbours);
+            cone.search(neighbours, signalNeighbours);
             log("\n");
 
             // cone is built, replicate items

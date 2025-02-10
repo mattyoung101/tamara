@@ -203,7 +203,7 @@ std::vector<RTLIL::SigChunk> findAttachedSigChunks(RTLIL::Wire *wire) {
 } // namespace
 
 TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(const RTLILAnyPtr &ptr,
-    const RTLILWireConnections &connections, const std::optional<RTLIL::SigSpec> &sigSpec) const {
+    const RTLILWireConnections &wireConnections, const RTLILAnySignalConnections &signalConnections) const {
     // based on example 3 of https://en.cppreference.com/w/cpp/utility/variant/visit
     auto localId = id;
     return std::visit(
@@ -217,12 +217,20 @@ TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(const RTLILAnyPtr &ptr,
                 return static_cast<TMRGraphNode::Ptr>(std::make_shared<ElementCellNode>(arg, localId));
             }
             if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
-                if (!sigSpec.has_value()) {
-                    log_warning("No SigSpec passed with wire '%s' to newLogicGraphNeighbour. This may cause "
+                std::optional<std::unordered_set<SigSpec>> sigSpecs = std::nullopt;
+
+                // determine if we have any SigSpecs available for this wire node
+                // FIXME we may possibly be looking this up the wrong way, we might need an inverse lookup??
+                if (signalConnections.contains(arg)) {
+                    sigSpecs = signalConnections.at(arg);
+                }
+                if (!sigSpecs.has_value()) {
+                    log_warning("No SigSpecs found for wire '%s' in newLogicGraphNeighbour. This may cause "
                                 "problems later.\n",
                         log_id(arg->name));
                 }
-                if (isWireIO(arg, connections)) {
+
+                if (isWireIO(arg, wireConnections)) {
                     // this is actually an IO
                     return static_cast<TMRGraphNode::Ptr>(std::make_shared<IONode>(arg, localId));
                 }
@@ -290,7 +298,8 @@ void IONode::replicate([[maybe_unused]] RTLIL::Module *module) {
     log_error("TaMaRa internal error: Cannot replicate IO node!\n");
 }
 
-std::vector<TMRGraphNode::Ptr> TMRGraphNode::computeNeighbours(const RTLILWireConnections &connections) {
+std::vector<TMRGraphNode::Ptr> TMRGraphNode::computeNeighbours(
+    const RTLILWireConnections &connections, const RTLILAnySignalConnections &signalConnections) {
     auto obj = getRTLILObjPtr();
     auto neighbours = getOrDefault(connections, obj, std::unordered_set<RTLILAnyPtr>());
     log("    %s '%s' has %zu neighbours\n", identify().c_str(), log_id(getRTLILName(obj)), neighbours.size());
@@ -300,7 +309,7 @@ std::vector<TMRGraphNode::Ptr> TMRGraphNode::computeNeighbours(const RTLILWireCo
     out.reserve(neighbours.size());
     for (const auto &neighbour : neighbours) {
         // we're passing nullopt here for the sigSpec, since we may not have an easy way of getting to it
-        out.push_back(newLogicGraphNeighbour(neighbour, connections, std::nullopt));
+        out.push_back(newLogicGraphNeighbour(neighbour, connections, signalConnections));
     }
     return out;
 }
@@ -315,7 +324,9 @@ void LogicCone::verifyInputNodes() const {
     }
 }
 
-void LogicCone::search(const RTLILWireConnections &connections) {
+// NOLINTNEXTLINE(readability-function-cognitive-complexity) don't care, didn't ask
+void LogicCone::search(
+    const RTLILWireConnections &connections, const RTLILAnySignalConnections &signalConnections) {
     // check that we're starting the search from scratch on this cone
     log_assert(frontier.empty());
     log_assert(cone.empty()); // NOLINT(bugprone-unused-return-value)
@@ -338,7 +349,7 @@ void LogicCone::search(const RTLILWireConnections &connections) {
 
         if (shouldAddNeighbours(node) || first) {
             // locate neighbours and add to BFS queue
-            auto neighbours = node->computeNeighbours(connections);
+            auto neighbours = node->computeNeighbours(connections, signalConnections);
             for (const auto &neighbour : neighbours) {
                 std::string name = getNodeName(node).c_str();
 
@@ -444,7 +455,6 @@ void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
     RTLILWireConnections &connections, VoterBuilder &builder) {
     log("%sWiring logic cone %u%s\n", COLOUR(Blue), id, RESET());
     if (cone.empty()) {
-        // TODO in this case, we probably will have wiring to do, just not to the voter
         log("%sSkipping wiring of cone %u - internal elements empty%s\n", COLOUR(Red), id, RESET());
         return;
     }
@@ -467,16 +477,14 @@ void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
         log("Connecting cone output '%s' to voter output '%s'\n", logRTLILName(outputNode),
             log_id(voterOutWire.value()->name));
 
-        // FIXME sketchy std::get call (this breaks in shiftreg.ys)
-        // specifically it seems to fail if there are multiple logic cones, so we need to think about what we
-        // do here (tracked as #22)
+        // FIXME fix this garbage (https://github.com/mattyoung101/tamara/issues/22)
         auto *outNodeWire = std::get<Wire *>(outputNode->getRTLILObjPtr());
-        DUMP_RTLIL;
-        DUMP;
+        // DUMP_RTLIL;
+        // DUMP;
 
-        // TODO what we need here is a copy of the original connection data
-        // maybe we DO need RTLILSignalConnections, but as an entirely separate thing?
-        // we need to know what bits were ORIGINALLY connected from, in crc_min, $xor -> out
+        if (outputNode->getSigSpecs().empty()) {
+            log_error("we didn't propagate any sigspecs sadface\n");
+        }
 
         // check if we have an attached SigChunk (see https://github.com/mattyoung101/tamara/issues/13)
         // in that case, special wiring will be required

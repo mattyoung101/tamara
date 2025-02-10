@@ -80,14 +80,16 @@ std::pair<RTLILWireConnections, RTLILAnySignalConnections> tamara::analyseConnec
             if (cellTypes.cell_output(cell->type, name)) {
                 wireConnections[wire].insert(cell);
                 signalConnections[wire].insert(signal);
-                log("[neighbour] wire %s --> cell %s\n", log_id(wire->name), log_id(cell->name));
+                log("[neighbour wire] wire %s --> cell %s\n", log_id(wire->name), log_id(cell->name));
+                log("[neighbour signal] wire %s --> signal %s\n", log_id(wire->name), log_signal(signal));
             }
 
             // this is an input to the cell, so connect cell -> wire (remember we work backwards)
             if (cellTypes.cell_input(cell->type, name)) {
                 wireConnections[cell].insert(wire);
                 signalConnections[cell].insert(signal);
-                log("[neighbour] cell %s --> wire %s\n", log_id(cell->name), log_id(wire->name));
+                log("[neighbour wire] cell %s --> wire %s\n", log_id(cell->name), log_id(wire->name));
+                log("[neighbour signal] cell %s --> signal %s\n", log_id(cell->name), log_signal(signal));
             }
         }
         log("\n");
@@ -104,11 +106,12 @@ std::pair<RTLILWireConnections, RTLILAnySignalConnections> tamara::analyseConnec
         // provided lhsWire is defined, we can still insert the rhs (even if rhsWire is nullptr)
         if (lhsWire != nullptr) {
             signalConnections[lhsWire].insert(rhs);
+            log("[neighbour signal] %s -> %s\n", log_id(lhsWire->name), log_signal(rhs));
         }
 
         if (lhsWire != nullptr && rhsWire != nullptr) {
             if (shouldConsiderForTMR(lhsWire) && shouldConsiderForTMR(rhsWire)) {
-                log("[neighbour] %s --> %s\n", log_id(lhsWire->name), log_id(rhsWire->name));
+                log("[neighbour wire] %s --> %s\n", log_id(lhsWire->name), log_id(rhsWire->name));
 
                 // apparently we don't actually need to reverse this, we're ok to just map lhs -> rhs
                 // despite doing backwards BFS
@@ -136,6 +139,21 @@ std::vector<RTLILAnyPtr> tamara::rtlilInverseLookup(const RTLILWireConnections &
             if (getRTLILName(item) == target->name) {
                 out.push_back(key);
             }
+        }
+    }
+    return out;
+}
+
+std::vector<RTLIL::SigSpec> tamara::signalInverseLookup(const RTLILAnySignalConnections &connections, Wire *target) {
+    std::vector<RTLIL::SigSpec> out;
+    for (const auto &pair : connections) {
+        const auto &[key, value] = pair;
+
+        for (const auto &item : value) {
+            // TODO
+            // if (getRTLILName(item) == target->name) {
+            //     out.push_back(key);
+            // }
         }
     }
     return out;
