@@ -17,7 +17,16 @@ scripts:
   - not_dff_tmr
   - not_tmr
   - not_dff_tmr_2bit
+  - dff_tmr
   - crc2
   - crc8
   - crc_min
+  - crc_const_variant3
+  - crc_const_variant4
+  - not_slice
+  - not_swizzle_high
+  - not_swizzle_low
   - shiftreg
+  - counter
+  - voter
+  - recurrent_dff
