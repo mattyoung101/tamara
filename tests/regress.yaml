@@ -14,6 +14,7 @@ scripts:
   - gen_4bit_voter
   - gen_voter
   - not_2bit
+  - not_32bit
   - not_dff_tmr
   - not_tmr
   - not_dff_tmr_2bit
@@ -30,3 +31,4 @@ scripts:
   - counter
   - voter
   - recurrent_dff
+  - divider

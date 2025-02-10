@@ -1,5 +1,5 @@
 // Source: https://projectf.io/posts/division-in-verilog/
-module div #(
+module divider #(
     parameter WIDTH=8,  // width of numbers in bits (integer and fractional)
     parameter FBITS=4   // fractional bits within WIDTH
     ) (
