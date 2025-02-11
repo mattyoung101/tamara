@@ -32,3 +32,10 @@ scripts:
   - voter
   - recurrent_dff
   - divider
+  - mux_1bit
+  - mux_2bit
+  - cones
+  - cones_2bit
+  # - picorv32
+  - memory
+  - memory_simple
