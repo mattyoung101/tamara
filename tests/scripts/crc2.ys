@@ -6,6 +6,8 @@ read_verilog ../tests/verilog/crc2.v
 hierarchy -top crc
 
 prep
+splitcells
+splitnets
 write_rtlil
 tamara_tmr
 check

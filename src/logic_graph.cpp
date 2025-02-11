@@ -450,8 +450,8 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILWireConnections &connecti
 
         // FIXME fix this garbage (https://github.com/mattyoung101/tamara/issues/22)
         auto *outNodeWire = std::get<Wire *>(outputNode->getRTLILObjPtr());
-        // DUMP_RTLIL;
-        // DUMP;
+        DUMP_RTLIL;
+        DUMP;
 
         // locate SigSpecs associated with the output node wire
         std::unordered_set<RTLIL::SigSpec> attachedSigSpecs;

@@ -4,6 +4,8 @@ plugin -i libtamara.so
 read_verilog ../tests/verilog/bug7_reduced.v
 
 prep
+splitcells
+splitnets
 show -colors 420
 
 write_rtlil

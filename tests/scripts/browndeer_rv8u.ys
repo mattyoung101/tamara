@@ -7,6 +7,8 @@ hierarchy -top browndeer_rv8u
 flatten
 
 prep
+splitcells
+splitnets
 write_rtlil
 tamara_tmr
 check

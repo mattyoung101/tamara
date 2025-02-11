@@ -172,7 +172,24 @@ addition of asserts plays an important role in debugging end user crashes. Ideal
 then generate an impossible design. All of this combines together to hopefully make a tool that users can be
 confident deploying in rad-hardened, safety critical scenarios.
 
-== Verification
+=== Software engineering considerations
+TaMaRa is a highly complex project that, during the course of this one year thesis, developed into a
+substantial and complicated codebase. Far from just being a research project, this thesis is also a software
+engineering project as well. This means that, in addition to the usual research considerations, there are also
+a number of software engineering considerations that are noted here.
+
+The TaMaRa algorithm itself is complex, and it builds on top of the very complex Yosys codebase. In addition,
+the very process of EDA synthesis is highly non-trivial; akin to writing a compiler. This means that an
+extensive verification methodology is required not just as a once-off, but throughout development. While the
+verification methodology is covered throughout @section:verification, there are some important software
+engineering considerations about _how_ this was implemented.
+
+#TODO("")
+- Poor design decisions that we had initially (RTLILWireConnections)
+- Not using SigSpec
+- Regression test suite
+
+== Verification <section:verification>
 Due to its use in safety critical sectors like aerospace and defence, comprehensive verification and testing
 of the TaMaRa flow is extremely important in this thesis. We want to verify to a very high level of accuracy
 that TaMaRa both works by preventing SEUs to an acceptable standard, and also does not change the underlying
