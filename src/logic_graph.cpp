@@ -12,6 +12,7 @@
 #include "tamara/termcolour.hpp"
 #include "tamara/util.hpp"
 #include "tamara/voter_builder.hpp"
+#include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <memory>
@@ -161,43 +162,13 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
         ptr);
 }
 
-/// Locates all the RTLIL::SigChunks that may feed the given wire
-std::vector<RTLIL::SigChunk> findAttachedSigChunks(RTLIL::Wire *wire) {
-    std::vector<RTLIL::SigChunk> out;
-
-    // first, let's check all global module connections
-    for (const auto &conn : wire->module->connections()) {
-        const auto &[lhs, rhs] = conn;
-
-        // look for SigBits, being careful that they're not const (otherwise the wire ptr is null)
-        if (lhs.is_chunk() && !lhs.is_fully_const()) {
-            // we found that the LHS is a SigBit, does it refer to this wire?
-            NOTNULL(lhs.as_chunk().wire);
-            if (lhs.as_chunk().wire == wire) {
-                // FIXME is this the correct side?
-                out.push_back(lhs.as_chunk());
-            }
-        }
-    }
-
-    // no luck with global module connections, we're going to need to check each cell individually
-    for (const auto &cell : wire->module->cells()) {
-        CellTypes cellTypes(wire->module->design);
-
-        for (const auto &conn : cell->connections()) {
-            const auto &[name, signal] = conn;
-
-            // look for SigBit, being careful that they're not const (otherwise the wire ptr is null)
-            if (signal.is_chunk() && !signal.is_fully_const()) {
-                NOTNULL(signal.as_chunk().wire);
-                if (signal.as_chunk().wire == wire) {
-                    out.push_back(signal.as_chunk());
-                }
-            }
-        }
-    }
-
-    return out;
+/// Determines if the given list of sigSpecs contains an RTLIL::SigChunk
+template<std::ranges::range T>
+bool containsSigChunk(const T& sigSpecs) {
+    return std::ranges::any_of(sigSpecs, [](const RTLIL::SigSpec &spec){
+        // make sure this spec is a chunk, and it has more than one chunk in it
+        return spec.is_chunk() && spec.chunks().size() > 1;
+    });
 }
 
 } // namespace
@@ -451,8 +422,8 @@ std::optional<RTLIL::Wire *> LogicCone::insertVoter(
     return out_w;
 }
 
-void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
-    RTLILWireConnections &connections, VoterBuilder &builder) {
+void LogicCone::wire(RTLIL::Module *module, const RTLILWireConnections &connections,
+    const RTLILAnySignalConnections &signalConnections, VoterBuilder &builder) {
     log("%sWiring logic cone %u%s\n", COLOUR(Blue), id, RESET());
     if (cone.empty()) {
         log("%sSkipping wiring of cone %u - internal elements empty%s\n", COLOUR(Red), id, RESET());
@@ -482,35 +453,23 @@ void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
         // DUMP_RTLIL;
         // DUMP;
 
-        if (outputNode->getSigSpecs().empty()) {
-            log_error("we didn't propagate any sigspecs sadface\n");
+        // locate SigSpecs associated with the output node wire
+        std::unordered_set<RTLIL::SigSpec> attachedSigSpecs;
+        if (signalConnections.contains(outNodeWire)) {
+            attachedSigSpecs = signalConnections.at(outNodeWire);
         }
 
-        // check if we have an attached SigChunk (see https://github.com/mattyoung101/tamara/issues/13)
+        // check if we have multiple attached SigChunk (see https://github.com/mattyoung101/tamara/issues/13)
         // in that case, special wiring will be required
-        auto attachedSigChunks = findAttachedSigChunks(outNodeWire);
-        if (!attachedSigChunks.empty()) {
-            log("Special wiring required (outNodeWire '%s' has %zu attached SigChunks)\n",
-                log_id(outNodeWire->name), attachedSigChunks.size());
+        if (attachedSigSpecs.size() > 1) {
+            log("Special wiring required (outNodeWire '%s' has %zu attached SigSpecs)\n",
+                log_id(outNodeWire->name), attachedSigSpecs.size());
 
-            // now, we need to determine if we have enough free SigBits to wire in our voter signal
-            auto potentiallyFreeSigChunks = outNodeWire->width - attachedSigChunks.size();
-            if (potentiallyFreeSigChunks != static_cast<size_t>(voterOutWire.value()->width)) {
-                log_error("TaMaRa internal error: Unable to find enough free SigChunks to route voter signal "
-                          "to output wire '%s'. Required %d, but have %zu potentially free. This may be user "
-                          "error.\n",
-                    log_id(outNodeWire->name), voterOutWire.value()->width, potentiallyFreeSigChunks);
-            }
+            // temporary hack could be just to wire it to the one that's not driven by the constant??
 
             TODO;
-
-            // TODO one additional problem is that we need to not just route the wire to a "free" SigBit, but
-            // to the CORRECT SigBit.
-
-            // what we might be able to do is just to connect the voter signal to the bit which is NOT taken?
-            // how do we do that?
         } else {
-            log("Using regular wiring\n");
+            log("Using regular wiring (only one attached SigChunk)\n");
             module->connect(outNodeWire, voterOutWire.value());
         }
     } else {

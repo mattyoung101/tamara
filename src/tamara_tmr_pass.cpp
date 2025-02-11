@@ -99,7 +99,7 @@ struct TamaraTMRPass : public Pass {
             log("\n");
 
             // wire up the netlist, and insert a voter
-            cone.wire(module, errorSink, neighbours, builder);
+            cone.wire(module, neighbours, signalNeighbours, builder);
             log("\n");
 
             // generate successors
@@ -124,7 +124,7 @@ struct TamaraTMRPass : public Pass {
             log("\n");
 
             // wire up the netlist
-            cone.wire(module, errorSink, neighbours, builder);
+            cone.wire(module, neighbours, signalNeighbours, builder);
             log("\n");
 
             // generate successors
