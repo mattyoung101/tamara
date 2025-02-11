@@ -5,6 +5,8 @@ plugin -i libtamara.so
 hierarchy -top top
 
 prep
+splitcells
+splitnets
 tamara_tmr
 check
 

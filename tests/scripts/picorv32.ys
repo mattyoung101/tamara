@@ -6,6 +6,8 @@ read_verilog ../tests/verilog/picorv32.v
 hierarchy -top picorv32
 
 prep
+splitcells
+splitnets
 tamara_tmr
 check
 

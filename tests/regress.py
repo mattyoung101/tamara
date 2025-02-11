@@ -16,7 +16,6 @@ import os
 from yaspin import yaspin
 from datetime import datetime
 import json
-from pathlib import Path
 
 # This script runs a regression test, based on the scripts listed in regress.yaml
 # Must be run from the build dir, like: ../tests/regress.py

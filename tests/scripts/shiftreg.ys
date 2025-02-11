@@ -6,6 +6,8 @@ read_verilog -sv ../tests/verilog/shiftreg.sv
 hierarchy -top shiftreg
 
 prep
+splitcells
+splitnets
 write_rtlil
 tamara_tmr
 check

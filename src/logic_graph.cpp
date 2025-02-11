@@ -479,12 +479,12 @@ void LogicCone::wire(RTLIL::Module *module, std::optional<Wire *> errorSink,
 
         // FIXME fix this garbage (https://github.com/mattyoung101/tamara/issues/22)
         auto *outNodeWire = std::get<Wire *>(outputNode->getRTLILObjPtr());
-        // DUMP_RTLIL;
-        // DUMP;
+        DUMP_RTLIL;
+        DUMP;
 
-        if (outputNode->getSigSpecs().empty()) {
-            log_error("we didn't propagate any sigspecs sadface\n");
-        }
+        // if (outputNode->getSigSpecs().empty()) {
+        //     log_error("we didn't propagate any sigspecs sadface\n");
+        // }
 
         // check if we have an attached SigChunk (see https://github.com/mattyoung101/tamara/issues/13)
         // in that case, special wiring will be required
