@@ -450,8 +450,8 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILWireConnections &connecti
 
         // FIXME fix this garbage (https://github.com/mattyoung101/tamara/issues/22)
         auto *outNodeWire = std::get<Wire *>(outputNode->getRTLILObjPtr());
-        DUMP_RTLIL;
-        DUMP;
+        // DUMP_RTLIL;
+        // DUMP;
 
         // locate SigSpecs associated with the output node wire
         std::unordered_set<RTLIL::SigSpec> attachedSigSpecs;
@@ -466,8 +466,43 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILWireConnections &connecti
                 log_id(outNodeWire->name), attachedSigSpecs.size());
 
             // temporary hack could be just to wire it to the one that's not driven by the constant??
+            // HACK
+            bool didFindTargetSigSpec = false;
+            for (const auto &spec : attachedSigSpecs) {
+                if (spec.is_fully_const() || spec.is_fully_zero() || spec.is_fully_ones()) {
+                    log("SigSpec '%s' is unlikely to be our target -> skipping\n", log_signal(spec));
+                    continue;
+                }
 
-            TODO;
+                log("Found target spec: '%s'\n", log_signal(spec));
+                // now we can make the connection
+                module->connect(spec, voterOutWire.value());
+
+                didFindTargetSigSpec = true;
+                break;
+            }
+
+            if (!didFindTargetSigSpec) {
+                log_error("Did not find target SigSpec in attachments! This could be user error.\n");
+            }
+
+            // TODO
+            // we need a better solution
+            // now our problem is to find out which of these SigSpecs was connected to the output node wire in
+            // the original circuit
+            // might require inverse lookup? --> no, it's not
+            // what now? we need a Sig->Sig mapping, so maybe we need RTLILSigSigConnections?
+
+            // int j = 0;
+            // for (const auto &spec : attachedSigSpecs) {
+            //     log("SigSpec %d. %s\n", j++, log_signal(spec));
+            //
+            //     log("Reverse lookup results:\n");
+            //     const auto reverse = signalInverseLookup(signalConnections, spec);
+            //     for (const auto &result : reverse) {
+            //         log("- %s\n", logRTLILName(result));
+            //     }
+            // }
         } else {
             log("Using regular wiring (only one attached SigChunk)\n");
             module->connect(outNodeWire, voterOutWire.value());

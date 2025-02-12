@@ -83,7 +83,7 @@ RTLILAnySignalConnections analyseSignalConnections(const RTLIL::Module *module);
 std::vector<RTLILAnyPtr> rtlilInverseLookup(const RTLILWireConnections &connections, Wire *target);
 
 //! Same as @ref rtlilInverseLookup, but for @ref RTLILAnySignalConnections
-std::vector<RTLIL::SigSpec> signalInverseLookup(const RTLILAnySignalConnections &connections, Wire *target);
+std::vector<RTLILAnyPtr> signalInverseLookup(const RTLILAnySignalConnections &connections, const RTLIL::SigSpec &target);
 
 } // namespace tamara
 

@@ -144,16 +144,16 @@ std::vector<RTLILAnyPtr> tamara::rtlilInverseLookup(const RTLILWireConnections &
     return out;
 }
 
-std::vector<RTLIL::SigSpec> tamara::signalInverseLookup(const RTLILAnySignalConnections &connections, Wire *target) {
-    std::vector<RTLIL::SigSpec> out;
+std::vector<RTLILAnyPtr> tamara::signalInverseLookup(const RTLILAnySignalConnections &connections, const RTLIL::SigSpec &target) {
+    // PERF: This is REALLY expensive currently on the order of O(n^2).
+    std::vector<RTLILAnyPtr> out;
     for (const auto &pair : connections) {
         const auto &[key, value] = pair;
 
         for (const auto &item : value) {
-            // TODO
-            // if (getRTLILName(item) == target->name) {
-            //     out.push_back(key);
-            // }
+            if (item == target) {
+                out.push_back(key);
+            }
         }
     }
     return out;

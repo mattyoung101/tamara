@@ -11,6 +11,7 @@ prep
 splitcells
 splitnets
 write_rtlil
+# show -colors 420 -pause
 
 tamara_tmr
 check
