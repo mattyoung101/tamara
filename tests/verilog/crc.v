@@ -13,8 +13,38 @@
 // NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE
 // USE OR PERFORMANCE OF THIS SOFTWARE.
 
-`ifndef CRC_V_
-`define CRC_V_
+// CRC polynomial coefficients: x^2 + x + 1
+//                              0x3 (hex)
+// CRC width:                   2 bits
+// CRC shift direction:         right (little endian)
+// Input word width:            2 bits
+
+module crc2 (
+    input [1:0] crcIn,
+    input [1:0] data,
+    output [1:0] crcOut
+);
+    assign crcOut[0] = crcIn[1] ^ data[1];
+    assign crcOut[1] = crcIn[0] ^ crcIn[1] ^ data[0] ^ data[1];
+endmodule
+
+
+// CRC polynomial coefficients: x^4 + x^2 + x + 1
+//                              0xE (hex)
+// CRC width:                   4 bits
+// CRC shift direction:         right (little endian)
+// Input word width:            4 bits
+
+module crc4 (
+    input [3:0] crcIn,
+    input [3:0] data,
+    output [3:0] crcOut
+);
+    assign crcOut[0] = crcIn[1] ^ crcIn[2] ^ data[1] ^ data[2];
+    assign crcOut[1] = crcIn[2] ^ crcIn[3] ^ data[2] ^ data[3];
+    assign crcOut[2] = crcIn[1] ^ crcIn[2] ^ crcIn[3] ^ data[1] ^ data[2] ^ data[3];
+    assign crcOut[3] = crcIn[0] ^ crcIn[1] ^ crcIn[3] ^ data[0] ^ data[1] ^ data[3];
+endmodule
 
 // CRC polynomial coefficients: x^8 + x^2 + x + 1
 //                              0x7 (hex)
@@ -23,7 +53,7 @@
 // Input word width:            8 bits
 
 (* tamara_triplicate *)
-module crc (
+module crc8 (
     input [7:0] crcIn,
     input [7:0] data,
     output [7:0] crcOut,
@@ -40,4 +70,4 @@ module crc (
     assign crcOut[7] = crcIn[5] ^ crcIn[6] ^ crcIn[7] ^ data[5] ^ data[6] ^ data[7];
 endmodule
 
-`endif // CRC_V_
+

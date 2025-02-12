@@ -2,8 +2,8 @@
 
 plugin -i libtamara.so
 
-read_verilog ../tests/verilog/crc8.v
-hierarchy -top crc
+read_verilog ../tests/verilog/crc.v
+hierarchy -top crc8
 
 prep
 splitcells

@@ -6,6 +6,10 @@ eqy:
   - not_2bit
   - not_tmr
   - voter
+  - crc_min
+  - crc2
+  - crc4
+  - crc8
 
 # Yosys scripts (from the scripts directory with .ys extension)
 scripts:
@@ -20,6 +24,7 @@ scripts:
   - not_dff_tmr_2bit
   - dff_tmr
   - crc2
+  - crc4
   - crc8
   - crc_min
   - crc_const_variant3

@@ -1,0 +1,24 @@
+#
+#
+
+[gold]
+read_verilog -sv ../tests/verilog/crc_min.sv
+prep -top crc_min
+rename -top design
+splitcells
+splitnets
+
+[gate]
+plugin -i libtamara.so
+read_verilog -DTAMARA -sv ../tests/verilog/crc_min.sv
+prep -top crc_min
+rename -top design
+splitcells
+splitnets
+tamara_tmr
+
+[strategy sby]
+use sby
+depth 2
+engine smtbmc yices
+

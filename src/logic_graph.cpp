@@ -163,9 +163,9 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
 }
 
 /// Determines if the given list of sigSpecs contains an RTLIL::SigChunk
-template<std::ranges::range T>
-bool containsSigChunk(const T& sigSpecs) {
-    return std::ranges::any_of(sigSpecs, [](const RTLIL::SigSpec &spec){
+template <std::ranges::range T>
+bool containsSigChunk(const T &sigSpecs) {
+    return std::ranges::any_of(sigSpecs, [](const RTLIL::SigSpec &spec) {
         // make sure this spec is a chunk, and it has more than one chunk in it
         return spec.is_chunk() && spec.chunks().size() > 1;
     });
@@ -189,18 +189,6 @@ TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(const RTLILAnyPtr &ptr,
             }
             if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
                 std::optional<std::unordered_set<SigSpec>> sigSpecs = std::nullopt;
-
-                // determine if we have any SigSpecs available for this wire node
-                // FIXME we may possibly be looking this up the wrong way, we might need an inverse lookup??
-                if (signalConnections.contains(arg)) {
-                    sigSpecs = signalConnections.at(arg);
-                }
-                if (!sigSpecs.has_value()) {
-                    log_warning("No SigSpecs found for wire '%s' in newLogicGraphNeighbour. This may cause "
-                                "problems later.\n",
-                        log_id(arg->name));
-                }
-
                 if (isWireIO(arg, wireConnections)) {
                     // this is actually an IO
                     return static_cast<TMRGraphNode::Ptr>(std::make_shared<IONode>(arg, localId));
