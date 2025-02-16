@@ -173,8 +173,8 @@ bool containsSigChunk(const T &sigSpecs) {
 
 } // namespace
 
-TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(const RTLILAnyPtr &ptr,
-    const RTLILWireConnections &wireConnections, const RTLILAnySignalConnections &signalConnections) const {
+TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(
+    const RTLILAnyPtr &ptr, const RTLILWireConnections &wireConnections) const {
     // based on example 3 of https://en.cppreference.com/w/cpp/utility/variant/visit
     auto localId = id;
     return std::visit(
@@ -268,7 +268,7 @@ std::vector<TMRGraphNode::Ptr> TMRGraphNode::computeNeighbours(
     out.reserve(neighbours.size());
     for (const auto &neighbour : neighbours) {
         // we're passing nullopt here for the sigSpec, since we may not have an easy way of getting to it
-        out.push_back(newLogicGraphNeighbour(neighbour, connections, signalConnections));
+        out.push_back(newLogicGraphNeighbour(neighbour, connections));
     }
     return out;
 }
@@ -310,11 +310,12 @@ void LogicCone::search(
             // locate neighbours and add to BFS queue
             auto neighbours = node->computeNeighbours(connections, signalConnections);
             for (const auto &neighbour : neighbours) {
-                std::string name = getNodeName(node).c_str();
+                std::string name = getNodeName(neighbour).c_str();
 
                 if (!visited.contains(name)) {
                     frontier.push(neighbour);
                     visited.insert(name);
+                    log("    Push neighbour '%s'\n", logRTLILName(neighbour));
                     // log("    Neighbour %s '%s' hash 0x%zX\n", neighbour->identify().c_str(),
                     //     log_id(getNodeName(neighbour)), std::hash<TMRGraphNode::Ptr>()(neighbour));
                 }
@@ -352,7 +353,12 @@ void LogicCone::search(
             log("\n");
         } else {
             // we're terminating search
-            inputNodes.push_back(node);
+            log("    %sPush node '%s' to input nodes%s\n", COLOUR(Yellow), logRTLILName(node), RESET());
+            // if it's an IONode or FFNode, we can push it as a neighbour
+            if (dynamic_pointer_cast<IONode>(node) != nullptr
+                || dynamic_pointer_cast<FFNode>(node) != nullptr) {
+                inputNodes.push_back(node);
+            }
         }
 
         first = false;
@@ -462,7 +468,7 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILWireConnections &connecti
                     continue;
                 }
 
-                log("Found target spec: '%s'\n", log_signal(spec));
+                log("Found suspected target spec: '%s'\n", log_signal(spec));
                 // now we can make the connection
                 module->connect(spec, voterOutWire.value());
 
@@ -480,17 +486,6 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILWireConnections &connecti
             // the original circuit
             // might require inverse lookup? --> no, it's not
             // what now? we need a Sig->Sig mapping, so maybe we need RTLILSigSigConnections?
-
-            // int j = 0;
-            // for (const auto &spec : attachedSigSpecs) {
-            //     log("SigSpec %d. %s\n", j++, log_signal(spec));
-            //
-            //     log("Reverse lookup results:\n");
-            //     const auto reverse = signalInverseLookup(signalConnections, spec);
-            //     for (const auto &result : reverse) {
-            //         log("- %s\n", logRTLILName(result));
-            //     }
-            // }
         } else {
             log("Using regular wiring (only one attached SigChunk)\n");
             module->connect(outNodeWire, voterOutWire.value());
