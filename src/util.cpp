@@ -11,7 +11,6 @@
 #include "kernel/yosys_common.h"
 #include "tamara/termcolour.hpp"
 #include <cmath>
-#include <unordered_set>
 #include <vector>
 
 USING_YOSYS_NAMESPACE;

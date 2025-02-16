@@ -7,9 +7,8 @@
 #pragma once
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
-#include <unordered_map>
-#include <unordered_set>
 #include <variant>
+#include "ankerl/unordered_dense.hpp"
 
 USING_YOSYS_NAMESPACE;
 
@@ -42,11 +41,15 @@ const auto ERROR_SINK_ANNOTATION = ID(tamara_error_sink);
 //! Pointer to an RTLIL wire or cell (not strictly "any", but for our use case it suffices)
 using RTLILAnyPtr = std::variant<RTLIL::Wire *, RTLIL::Cell *>;
 
+using RTLILAnyPtrSet = ankerl::unordered_dense::set<RTLILAnyPtr>;
+
+using RTLILSigSpecSet = ankerl::unordered_dense::set<RTLIL::SigSpec>;
+
 //! Mapping of connections between a wire and all RTLIL objects its connected to
-using RTLILWireConnections = std::unordered_map<RTLILAnyPtr, std::unordered_set<RTLILAnyPtr>>;
+using RTLILWireConnections = ankerl::unordered_dense::map<RTLILAnyPtr, RTLILAnyPtrSet>;
 
 //! Mapping of connections between an RTLILAnyPtr and all the RTLIL SigSpecs it is connected to
-using RTLILAnySignalConnections = std::unordered_map<RTLILAnyPtr, std::unordered_set<RTLIL::SigSpec>>;
+using RTLILAnySignalConnections = ankerl::unordered_dense::map<RTLILAnyPtr, RTLILSigSpecSet>;
 
 //! Returns true if the cell is a DFF.
 bool isDFF(const RTLIL::Cell *cell);

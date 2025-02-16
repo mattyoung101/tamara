@@ -13,7 +13,6 @@
 #include "tamara/util.hpp"
 #include "tamara/voter_builder.hpp"
 #include <cmath>
-#include <unordered_set>
 #include <vector>
 
 USING_YOSYS_NAMESPACE;

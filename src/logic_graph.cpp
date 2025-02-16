@@ -17,7 +17,6 @@
 #include <cstring>
 #include <memory>
 #include <optional>
-#include <unordered_set>
 #include <variant>
 #include <vector>
 
@@ -29,7 +28,7 @@ using namespace tamara;
 #define RESET() (termcolour::reset().c_str())
 
 uint32_t LogicCone::g_cone_ID = 0;
-std::unordered_set<std::string> LogicCone::exploredSuccessors = {};
+ankerl::unordered_dense::set<std::string> LogicCone::exploredSuccessors = {};
 
 namespace {
 
@@ -37,8 +36,8 @@ namespace {
 const char *const NONE_MESSAGE = "None";
 
 //! With the given map, either returns the existing value for the key "K", or the default value "def".
-template <class K, class V>
-constexpr V getOrDefault(const std::unordered_map<K, V> &map, const K &key, V def) {
+template <class K, class V, class M>
+constexpr V getOrDefault(const M &map, const K &key, V def) {
     if (map.contains(key)) {
         return map.at(key);
     }
@@ -188,7 +187,6 @@ TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(
                 return static_cast<TMRGraphNode::Ptr>(std::make_shared<ElementCellNode>(arg, localId));
             }
             if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
-                std::optional<std::unordered_set<SigSpec>> sigSpecs = std::nullopt;
                 if (isWireIO(arg, wireConnections)) {
                     // this is actually an IO
                     return static_cast<TMRGraphNode::Ptr>(std::make_shared<IONode>(arg, localId));
@@ -260,7 +258,7 @@ void IONode::replicate([[maybe_unused]] RTLIL::Module *module) {
 std::vector<TMRGraphNode::Ptr> TMRGraphNode::computeNeighbours(
     const RTLILWireConnections &connections, const RTLILAnySignalConnections &signalConnections) {
     auto obj = getRTLILObjPtr();
-    auto neighbours = getOrDefault(connections, obj, std::unordered_set<RTLILAnyPtr>());
+    auto neighbours = getOrDefault(connections, obj, RTLILAnyPtrSet());
     log("    %s '%s' has %zu neighbours\n", identify().c_str(), log_id(getRTLILName(obj)), neighbours.size());
 
     // now, construct Yosys types into our logic graph types
@@ -297,7 +295,7 @@ void LogicCone::search(
     // normally wouldn't (because it's an FFNode/IONode)
     bool first = true;
 
-    std::unordered_set<std::string> visited;
+    ankerl::unordered_dense::set<std::string> visited;
 
     log("%sStarting search for cone %u%s\n", COLOUR(Blue), id, RESET());
     while (!frontier.empty()) {
@@ -448,7 +446,7 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILWireConnections &connecti
         // DUMP;
 
         // locate SigSpecs associated with the output node wire
-        std::unordered_set<RTLIL::SigSpec> attachedSigSpecs;
+        RTLILSigSpecSet attachedSigSpecs;
         if (signalConnections.contains(outNodeWire)) {
             attachedSigSpecs = signalConnections.at(outNodeWire);
         }

@@ -15,8 +15,8 @@ that the circuit can be processed at a low level, with less concerns about optim
 TMR logic. However, as shown in , some Yosys synthesis scripts do perform additional optimisation _after_
 technology mapping, which again risks the removal of the TMR logic. Yet, we also cannot operate after
 technology mapping, since TaMaRa voter circuits are described using relatively high level circuit primitives
-(AND gates, NOT gates, etc) instead of vendor-specific FPGA primitives like LUTs. #TODO("whatever the solution
-    for this is")
+(AND gates, NOT gates, etc) instead of vendor-specific FPGA primitives like LUTs.
+#TODO("whatever the solution for this is")
 
 Whilst TaMaRa aims to be compatible with all existing designs with minimal changes, some preconditions are
 necessary for the algorithm to process the circuit correctly.
@@ -254,7 +254,7 @@ using SAT a tractable problem.
 
 However, on large and complex designs, using SAT solvers directly on multi-bit buses can be slow. Instead,
 Satisfiability Modulo Theories (SMT) solvers can be used instead. SMT is a generalisation of SAT that
-introduces richer types such as bit vectors, integers and reals @Barrett2018. Solving satisfiability modulo
+introduces richer types such as bit vectors, integers, and reals @Barrett2018. Solving satisfiability modulo
 theories is still at least NP-complete, sometimes undecidable. Most SMT solvers either depend on or "call out"
 to an underlying SAT solver. One such SMT solver that uses this approach is Bitwuzla @Niemetz2023. Others,
 however, such as Z3 @Moura2008 include their own SAT logic and other methods for computing solutions. The

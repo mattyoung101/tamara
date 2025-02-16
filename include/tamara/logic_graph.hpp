@@ -363,7 +363,7 @@ private:
     /// Contains the names of starting nodes for cones we've already discovered in @ref
     /// LogicCone::buildSuccessors. This is to stop us from infinite looping when we discover new successor
     /// cones.
-    static std::unordered_set<std::string> exploredSuccessors;
+    static ankerl::unordered_dense::set<std::string> exploredSuccessors;
 };
 
 } // namespace tamara

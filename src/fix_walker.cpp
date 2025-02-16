@@ -68,7 +68,7 @@ void FixWalkerManager::execute(RTLIL::Module *module) {
         log("Running FixWalker %s\n", walker->name().c_str());
 
         // avoid processing things twice (for each walker)
-        std::unordered_set<RTLIL::AttrObject *> processed;
+        ankerl::unordered_dense::set<RTLIL::AttrObject *> processed;
 
         walker->processModule(module);
         for (auto *cell : module->cells()) {
@@ -147,7 +147,7 @@ void MultiDriverFixer::processWire(
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static) We prefer to keep this as a member func.
 void MultiDriverFixer::rewire(RTLIL::Wire *wire, const RTLILWireConnections &connections) {
     // compute our inputs and outputs
-    std::unordered_set<RTLILAnyPtr> inputs = connections.at(wire);
+    RTLILAnyPtrSet inputs = connections.at(wire);
     // PERF We should re-use this from processWire since rtlilInverseLookup is O(n^2)
     auto outputs = rtlilInverseLookup(connections, wire);
     log_assert(inputs.size() == outputs.size() && !inputs.empty() && !outputs.empty());
