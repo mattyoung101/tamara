@@ -9,7 +9,14 @@ eqy:
   - crc_min
   - crc2
   - crc4
+  - crc6
+  - crc7
   - crc8
+  - crc16
+  - crc_const_variant3
+  - crc_const_variant4
+  - crc_const_variant5
+  - not_slice
 
 # Yosys scripts (from the scripts directory with .ys extension)
 scripts:
@@ -25,7 +32,10 @@ scripts:
   - dff_tmr
   - crc2
   - crc4
+  - crc6
+  - crc7
   - crc8
+  - crc16
   - crc_min
   - crc_const_variant3
   - crc_const_variant4

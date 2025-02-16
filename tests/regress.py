@@ -16,6 +16,8 @@ import os
 from yaspin import yaspin
 from datetime import datetime
 import json
+import multiprocessing
+import argparse
 
 # This script runs a regression test, based on the scripts listed in regress.yaml
 # Must be run from the build dir, like: ../tests/regress.py
@@ -25,7 +27,7 @@ failed = 0
 failed_tests = []
 
 
-def invoke(cmd: List[str]):
+def invoke(cmd: List[str], quiet: bool = False):
     global passed, failed, failed_tests
     # Custom feature from my Yosys fork that silences all 'show' commands. Can easily be replicated through
     # this patch:
@@ -60,25 +62,29 @@ def invoke(cmd: List[str]):
         print(f"{Fore.GREEN}OK{Style.RESET_ALL}")
         passed += 1
     else:
-        print(f"{Fore.RED}FAIL{Style.RESET_ALL}\nRan:"
-              f"{shlex.join(cmd)}\n{result.stdout.decode('utf-8')}\n{result.stderr.decode('utf-8')}")
+        if not quiet:
+            print(f"{Fore.RED}FAIL{Style.RESET_ALL}\nRan:"
+                  f"{shlex.join(cmd)}\n{result.stdout.decode('utf-8')}\n{result.stderr.decode('utf-8')}")
+        else:
+            print(f"{Fore.RED}FAIL{Style.RESET_ALL}")
         failed += 1
         failed_tests.append(shlex.join(cmd))
 
 
-def run_eqy_tests(tests: List[str]):
+def run_eqy_tests(tests: List[str], quiet: bool = False):
     for test in tests:
         print(f"{Fore.BLUE}Running eqy test: {test}{Style.RESET_ALL}... ", end="", flush=True)
-        invoke(["eqy", "-f", f"../tests/formal/equivalence/{test}.eqy"])
+        invoke(["eqy", "-j", str(multiprocessing.cpu_count()), "-f",
+                f"../tests/formal/equivalence/{test}.eqy"], quiet)
 
 
-def run_script_tests(tests: List[str]):
+def run_script_tests(tests: List[str], quiet: bool = False):
     for test in tests:
         print(f"{Fore.BLUE}Running script test: {test}{Style.RESET_ALL}... ", end="", flush=True)
-        invoke(["yosys", f"../tests/scripts/{test}.ys"])
+        invoke(["yosys", f"../tests/scripts/{test}.ys"], quiet)
 
 
-def main():
+def main(quiet: bool = False):
     if "tamara/build" not in os.getcwd():
         raise RuntimeError("Must be run from tamara/build directory.")
 
@@ -91,8 +97,8 @@ def main():
 
     with open("../tests/regress.yaml") as f:
         doc = yaml.safe_load(f)
-        run_eqy_tests(doc["eqy"])
-        run_script_tests(doc["scripts"])
+        run_eqy_tests(doc["eqy"], quiet)
+        run_script_tests(doc["scripts"], quiet)
 
     print(f"{Fore.LIGHTGREEN_EX}{passed} passed{Style.RESET_ALL} {Fore.RED}{failed} failed{Style.RESET_ALL}")
     print(f"{Fore.CYAN}{int(round((passed / (passed + failed) * 100.0)))}% success{Style.RESET_ALL}")
@@ -139,4 +145,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--quiet", help="do not output logs", action="store_true")
+    args = parser.parse_args()
+    main(args.quiet)
