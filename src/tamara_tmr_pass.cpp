@@ -17,6 +17,26 @@
 
 USING_YOSYS_NAMESPACE;
 
+namespace {
+
+/// Locates and marks $mem cells as ignored
+void markMemoriesIgnored(RTLIL::Module *module) {
+    bool haveWarned = false;
+
+    for (const auto &cell : module->cells()) {
+        if (cell->is_mem_cell()) {
+            if (!haveWarned) {
+                log_warning("This design contains memories, but TaMaRa currently does not triplicate them. "
+                            "Instead, they will be ignored.\n");
+                haveWarned = true;
+            }
+            cell->set_bool_attribute(tamara::IGNORE_ANNOTATION);
+        }
+    }
+}
+
+}; // namespace
+
 namespace tamara {
 
 //! This is the main TaMaRa TMR command, which starts the TMR process.
@@ -60,6 +80,10 @@ struct TamaraTMRPass : public Pass {
         // locate the error sink (place where we route the voter 'err' signals too)
         log_header(design, "Locating error sink\n");
         locateErrorSink(design->top_module());
+
+        // tag memories as ignore
+        log_header(design, "Locating and marking memories as ignored\n");
+        markMemoriesIgnored(module);
 
         // analyse wire connections, this is used later by the logic cone code for neighbour calculations
         // I thought that we might be able to get this through RTLIL directly, but I think we have to compute
