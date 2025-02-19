@@ -31,6 +31,7 @@ void markMemoriesIgnored(RTLIL::Module *module) {
                 haveWarned = true;
             }
             cell->set_bool_attribute(tamara::IGNORE_ANNOTATION);
+            log("Marking memory '%s' as ignored\n", log_id(cell->name));
         }
     }
 }

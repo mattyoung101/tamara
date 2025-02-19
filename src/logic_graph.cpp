@@ -114,7 +114,7 @@ void replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *module) {
 /// Taking an RTLILAnyPtr that came from a call to replicate(), returns the relevant output wire associated
 /// with it
 RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
-    log("extractReplicaWire(%s)\n", logRTLILName(ptr));
+    log("Extracting wire for replica '%s'\n", logRTLILName(ptr));
     return std::visit(
         [](auto &&arg) {
             using T = std::decay_t<decltype(arg)>;
@@ -129,7 +129,7 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
 
                     // is this the output wire?
                     if (cellTypes.cell_output(cell->type, name)) {
-                        // find the wire it's connected to
+                        // find the wire that the signal connected to
                         auto *conn = sigSpecToWire(signal);
                         NOTNULL(conn);
 
@@ -204,6 +204,7 @@ void ElementCellNode::replicate(RTLIL::Module *module) {
         log_warning("When replicating %s %s in cone %u: Already replicated in logic cone %s\n",
             identify().c_str(), log_id(cell->name), getConeID(),
             cell->get_string_attribute(CONE_ANNOTATION).c_str());
+        // FIXME should we just skip it then?
     }
 
     auto id = std::to_string(getConeID());
@@ -231,6 +232,7 @@ void ElementWireNode::replicate(RTLIL::Module *module) {
     if (wire->has_attribute(CONE_ANNOTATION)) {
         log_warning("When replicating ElementWireNode %s in cone %u: Already replicated in logic cone %s\n",
             log_id(wire->name), getConeID(), wire->get_string_attribute(CONE_ANNOTATION).c_str());
+        // FIXME should we just skip it then?
     }
 
     auto id = std::to_string(getConeID());
@@ -399,15 +401,18 @@ std::optional<RTLIL::Wire *> LogicCone::insertVoter(
     log("Going to splice voter between LogicCone output %s and cut point %s\n", logRTLILName(outputNode),
         logRTLILName(voterCutPoint));
 
-    log("out_w voterCutPoint\n");
+    // log("out_w voterCutPoint\n");
     // NOTE: It is VERY important that out_w runs first, otherwise the wires are not connected correctly (c
     // gets overwritten basically)
     auto *out_w = extractReplicaWire(voterCutPoint->get()->getRTLILObjPtr());
-    log("a_w replicas[0]\n");
+
+    // log("a_w replicas[0]\n");
     auto *a_w = extractReplicaWire(replicas.at(0));
-    log("b_w replicas[1]\n");
+
+    // log("b_w replicas[1]\n");
     auto *b_w = extractReplicaWire(replicas.at(1));
-    log("c_w replicas[2]\n");
+
+    // log("c_w replicas[2]\n");
     auto *c_w = extractReplicaWire(replicas.at(2));
     builder.build(a_w, b_w, c_w, out_w);
 
@@ -441,15 +446,14 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILWireConnections &connecti
             log_id(voterOutWire.value()->name));
 
         // FIXME fix this garbage (https://github.com/mattyoung101/tamara/issues/22)
+        // if it's a cell, then we probably want to find the output port and use that - maybe something like
+        // extractReplicaWire again
         auto *outNodeWire = std::get<Wire *>(outputNode->getRTLILObjPtr());
         // DUMP_RTLIL;
         // DUMP;
 
         // locate SigSpecs associated with the output node wire
-        RTLILSigSpecSet attachedSigSpecs;
-        if (signalConnections.contains(outNodeWire)) {
-            attachedSigSpecs = signalConnections.at(outNodeWire);
-        }
+        RTLILSigSpecSet attachedSigSpecs = getOrDefault(signalConnections, outNodeWire, RTLILSigSpecSet());
 
         // check if we have multiple attached SigChunk (see https://github.com/mattyoung101/tamara/issues/13)
         // in that case, special wiring will be required
@@ -457,33 +461,58 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILWireConnections &connecti
             log("Special wiring required (outNodeWire '%s' has %zu attached SigSpecs)\n",
                 log_id(outNodeWire->name), attachedSigSpecs.size());
 
+            // [neighbour signal] wire out --> signal \out [1]
+            // signal lookup on out node wire?
+
+            if (!signalConnections.contains(outNodeWire)) {
+                log_error("TaMaRa internal error: signalConnections should contain outNodeWire!\n");
+            }
+            auto specs = signalConnections.at(outNodeWire);
+            if (specs.size() > 1) {
+                log_warning("Cannot yet handle multiple output SigSpecs\n");
+                TODO;
+            }
+
+            auto spec = *specs.begin();
+            module->connect(spec, voterOutWire.value());
+            log("Connecting attached SigSpec to %s\n", log_signal(spec));
+
+            // TODO OH I KNOW HERE'S THE SOLUTION
+            // it must be connected to the output AND it must be connected to the voter cut point cell so it
+            // has to be connected to the output (the input port of the output wire) and it must be connected
+            // to the cell (the output port of the cell)
+
+            // SO BASICALLY:
+            // set(voter cut point sigspecs) UNION set(output wire sigspecs) == our target wire??
+
             // temporary hack could be just to wire it to the one that's not driven by the constant??
-            // HACK
-            bool didFindTargetSigSpec = false;
-            for (const auto &spec : attachedSigSpecs) {
-                if (spec.is_fully_const() || spec.is_fully_zero() || spec.is_fully_ones()) {
-                    log("SigSpec '%s' is unlikely to be our target -> skipping\n", log_signal(spec));
-                    continue;
-                }
-
-                log("Found suspected target spec: '%s'\n", log_signal(spec));
-                // now we can make the connection
-                module->connect(spec, voterOutWire.value());
-
-                didFindTargetSigSpec = true;
-                break;
-            }
-
-            if (!didFindTargetSigSpec) {
-                log_error("Did not find target SigSpec in attachments! This could be user error.\n");
-            }
-
-            // TODO
-            // we need a better solution
-            // now our problem is to find out which of these SigSpecs was connected to the output node wire in
-            // the original circuit
-            // might require inverse lookup? --> no, it's not
-            // what now? we need a Sig->Sig mapping, so maybe we need RTLILSigSigConnections?
+            // bool didFindTargetSigSpec = false;
+            // for (const auto &spec : attachedSigSpecs) {
+            //     // OLD
+            //     // we want to find which of these specs was originally wired to the $not cell (I think
+            //     // that's the voter cut point wire or something)
+            //     // now our problem is to find out which of these SigSpecs was connected to the output node
+            //     // wire in the original circuit might require inverse lookup? --> no, it's not what now? we
+            //     // need a Sig->Sig mapping, so maybe we need RTLILSigSigConnections?
+            //     //
+            //     // TODO maybe we need to look it up by the cut point?
+            //
+            //     if (spec.is_fully_const() || spec.is_fully_zero() || spec.is_fully_ones()) {
+            //         log("SigSpec '%s' is unlikely to be our target -> skipping\n", log_signal(spec));
+            //         continue;
+            //     }
+            //
+            //     log("Found suspected target spec: '%s'\n", log_signal(spec));
+            //     // now we can make the connection
+            //     module->connect(spec, voterOutWire.value());
+            //
+            //     didFindTargetSigSpec = true;
+            //     break;
+            // }
+            //
+            // if (!didFindTargetSigSpec) {
+            //     log_error("Did not find target SigSpec in attachments! This could be user error.\n");
+            // }
         } else {
             log("Using regular wiring (only one attached SigChunk)\n");
             module->connect(outNodeWire, voterOutWire.value());

@@ -5,10 +5,10 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL
 // was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #pragma once
+#include "ankerl/unordered_dense.hpp"
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
 #include <variant>
-#include "ankerl/unordered_dense.hpp"
 
 USING_YOSYS_NAMESPACE;
 
@@ -41,8 +41,10 @@ const auto ERROR_SINK_ANNOTATION = ID(tamara_error_sink);
 //! Pointer to an RTLIL wire or cell (not strictly "any", but for our use case it suffices)
 using RTLILAnyPtr = std::variant<RTLIL::Wire *, RTLIL::Cell *>;
 
+//! Unordered set of @ref RTLILAnyPtr
 using RTLILAnyPtrSet = ankerl::unordered_dense::set<RTLILAnyPtr>;
 
+//! Unordered set of @ref RTLIL::SigSpec
 using RTLILSigSpecSet = ankerl::unordered_dense::set<RTLIL::SigSpec>;
 
 //! Mapping of connections between a wire and all RTLIL objects its connected to
@@ -86,7 +88,8 @@ RTLILAnySignalConnections analyseSignalConnections(const RTLIL::Module *module);
 std::vector<RTLILAnyPtr> rtlilInverseLookup(const RTLILWireConnections &connections, Wire *target);
 
 //! Same as @ref rtlilInverseLookup, but for @ref RTLILAnySignalConnections
-std::vector<RTLILAnyPtr> signalInverseLookup(const RTLILAnySignalConnections &connections, const RTLIL::SigSpec &target);
+std::vector<RTLILAnyPtr> signalInverseLookup(
+    const RTLILAnySignalConnections &connections, const RTLIL::SigSpec &target);
 
 } // namespace tamara
 
