@@ -448,8 +448,6 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILConnections &connections,
         // if it's a cell, then we probably want to find the output port and use that - maybe something like
         // extractReplicaWire again
         auto *outNodeWire = std::get<Wire *>(outputNode->getRTLILObjPtr());
-        // DUMP_RTLIL;
-        // DUMP;
 
         // locate SigSpecs associated with the output node wire
         RTLILSigSpecSet attachedSigSpecs = getOrDefault(connections.signals, outNodeWire, RTLILSigSpecSet());
@@ -476,6 +474,7 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILConnections &connections,
             }
 
             // now we also find the SigSpecs that are the _output_ of the voter cut point
+            // FIXME sketchy std::get call
             auto *voterCutCell = std::get<RTLIL::Cell *>(voterCutPoint.value()->getRTLILObjPtr());
             // the important part here is that this routine runs on the original circuit before we modify it,
             // hence why we're looking up into connections.cellOutputs (which is calculated by
@@ -499,12 +498,12 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILConnections &connections,
             }
 
             if (intersection.size() > 1) {
-                log_error("TaMaRa internal error: voterSpecs intersect outputSpecs has size %zu, which we "
+                log_error("TaMaRa internal error: voterSpecs ∩ outputSpecs has size %zu, which we "
                           "can't yet deal with!\n",
                     intersection.size());
             }
 
-            log("INTERSECTION:\n");
+            log("Intersection:\n");
             for (const auto &it : intersection) {
                 log("%s\n", log_signal(it));
             }
@@ -514,13 +513,13 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILConnections &connections,
             module->connect(first, voterOutWire.value());
             log("Connecting attached SigSpec to %s\n", log_signal(first));
 
-            // how does the above work?
-            // it must be connected to the output AND it must be connected to the voter cut point cell so it
-            // has to be connected to the output (the input port of the output wire) and it must be connected
-            // to the cell (the output port of the cell)
-
-            // SO BASICALLY:
-            // set(voter cut point sigspecs) UNION set(output wire sigspecs) == our target wire??
+            // how does the above work:
+            // to find the output wire, we determine that:
+            // it must be connected to the output AND it must be connected to the voter cut point cell.
+            // so it has to be connected to the output (the input port of the output wire) and it must be
+            // connected to the cell (the output port of the cell)
+            // basically:
+            // set(voter cut point sigspecs) INTERSECT set(output wire sigspecs) == our target wire
         } else {
             log("Using regular wiring (only one attached SigChunk)\n");
             module->connect(outNodeWire, voterOutWire.value());

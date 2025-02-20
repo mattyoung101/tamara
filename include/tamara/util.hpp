@@ -30,6 +30,9 @@ namespace tamara {
 //! Debug command to dump the RTLIL of the design
 #define DUMP_RTLIL Yosys::run_pass("write_rtlil");
 
+//! Same as @ref DUMP, but runs in the background and does not halt the program
+#define DUMPASYNC tamara::dumpAsync(__FILE__, __LINE__);
+
 const auto TRIPLICATE_ANNOTATION = ID(tamara_triplicate);
 const auto IGNORE_ANNOTATION = ID(tamara_ignore);
 const auto REPLICA_ANNOTATION = ID(tamara_replica);
@@ -102,6 +105,8 @@ std::vector<RTLILAnyPtr> rtlilInverseLookup(const RTLILWireConnections &connecti
 //! Same as @ref rtlilInverseLookup, but for @ref RTLILAnySignalConnections
 std::vector<RTLILAnyPtr> signalInverseLookup(
     const RTLILAnySignalConnections &connections, const RTLIL::SigSpec &target);
+
+void dumpAsync(const std::string &file, size_t line);
 
 } // namespace tamara
 

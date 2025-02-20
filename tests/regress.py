@@ -29,32 +29,8 @@ failed_tests = []
 
 def invoke(cmd: List[str], quiet: bool = False):
     global passed, failed, failed_tests
-    # Custom feature from my Yosys fork that silences all 'show' commands. Can easily be replicated through
-    # this patch:
-
-    # diff --git a/passes/cmds/show.cc b/passes/cmds/show.cc
-    # index 82b5c6bcf..b1d644249 100644
-    # --- a/passes/cmds/show.cc
-    # +++ b/passes/cmds/show.cc
-    # @@ -20,6 +20,7 @@
-    #  #include "kernel/register.h"
-    #  #include "kernel/celltypes.h"
-    #  #include "kernel/log.h"
-    # +#include <cstdlib>
-    #  #include <string.h>
-    #
-    #  #ifndef _WIN32
-    # @@ -752,6 +753,10 @@ struct ShowPass : public Pass {
-    #         }
-    #         void execute(std::vector<std::string> args, RTLIL::Design *design) override
-    #         {
-    # +               if (getenv("YS_IGNORE_SHOW") != nullptr) {
-    # +                       return;
-    # +               }
-    # +
-    #             log_header(design, "Generating Graphviz representation of design.\n");
-    #             log_push();
-
+    # Custom feature from my Yosys fork that silences all 'show' commands. Can easily be replicated; see the
+    # patch in tools/0001-Add-YS_IGNORE_SHOW-to-show.cc.patch
     os.environ["YS_IGNORE_SHOW"] = "1"
     result = subprocess.run(cmd, capture_output=True, timeout=100)
 

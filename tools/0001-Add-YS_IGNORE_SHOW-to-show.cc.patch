@@ -1,0 +1,26 @@
+From 35365f09a032e8d83a1916600e965c5ffbc18645 Mon Sep 17 00:00:00 2001
+From: Matt Young <matt.young.1@outlook.com>
+Date: Thu, 20 Feb 2025 14:05:07 +1000
+Subject: [PATCH] Add YS_IGNORE_SHOW to show.cc
+
+---
+ passes/cmds/show.cc | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/passes/cmds/show.cc b/passes/cmds/show.cc
+index 82b5c6bcf..51b575bcc 100644
+--- a/passes/cmds/show.cc
++++ b/passes/cmds/show.cc
+@@ -752,6 +752,9 @@ struct ShowPass : public Pass {
+ 	}
+ 	void execute(std::vector<std::string> args, RTLIL::Design *design) override
+ 	{
++	    if (getenv("YS_IGNORE_SHOW") != nullptr) {
++			return;
++	    }
+ 		log_header(design, "Generating Graphviz representation of design.\n");
+ 		log_push();
+
+--
+2.45.2
+
