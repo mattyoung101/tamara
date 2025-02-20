@@ -3,6 +3,6 @@
 plugin -i libtamara.so
 tamara_debug mkvoter 2
 write_rtlil
-check
+check -assert
 show -colors 420
 

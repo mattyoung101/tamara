@@ -15,7 +15,6 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
-#include <iterator>
 #include <memory>
 #include <optional>
 #include <variant>
@@ -125,16 +124,21 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
 
                 CellTypes cellTypes(cell->module->design);
 
+                Wire *out = nullptr;
+
                 for (const auto &connection : cell->connections()) {
                     const auto &[name, signal] = connection;
 
                     // is this the output wire?
                     if (cellTypes.cell_output(cell->type, name)) {
+                        if (out != nullptr) {
+                            log_error("TaMaRa internal error: Cell '%s' has multiple output ports - can't "
+                                      "yet handle this\n",
+                                log_id(cell->name));
+                        }
                         // find the wire that the signal connected to
                         auto *conn = sigSpecToWire(signal);
                         NOTNULL(conn);
-
-                        // FIXME what about cells with multiple outputs?
 
                         // Now what we should do is make a new wire, which will be our output
                         // then rip up the existing wire and redirect it
@@ -148,11 +152,16 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
                         log("Generated replacement wire '%s' for cell '%s'\n", log_id(wire->name),
                             log_id(cell->name));
 
-                        return wire;
+                        out = wire;
                     }
                 }
-                log_error("TaMaRa internal error: Failed to locate output wire for cell '%s'\n",
-                    log_id(cell->name));
+
+                if (out == nullptr) {
+                    log_error("TaMaRa internal error: Failed to locate output wire for cell '%s'\n",
+                        log_id(cell->name));
+                }
+
+                return out;
             }
             if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
                 // if it's just a wire, we can return that

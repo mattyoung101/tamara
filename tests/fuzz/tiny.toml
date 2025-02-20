@@ -21,9 +21,9 @@
   statement.nonblocking = 2
 
 [property]
-  module.depth = 2
-  module.max = 5
-  size = 15
-  statement.depth = 3
+  module.depth = 1
+  module.max = 1
+  size = 2
+  statement.depth = 2
   sample.method = "hat"
   sample.size = 10

@@ -5,6 +5,6 @@ tamara_debug mkvoter 1
 write_rtlil
 #write_verilog
 #write_cxxrtl
-check
+check -assert
 show -colors 420
 
