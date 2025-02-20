@@ -193,6 +193,7 @@ void MultiDriverFixer::reconnect(RTLIL::Wire *target, RTLIL::Cell *input, RTLIL:
             auto *wire = input->module->addWire(NEW_ID_SUFFIX("MultiDriverFixer"), connWire->width);
 
             // finalise the connection
+            // FIXME I think this can cause problems on some circuits
             input->setPort(name, wire);
             output->setPort(outputCellPort, wire);
 
