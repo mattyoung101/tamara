@@ -26,7 +26,7 @@ splitnets
 write_rtlil
 
 tamara_tmr
-check
+check -assert
 write_rtlil
 write_verilog
 show -colors 420

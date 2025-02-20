@@ -150,7 +150,7 @@ This repo also includes various papers including the proposal draft, presentatio
 thesis itself. The papers are all written in [Typst](https://github.com/typst/typst).
 
 To compile the papers, you will need:
-- Typst >= 0.11
+- Typst >= 0.13
 - [MermaidJS CLI](https://github.com/mermaid-js/mermaid-cli)
 - [dvisvgm](https://github.com/mgieseki/dvisvgm)
     - mupdf

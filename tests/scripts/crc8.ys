@@ -10,7 +10,7 @@ splitcells
 splitnets
 write_rtlil
 tamara_tmr
-check
+check -assert
 
 write_rtlil
 show -colors 420

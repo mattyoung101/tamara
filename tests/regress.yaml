@@ -4,6 +4,7 @@
 # Equivalence checks (from the formal/equivalence directory with .eqy extensions)
 eqy:
   - not_2bit
+  - not_32bit
   - not_tmr
   - voter
   - crc_min
@@ -17,6 +18,8 @@ eqy:
   - crc_const_variant4
   - crc_const_variant5
   - not_slice
+  - mux_1bit
+  - mux_2bit
 
 # Yosys scripts (from the scripts directory with .ys extension)
 scripts:
