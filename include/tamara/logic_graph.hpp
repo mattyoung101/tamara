@@ -306,17 +306,16 @@ public:
     }
 
     //! Builds a logic cone by tracing backwards from outputNode to either a DFF or other IO.
-    void search(const RTLILWireConnections &connections, const RTLILAnySignalConnections &signalConnections);
+    void search(const RTLILConnections &connections);
 
     //! Replicates the RTLIL components in a logic cone
     void replicate(RTLIL::Module *module);
 
     //! Wires up the replicated components and the module, and inserts a voter
-    void wire(RTLIL::Module *module, const RTLILWireConnections &connections,
-        const RTLILAnySignalConnections &signalConnections, VoterBuilder &builder);
+    void wire(RTLIL::Module *module, const RTLILConnections &connections, VoterBuilder &builder);
 
     //! Builds a new logic cone that will continue the search onwards, or none if we're already at the input
-    std::vector<LogicCone> buildSuccessors(const RTLILWireConnections &connections);
+    std::vector<LogicCone> buildSuccessors(const RTLILConnections &connections);
 
 private:
     /// this is the list of terminals: the list of IO nodes or FF nodes that we end up on through our

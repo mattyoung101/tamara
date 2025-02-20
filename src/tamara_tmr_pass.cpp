@@ -92,8 +92,8 @@ struct TamaraTMRPass : public Pass {
         // the main trouble is we have to compute it in reverse: that is, we want to know which _wires_ have
         // which _cells_ associated with them, but RTLIL will only tell us which _cells_ have which _wires_
         // associated with them.
-        log_header(design, "Analysing wire connections\n");
-        auto [neighbours, signalNeighbours] = analyseConnections(module);
+        log_header(design, "Analysing connections\n");
+        auto connections = analyseAll(module);
 
         // figure out where our output ports are, these will be the start of the BFS
         log_header(design, "Computing initial logic graph\n");
@@ -115,7 +115,7 @@ struct TamaraTMRPass : public Pass {
             auto cone = LogicCone(output);
 
             // start at the output port, do a BFS backwards to build up our logic cones
-            cone.search(neighbours, signalNeighbours);
+            cone.search(connections);
             log("\n");
 
             // cone is built, replicate items
@@ -123,11 +123,11 @@ struct TamaraTMRPass : public Pass {
             log("\n");
 
             // wire up the netlist, and insert a voter
-            cone.wire(module, neighbours, signalNeighbours, builder);
+            cone.wire(module, connections, builder);
             log("\n");
 
             // generate successors
-            auto coneSuccessors = cone.buildSuccessors(neighbours);
+            auto coneSuccessors = cone.buildSuccessors(connections);
             for (const auto &successor : coneSuccessors) {
                 successors.push(successor);
             }
@@ -140,7 +140,7 @@ struct TamaraTMRPass : public Pass {
             successors.pop();
 
             // start at the output port, do a BFS backwards to build up our logic cones
-            cone.search(neighbours, signalNeighbours);
+            cone.search(connections);
             log("\n");
 
             // cone is built, replicate items
@@ -148,11 +148,11 @@ struct TamaraTMRPass : public Pass {
             log("\n");
 
             // wire up the netlist
-            cone.wire(module, neighbours, signalNeighbours, builder);
+            cone.wire(module, connections, builder);
             log("\n");
 
             // generate successors
-            auto coneSuccessors = cone.buildSuccessors(neighbours);
+            auto coneSuccessors = cone.buildSuccessors(connections);
             for (const auto &successor : coneSuccessors) {
                 successors.push(successor);
             }

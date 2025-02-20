@@ -53,6 +53,14 @@ using RTLILWireConnections = ankerl::unordered_dense::map<RTLILAnyPtr, RTLILAnyP
 //! Mapping of connections between an RTLILAnyPtr and all the RTLIL SigSpecs it is connected to
 using RTLILAnySignalConnections = ankerl::unordered_dense::map<RTLILAnyPtr, RTLILSigSpecSet>;
 
+//! Representation of connections in the original netlist
+struct RTLILConnections {
+    RTLILWireConnections wires;
+    RTLILAnySignalConnections signals;
+    //! Original cell outputs in the original circuit
+    RTLILAnySignalConnections cellOutputs;
+};
+
 //! Returns true if the cell is a DFF.
 bool isDFF(const RTLIL::Cell *cell);
 
@@ -80,8 +88,12 @@ RTLIL::IdString getRTLILName(const RTLILAnyPtr &ptr);
 //! Analyses connections betweens wires/cells and the other wires or cells they're connected to
 std::pair<RTLILWireConnections, RTLILAnySignalConnections> analyseConnections(const RTLIL::Module *module);
 
-//! Analyses connections betweens wires/cells and the signals they're connected to
-RTLILAnySignalConnections analyseSignalConnections(const RTLIL::Module *module);
+//! Analyses cell outputs in the original netlist
+RTLILAnySignalConnections analyseCellOutputs(RTLIL::Module *module);
+
+//! Performs a combination of @ref analyseConnections, @ref analyseSignalConnections and @ref
+//! analyseCellOutputs
+RTLILConnections analyseAll(RTLIL::Module *module);
 
 //! RTLILWireConnections maps a -> (b, c, d, e); but what this function does is find "a" given say b, or c, or
 //! d. Returns empty list if no results found.

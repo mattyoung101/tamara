@@ -48,7 +48,8 @@ RTLIL::Wire *tamara::sigSpecToWire(const RTLIL::SigSpec &sigSpec) {
     return nullptr;
 }
 
-std::pair<RTLILWireConnections, RTLILAnySignalConnections> tamara::analyseConnections(const RTLIL::Module *module) {
+std::pair<RTLILWireConnections, RTLILAnySignalConnections> tamara::analyseConnections(
+    const RTLIL::Module *module) {
     RTLILWireConnections wireConnections {};
     RTLILAnySignalConnections signalConnections {};
 
@@ -128,6 +129,25 @@ std::pair<RTLILWireConnections, RTLILAnySignalConnections> tamara::analyseConnec
     return std::make_pair(wireConnections, signalConnections);
 }
 
+RTLILAnySignalConnections tamara::analyseCellOutputs(RTLIL::Module *module) {
+    RTLILAnySignalConnections out;
+
+    CellTypes cellTypes(module->design);
+
+    for (const auto &cell : module->cells()) {
+        for (const auto &connection : cell->connections()) {
+            const auto &[name, signal] = connection;
+
+            // is this an output wire?
+            if (cellTypes.cell_output(cell->type, name)) {
+                out[cell].insert(signal);
+            }
+        }
+    }
+
+    return out;
+}
+
 std::vector<RTLILAnyPtr> tamara::rtlilInverseLookup(const RTLILWireConnections &connections, Wire *target) {
     // PERF: This is REALLY expensive currently on the order of O(n^2).
     std::vector<RTLILAnyPtr> out;
@@ -143,7 +163,8 @@ std::vector<RTLILAnyPtr> tamara::rtlilInverseLookup(const RTLILWireConnections &
     return out;
 }
 
-std::vector<RTLILAnyPtr> tamara::signalInverseLookup(const RTLILAnySignalConnections &connections, const RTLIL::SigSpec &target) {
+std::vector<RTLILAnyPtr> tamara::signalInverseLookup(
+    const RTLILAnySignalConnections &connections, const RTLIL::SigSpec &target) {
     // PERF: This is REALLY expensive currently on the order of O(n^2).
     std::vector<RTLILAnyPtr> out;
     for (const auto &pair : connections) {
@@ -170,4 +191,13 @@ RTLIL::IdString tamara::getRTLILName(const RTLILAnyPtr &ptr) {
             }
         },
         ptr);
+}
+
+RTLILConnections tamara::analyseAll(RTLIL::Module *module) {
+    RTLILConnections out;
+    auto [wires, signals] = analyseConnections(module);
+    out.wires = wires;
+    out.signals = signals;
+    out.cellOutputs = analyseCellOutputs(module);
+    return out;
 }

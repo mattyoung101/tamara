@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <iterator>
 #include <memory>
 #include <optional>
 #include <variant>
@@ -284,8 +285,7 @@ void LogicCone::verifyInputNodes() const {
 }
 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity) don't care, didn't ask
-void LogicCone::search(
-    const RTLILWireConnections &connections, const RTLILAnySignalConnections &signalConnections) {
+void LogicCone::search(const RTLILConnections &connections) {
     // check that we're starting the search from scratch on this cone
     log_assert(frontier.empty());
     log_assert(cone.empty()); // NOLINT(bugprone-unused-return-value)
@@ -308,7 +308,7 @@ void LogicCone::search(
 
         if (shouldAddNeighbours(node) || first) {
             // locate neighbours and add to BFS queue
-            auto neighbours = node->computeNeighbours(connections, signalConnections);
+            auto neighbours = node->computeNeighbours(connections.wires, connections.signals);
             for (const auto &neighbour : neighbours) {
                 std::string name = getNodeName(neighbour).c_str();
 
@@ -419,8 +419,7 @@ std::optional<RTLIL::Wire *> LogicCone::insertVoter(
     return out_w;
 }
 
-void LogicCone::wire(RTLIL::Module *module, const RTLILWireConnections &connections,
-    const RTLILAnySignalConnections &signalConnections, VoterBuilder &builder) {
+void LogicCone::wire(RTLIL::Module *module, const RTLILConnections &connections, VoterBuilder &builder) {
     log("%sWiring logic cone %u%s\n", COLOUR(Blue), id, RESET());
     if (cone.empty()) {
         log("%sSkipping wiring of cone %u - internal elements empty%s\n", COLOUR(Red), id, RESET());
@@ -453,7 +452,7 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILWireConnections &connecti
         // DUMP;
 
         // locate SigSpecs associated with the output node wire
-        RTLILSigSpecSet attachedSigSpecs = getOrDefault(signalConnections, outNodeWire, RTLILSigSpecSet());
+        RTLILSigSpecSet attachedSigSpecs = getOrDefault(connections.signals, outNodeWire, RTLILSigSpecSet());
 
         // check if we have multiple attached SigChunk (see https://github.com/mattyoung101/tamara/issues/13)
         // in that case, special wiring will be required
@@ -464,55 +463,64 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILWireConnections &connecti
             // [neighbour signal] wire out --> signal \out [1]
             // signal lookup on out node wire?
 
-            if (!signalConnections.contains(outNodeWire)) {
+            if (!connections.signals.contains(outNodeWire)) {
                 log_error("TaMaRa internal error: signalConnections should contain outNodeWire!\n");
             }
-            auto specs = signalConnections.at(outNodeWire);
-            if (specs.size() > 1) {
-                log_warning("Cannot yet handle multiple output SigSpecs\n");
-                TODO;
+            // this is as list of SigSpecs that connects from the output back to voter cut point
+            // i.e. they are the _input_ of the _output_ cell
+            RTLILSigSpecSet outputSpecs = connections.signals.at(outNodeWire);
+            log_assert(!outputSpecs.empty() && "No SigSpecs found for outNodeWire");
+            log("outSpecs:\n");
+            for (const auto &spec : outputSpecs) {
+                log("%s\n", log_signal(spec));
             }
 
-            auto spec = *specs.begin();
-            module->connect(spec, voterOutWire.value());
-            log("Connecting attached SigSpec to %s\n", log_signal(spec));
+            // now we also find the SigSpecs that are the _output_ of the voter cut point
+            auto *voterCutCell = std::get<RTLIL::Cell *>(voterCutPoint.value()->getRTLILObjPtr());
+            // the important part here is that this routine runs on the original circuit before we modify it,
+            // hence why we're looking up into connections.cellOutputs (which is calculated by
+            // utils.cpp#analyseAll)
+            auto voterSpecs = connections.cellOutputs.at(voterCutCell);
+            log("voterSpecs:\n");
+            for (const auto &spec : voterSpecs) {
+                log("%s\n", log_signal(spec));
+            }
 
-            // TODO OH I KNOW HERE'S THE SOLUTION
+            // manually compute set intersection, because C++ is stupid and so is
+            // std::ranges::set_intersection
+            //
+            // compute the intersection of the two sets - this should only have one element, which will be our
+            // target SigSpec
+            RTLILSigSpecSet intersection;
+            for (const auto &spec : voterSpecs) {
+                if (outputSpecs.contains(spec)) {
+                    intersection.insert(spec);
+                }
+            }
+
+            if (intersection.size() > 1) {
+                log_error("TaMaRa internal error: voterSpecs intersect outputSpecs has size %zu, which we "
+                          "can't yet deal with!\n",
+                    intersection.size());
+            }
+
+            log("INTERSECTION:\n");
+            for (const auto &it : intersection) {
+                log("%s\n", log_signal(it));
+            }
+
+            auto first = *intersection.begin();
+
+            module->connect(first, voterOutWire.value());
+            log("Connecting attached SigSpec to %s\n", log_signal(first));
+
+            // how does the above work?
             // it must be connected to the output AND it must be connected to the voter cut point cell so it
             // has to be connected to the output (the input port of the output wire) and it must be connected
             // to the cell (the output port of the cell)
 
             // SO BASICALLY:
             // set(voter cut point sigspecs) UNION set(output wire sigspecs) == our target wire??
-
-            // temporary hack could be just to wire it to the one that's not driven by the constant??
-            // bool didFindTargetSigSpec = false;
-            // for (const auto &spec : attachedSigSpecs) {
-            //     // OLD
-            //     // we want to find which of these specs was originally wired to the $not cell (I think
-            //     // that's the voter cut point wire or something)
-            //     // now our problem is to find out which of these SigSpecs was connected to the output node
-            //     // wire in the original circuit might require inverse lookup? --> no, it's not what now? we
-            //     // need a Sig->Sig mapping, so maybe we need RTLILSigSigConnections?
-            //     //
-            //     // TODO maybe we need to look it up by the cut point?
-            //
-            //     if (spec.is_fully_const() || spec.is_fully_zero() || spec.is_fully_ones()) {
-            //         log("SigSpec '%s' is unlikely to be our target -> skipping\n", log_signal(spec));
-            //         continue;
-            //     }
-            //
-            //     log("Found suspected target spec: '%s'\n", log_signal(spec));
-            //     // now we can make the connection
-            //     module->connect(spec, voterOutWire.value());
-            //
-            //     didFindTargetSigSpec = true;
-            //     break;
-            // }
-            //
-            // if (!didFindTargetSigSpec) {
-            //     log_error("Did not find target SigSpec in attachments! This could be user error.\n");
-            // }
         } else {
             log("Using regular wiring (only one attached SigChunk)\n");
             module->connect(outNodeWire, voterOutWire.value());
@@ -527,7 +535,7 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILWireConnections &connecti
     fixWalkers.execute(module);
 }
 
-std::vector<LogicCone> LogicCone::buildSuccessors(const RTLILWireConnections &connections) {
+std::vector<LogicCone> LogicCone::buildSuccessors(const RTLILConnections &connections) {
     log("%sConsidering potential successors for cone %u%s\n", COLOUR(Blue), id, RESET());
     std::vector<LogicCone> out {};
     // reserve worst-case size, minor performance improvement?
@@ -538,7 +546,8 @@ std::vector<LogicCone> LogicCone::buildSuccessors(const RTLILWireConnections &co
         log("Considering %s %s as a successor cone... ", node->identify().c_str(), name.c_str());
 
         // check if it has a neighbour that we haven't already made a cone out of yet
-        if (connections.contains(node->getRTLILObjPtr()) && connections.at(node->getRTLILObjPtr()).size() > 0
+        if (connections.wires.contains(node->getRTLILObjPtr())
+            && connections.wires.at(node->getRTLILObjPtr()).size() > 0
             && !exploredSuccessors.contains(name)) {
             // we have neighbours, this is a valid successor
             log("%sConfirmed.%s\n", COLOUR(Green), RESET());
