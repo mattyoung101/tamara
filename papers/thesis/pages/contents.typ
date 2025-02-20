@@ -12,8 +12,6 @@
     }
 
     #outline(
-        // https://www.reddit.com/r/typst/comments/1bp8zty/how_to_make_dots_in_outline_spaced_the_same_for/
-        fill: box(width: 1fr, repeat(h(5pt) + "." + h(5pt))) + h(8pt),
         indent: auto,
         title: none
     )
@@ -23,7 +21,6 @@
 = List of Figures
 #outline(
     title: none,
-    fill: box(width: 1fr, repeat(h(5pt) + "." + h(5pt))) + h(8pt),
     target: figure,
 )
 #pagebreak()
