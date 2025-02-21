@@ -467,68 +467,29 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILConnections &connections,
             log("Special wiring required (outNodeWire '%s' has %zu attached SigSpecs)\n",
                 log_id(outNodeWire->name), attachedSigSpecs.size());
 
-            // [neighbour signal] wire out --> signal \out [1]
-            // signal lookup on out node wire?
-
-            if (!connections.signals.contains(outNodeWire)) {
-                log_error("TaMaRa internal error: signalConnections should contain outNodeWire!\n");
-            }
-            // this is as list of SigSpecs that connects from the output back to voter cut point
-            // i.e. they are the _input_ of the _output_ cell
-            RTLILSigSpecSet outputSpecs = connections.signals.at(outNodeWire);
-            log_assert(!outputSpecs.empty() && "No SigSpecs found for outNodeWire");
-            log("outSpecs:\n");
-            for (const auto &spec : outputSpecs) {
-                log("%s\n", log_signal(spec));
-            }
-
-            // now we also find the SigSpecs that are the _output_ of the voter cut point
+            // lookup the SigSpecs that are the _output_ of the voter cut point, on the _original_ circuit
             // FIXME sketchy std::get call
             auto *voterCutCell = std::get<RTLIL::Cell *>(voterCutPoint.value()->getRTLILObjPtr());
             // the important part here is that this routine runs on the original circuit before we modify it,
             // hence why we're looking up into connections.cellOutputs (which is calculated by
-            // utils.cpp#analyseAll)
+            // utils.cpp#analyseAll before we mess with it)
             auto voterSpecs = connections.cellOutputs.at(voterCutCell);
             log("voterSpecs:\n");
             for (const auto &spec : voterSpecs) {
                 log("%s\n", log_signal(spec));
             }
 
-            // manually compute set intersection, because C++ is stupid and so is
-            // std::ranges::set_intersection
-            //
-            // compute the intersection of the two sets - this should only have one element, which will be our
-            // target SigSpec
-            RTLILSigSpecSet intersection;
-            for (const auto &spec : voterSpecs) {
-                if (outputSpecs.contains(spec)) {
-                    intersection.insert(spec);
-                }
-            }
-
-            if (intersection.size() > 1) {
-                log_error("TaMaRa internal error: voterSpecs ∩ outputSpecs has size %zu, which we "
+            // hopefully that set only has one element in it, if it doesn't, we don't yet know how to deal
+            // with that (perhaps this indicates a multi-port output cell?)
+            if (voterSpecs.size() > 1) {
+                log_error("TaMaRa internal error: voterSpecs has size %zu, which we "
                           "can't yet deal with!\n",
-                    intersection.size());
+                    voterSpecs.size());
             }
 
-            log("Intersection:\n");
-            for (const auto &it : intersection) {
-                log("%s\n", log_signal(it));
-            }
-
-            auto first = *intersection.begin();
-
+            auto first = *voterSpecs.begin();
             module->connect(first, voterOutWire.value());
             log("Connecting attached SigSpec to %s\n", log_signal(first));
-
-            // how does the above work:
-            // to find the output wire, we determine that:
-            // it must be connected to the output AND it must be connected to the voter cut point cell.
-            // so it has to be connected to the output (the input port of the output wire) and it must be
-            // connected to the cell (the output port of the cell)
-            // basically:
-            // set(voter cut point sigspecs) INTERSECT set(output wire sigspecs) == our target wire
         } else {
             log("Using regular wiring (only one attached SigChunk)\n");
             module->connect(outNodeWire, voterOutWire.value());

@@ -25,13 +25,25 @@ namespace tamara {
 #define TODO log_error("TaMaRa internal error: Feature not yet implemented!\n");
 
 //! Debug command to dump the graph of the design
+#ifdef TAMARA_DEBUG
 #define DUMP Yosys::run_pass("show -colors 420 -pause -long");
+#else
+#define DUMP
+#endif
 
 //! Debug command to dump the RTLIL of the design
+#ifdef TAMARA_DEBUG
 #define DUMP_RTLIL Yosys::run_pass("write_rtlil");
+#else
+#define DUMP_RTLIL
+#endif
 
 //! Same as @ref DUMP, but runs in the background and does not halt the program
+#ifdef TAMARA_DEBUG
 #define DUMPASYNC tamara::dumpAsync(__FILE__, __LINE__);
+#else
+#define DUMPASYNC
+#endif
 
 const auto TRIPLICATE_ANNOTATION = ID(tamara_triplicate);
 const auto IGNORE_ANNOTATION = ID(tamara_ignore);
