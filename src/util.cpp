@@ -203,7 +203,9 @@ RTLILConnections tamara::analyseAll(RTLIL::Module *module) {
 }
 
 void tamara::dumpAsync(const std::string &file, size_t line) {
-    size_t lastSlash = file.find_last_of('/');
+    auto lastSlash = file.find_last_of('/');
     auto filename = (lastSlash == std::string::npos) ? file : file.substr(lastSlash + 1);
-    Yosys::run_pass("show -colors 420 -format svg -prefix ./dump_" + filename + ":" + std::to_string(line));
+    auto topModuleName = std::string(Yosys::yosys_get_design()->top_module()->name.c_str());
+    Yosys::run_pass("show -colors 420 -format svg -prefix ./dump_" + topModuleName + "_@_" + filename + ":"
+        + std::to_string(line));
 }

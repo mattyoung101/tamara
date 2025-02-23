@@ -39,8 +39,11 @@ def invoke(cmd: List[str], quiet: bool = False):
         passed += 1
     else:
         if not quiet:
-            print(f"{Fore.RED}FAIL{Style.RESET_ALL}\nRan:"
-                  f"{shlex.join(cmd)}\n{result.stdout.decode('utf-8')}\n{result.stderr.decode('utf-8')}")
+            stdout = result.stdout.decode('utf-8').strip()
+            # only show the last 5 lines
+            stdout = "\n".join(stdout.splitlines()[-5:])
+            stderr = result.stderr.decode('utf-8').strip()
+            print(f"{Fore.RED}FAIL{Style.RESET_ALL}\nRan: {shlex.join(cmd)}\n{stdout}\n{stderr}\n")
         else:
             print(f"{Fore.RED}FAIL{Style.RESET_ALL}")
         failed += 1
