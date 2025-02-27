@@ -54,6 +54,7 @@ scripts:
   - mux_2bit
   - cones
   - cones_2bit
+  - cones_min
   # - picorv32
   - memory
   - memory_simple

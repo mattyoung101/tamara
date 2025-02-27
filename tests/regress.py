@@ -32,6 +32,7 @@ def invoke(cmd: List[str], quiet: bool = False):
     # Custom feature from my Yosys fork that silences all 'show' commands. Can easily be replicated; see the
     # patch in tools/0001-Add-YS_IGNORE_SHOW-to-show.cc.patch
     os.environ["YS_IGNORE_SHOW"] = "1"
+    os.environ["TAMARA_NO_DUMP"] = "1"
     result = subprocess.run(cmd, capture_output=True, timeout=100)
 
     if result.returncode == 0:
