@@ -1,6 +1,13 @@
+## General guidelines
 - Strictly follow .clang-format and .clang-tidy guidelines (essentially, format and tidy on save)
     - clangd LSP is highly recommended
-- `template <class T>` not `template <typename T>`
+- Prefer `template <class T>` not `template <typename T>`
+- Prefer `vector.at()` rather than `vector[]`
+- Prefer `map.at()` rather than `map[]`
+- Use `camelCase` for members, `UpperCamelCase` for classes
+- Prefix global variables with `g_` and use `snake_case`, e.g. `g_my_global`
+
+## Yosys guidelines
 - Use `log_assert` when something needs to be checked for debug, but is not likely to occur in production
 - Use `if (...) { log_error(...); }` when something needs to be checked in production too
 - Prefix `log_error` messages that are NOT due to user error with "TaMaRa internal error:"

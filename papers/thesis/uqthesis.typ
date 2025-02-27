@@ -1,7 +1,6 @@
 // Main thesis file.
 #import "util/macros.typ": *
 
-// FIXME Typst 0.13 breaks codly
 // #import "@preview/codly:1.2.0": *
 // #import "@preview/codly-languages:0.1.1": *
 // #show: codly-init.with()

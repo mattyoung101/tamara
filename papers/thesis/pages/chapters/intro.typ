@@ -60,3 +60,11 @@ process nodes (e.g. Skywater 130nm). When combined with the Nextpnr place and ro
 Yosys+Nextpnr forms a fully end-to-end FPGA synthesis flow for Lattice iCE40 and ECP5 devices. Importantly,
 for this thesis, Yosys can be modified either by changing the source code or by developing modular plugins
 that can be dynamically loaded at runtime.
+
+This thesis will focus on the design and implementation of _TaMaRa_, an automated Triple Modular Redundancy
+EDA flow for Yosys. In Chapter 2, I present a comprehensive literature review of prior TMR algorithms by
+classifying them into dichotomy of either netlist-level or design-level approaches. I evaluate the strengths
+and weakness of each approach, and determine how it will shape the TaMaRa algorithm. In Chapter 3, I introduce
+the TaMaRa algorithm, and demonstrate how it was implemented as a Yosys plugin. Finally, in Chapter 4, I
+show the results of the TaMaRa algorithm for a number of real-world circuits and measure its ability to
+mitigate SEUs.

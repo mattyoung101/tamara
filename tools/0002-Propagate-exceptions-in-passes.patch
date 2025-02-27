@@ -1,0 +1,40 @@
+From 3bea01d609a367d2b518cfb6ab8c40e15aef7fdb Mon Sep 17 00:00:00 2001
+From: Matt Young <matt.young.1@outlook.com>
+Date: Tue, 25 Feb 2025 00:06:12 +1000
+Subject: [PATCH] Propagate exceptions in passes
+
+---
+ kernel/yosys.cc | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/kernel/yosys.cc b/kernel/yosys.cc
+index de25d20e2..da07c7732 100644
+--- a/kernel/yosys.cc
++++ b/kernel/yosys.cc
+@@ -1102,7 +1102,7 @@ bool run_frontend(std::string filename, std::string command, RTLIL::Design *desi
+ 		FILE *backup_script_file = Frontend::current_script_file;
+ 		Frontend::current_script_file = f;
+ 
+-		try {
++		/*try*/ {
+ 			std::string command;
+ 			while (fgetline(f, command)) {
+ 				while (!command.empty() && command[command.size()-1] == '\\') {
+@@ -1127,10 +1127,10 @@ bool run_frontend(std::string filename, std::string command, RTLIL::Design *desi
+ 				}
+ 			}
+ 		}
+-		catch (...) {
+-			Frontend::current_script_file = backup_script_file;
+-			throw;
+-		}
++		// catch (...) {
++		// 	Frontend::current_script_file = backup_script_file;
++		// 	throw;
++		// }
+ 
+ 		Frontend::current_script_file = backup_script_file;
+ 
+-- 
+2.48.1
+

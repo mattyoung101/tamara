@@ -1,4 +1,4 @@
-= Literature review
+= Literature review <chap:lit>
 == Introduction, methodology and terminology <section:litintro>
 The automation of triple modular redundancy, as well as associated topics such as general fault-tolerant
 computing methods and the effects of SEUs on digital hardware, have been studied a fair amount in academic
