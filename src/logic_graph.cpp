@@ -8,7 +8,6 @@
 #include "kernel/celltypes.h"
 #include "kernel/log.h"
 #include "kernel/rtlil.h"
-#include "kernel/yosys.h"
 #include "kernel/yosys_common.h"
 #include "tamara/termcolour.hpp"
 #include "tamara/util.hpp"
@@ -29,7 +28,7 @@ using namespace tamara;
 #define RESET() (termcolour::reset().c_str())
 
 uint32_t LogicCone::g_cone_ID = 0;
-ankerl::unordered_dense::set<std::string> LogicCone::exploredSuccessors = {};
+ankerl::unordered_dense::set<std::string> LogicCone::g_explored_successors = {};
 
 namespace {
 
@@ -120,6 +119,7 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
         [](auto &&arg) {
             using T = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
+                DUMPASYNC;
                 RTLIL::Cell *cell = arg; // this is for the benefit of clangd
                 // log("Locating output wire for %s\n", log_id(cell->name));
 
@@ -147,6 +147,8 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
                         auto *wire
                             = cell->module->addWire(NEW_ID_SUFFIX("extractReplicaWire"), GetSize(signal));
 
+                        DUMPASYNC;
+
                         // rip up the existing wire, and add our own
                         cell->setPort(name, wire);
 
@@ -162,6 +164,7 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
                         log_id(cell->name));
                 }
 
+                DUMPASYNC;
                 return out;
             }
             if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
@@ -212,10 +215,10 @@ TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(
 void ElementCellNode::replicate(RTLIL::Module *module) {
     log("    Replicating %s %s\n", identify().c_str(), log_id(cell->name));
     if (cell->has_attribute(CONE_ANNOTATION)) {
-        log_warning("When replicating %s %s in cone %u: Already replicated in logic cone %s\n",
+        log("When replicating %s %s in cone %u: Already replicated in logic cone %s\n",
             identify().c_str(), log_id(cell->name), getConeID(),
             cell->get_string_attribute(CONE_ANNOTATION).c_str());
-        // FIXME should we just skip it then?
+        return;
     }
 
     auto id = std::to_string(getConeID());
@@ -241,9 +244,9 @@ void ElementCellNode::replicate(RTLIL::Module *module) {
 void ElementWireNode::replicate(RTLIL::Module *module) {
     log("    Replicating ElementWireNode %s\n", log_id(wire->name));
     if (wire->has_attribute(CONE_ANNOTATION)) {
-        log_warning("When replicating ElementWireNode %s in cone %u: Already replicated in logic cone %s\n",
+        log("When replicating ElementWireNode %s in cone %u: Already replicated in logic cone %s\n",
             log_id(wire->name), getConeID(), wire->get_string_attribute(CONE_ANNOTATION).c_str());
-        // FIXME should we just skip it then?
+        return;
     }
 
     auto id = std::to_string(getConeID());
@@ -376,6 +379,7 @@ void LogicCone::search(const RTLILConnections &connections) {
 
     verifyInputNodes();
     log("%sSearch complete for cone %u, have %zu items\n%s", COLOUR(Blue), id, cone.size(), RESET());
+    DUMPASYNC;
 }
 
 void LogicCone::replicate(RTLIL::Module *module) {
@@ -386,6 +390,7 @@ void LogicCone::replicate(RTLIL::Module *module) {
     }
     log_assert(frontier.empty() && "Search might not be finished");
 
+    DUMPASYNC;
     log("%sReplicating %zu collected items for logic cone %u%s\n", COLOUR(Blue), cone.size(), id, RESET());
     for (const auto &item : cone) {
         item->replicate(module);
@@ -397,6 +402,8 @@ void LogicCone::replicate(RTLIL::Module *module) {
         replicateIfNotIO(node, module);
     }
     replicateIfNotIO(outputNode, module);
+
+    DUMPASYNC;
 }
 
 std::optional<RTLIL::Wire *> LogicCone::insertVoter(
@@ -410,6 +417,7 @@ std::optional<RTLIL::Wire *> LogicCone::insertVoter(
 
     log("Going to splice voter between LogicCone output %s and cut point %s\n", logRTLILName(outputNode),
         logRTLILName(voterCutPoint));
+    DUMPASYNC;
 
     // log("out_w voterCutPoint\n");
     // NOTE: It is VERY important that out_w runs first, otherwise the wires are not connected correctly (c
@@ -425,6 +433,7 @@ std::optional<RTLIL::Wire *> LogicCone::insertVoter(
     // log("c_w replicas[2]\n");
     auto *c_w = extractReplicaWire(replicas.at(2));
     builder.build(a_w, b_w, c_w, out_w);
+    DUMPASYNC;
 
     return out_w;
 }
@@ -435,6 +444,7 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILConnections &connections,
         log("%sSkipping wiring of cone %u - internal elements empty%s\n", COLOUR(Red), id, RESET());
         return;
     }
+    DUMPASYNC;
 
     // connect voter between output and firstReplicated
     log_assert(voterCutPoint.has_value() && "Voter cut point not set!");
@@ -506,9 +516,13 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILConnections &connections,
     }
     module->check();
 
+    DUMPASYNC;
+
     // now, clean up by running the FixWalkers
     log("\n%sFixing up wiring%s\n", COLOUR(Blue), RESET());
     fixWalkers.execute(module);
+
+    DUMPASYNC;
 }
 
 std::vector<LogicCone> LogicCone::buildSuccessors(const RTLILConnections &connections) {
@@ -524,11 +538,11 @@ std::vector<LogicCone> LogicCone::buildSuccessors(const RTLILConnections &connec
         // check if it has a neighbour that we haven't already made a cone out of yet
         if (connections.wires.contains(node->getRTLILObjPtr())
             && connections.wires.at(node->getRTLILObjPtr()).size() > 0
-            && !exploredSuccessors.contains(name)) {
+            && !g_explored_successors.contains(name)) {
             // we have neighbours, this is a valid successor
             log("%sConfirmed.%s\n", COLOUR(Green), RESET());
             out.push_back(newLogicCone(node->getRTLILObjPtr()));
-            exploredSuccessors.insert(name);
+            g_explored_successors.insert(name);
         } else {
             log("%sHas no additional neighbours, not a valid successor.%s\n", COLOUR(Red), RESET());
         }

@@ -180,8 +180,13 @@ void MultiDriverFixer::reconnect(RTLIL::Wire *target, RTLIL::Cell *input, RTLIL:
     // find the port in the cell that is connected to the problematic wire
     // so input is basically going to be a cell that has an output going into our wire
 
+    log("Reconnecting target '%s' with input '%s' output '%s'\n", log_id(target->name), log_id(input->name),
+        log_id(output->name));
+
     for (const auto &connection : input->connections()) {
         const auto &[name, signal] = connection;
+        // TODO I don't like this, I think it might be causing problems. why not operate with connWire
+        // directly?
         auto *connWire = sigSpecToWire(signal);
 
         if (cellTypes.cell_output(input->type, name) && connWire == target) {

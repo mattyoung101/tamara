@@ -8,6 +8,7 @@
 #include "ankerl/unordered_dense.hpp"
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
+#include <random>
 #include <variant>
 
 USING_YOSYS_NAMESPACE;
@@ -39,7 +40,7 @@ namespace tamara {
 #endif
 
 //! Same as @ref DUMP, but runs in the background and does not halt the program
-#ifdef TAMARA_DEBUG
+#if defined(TAMARA_DEBUG) && !defined(TAMARA_NO_DUMP)
 #define DUMPASYNC tamara::dumpAsync(__FILE__, __LINE__);
 #else
 #define DUMPASYNC
@@ -118,7 +119,11 @@ std::vector<RTLILAnyPtr> rtlilInverseLookup(const RTLILWireConnections &connecti
 std::vector<RTLILAnyPtr> signalInverseLookup(
     const RTLILAnySignalConnections &connections, const RTLIL::SigSpec &target);
 
+//! Called by the @ref DUMPASYNC macro to write out a dump to disk. Do not invoke manually.
 void dumpAsync(const std::string &file, size_t line);
+
+//! Generates random hex characters of the output length len
+std::string generateRandomHex(size_t len);
 
 } // namespace tamara
 

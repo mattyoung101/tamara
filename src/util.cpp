@@ -10,7 +10,11 @@
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
 #include "tamara/termcolour.hpp"
+#include <chrono>
 #include <cmath>
+#include <cstdlib>
+#include <filesystem>
+#include <sstream>
 #include <vector>
 
 USING_YOSYS_NAMESPACE;
@@ -59,7 +63,7 @@ std::pair<RTLILWireConnections, RTLILAnySignalConnections> tamara::analyseConnec
     for (const auto &cell : module->selected_cells()) {
         // cells that are ignored by TaMaRa should never be neighbours
         if (!shouldConsiderForTMR(cell)) {
-            log("Skipping cell %s, not marked tamara_triplicate\n", log_id(cell->name));
+            log_debug("Skipping cell %s, not marked tamara_triplicate\n", log_id(cell->name));
             continue;
         }
 
@@ -80,19 +84,21 @@ std::pair<RTLILWireConnections, RTLILAnySignalConnections> tamara::analyseConnec
             if (cellTypes.cell_output(cell->type, name)) {
                 wireConnections[wire].insert(cell);
                 signalConnections[wire].insert(signal);
-                log("[neighbour wire] wire %s --> cell %s\n", log_id(wire->name), log_id(cell->name));
-                log("[neighbour signal] wire %s --> signal %s\n", log_id(wire->name), log_signal(signal));
+                log_debug("[neighbour wire] wire %s --> cell %s\n", log_id(wire->name), log_id(cell->name));
+                log_debug(
+                    "[neighbour signal] wire %s --> signal %s\n", log_id(wire->name), log_signal(signal));
             }
 
             // this is an input to the cell, so connect cell -> wire (remember we work backwards)
             if (cellTypes.cell_input(cell->type, name)) {
                 wireConnections[cell].insert(wire);
                 signalConnections[cell].insert(signal);
-                log("[neighbour wire] cell %s --> wire %s\n", log_id(cell->name), log_id(wire->name));
-                log("[neighbour signal] cell %s --> signal %s\n", log_id(cell->name), log_signal(signal));
+                log_debug("[neighbour wire] cell %s --> wire %s\n", log_id(cell->name), log_id(wire->name));
+                log_debug(
+                    "[neighbour signal] cell %s --> signal %s\n", log_id(cell->name), log_signal(signal));
             }
         }
-        log("\n");
+        log_debug("\n");
     }
 
     // also add global connections
@@ -106,24 +112,24 @@ std::pair<RTLILWireConnections, RTLILAnySignalConnections> tamara::analyseConnec
         // provided lhsWire is defined, we can still insert the rhs (even if rhsWire is nullptr)
         if (lhsWire != nullptr) {
             signalConnections[lhsWire].insert(rhs);
-            log("[neighbour signal] %s -> %s\n", log_id(lhsWire->name), log_signal(rhs));
+            log_debug("[neighbour signal] %s -> %s\n", log_id(lhsWire->name), log_signal(rhs));
         }
 
         if (lhsWire != nullptr && rhsWire != nullptr) {
             if (shouldConsiderForTMR(lhsWire) && shouldConsiderForTMR(rhsWire)) {
-                log("[neighbour wire] %s --> %s\n", log_id(lhsWire->name), log_id(rhsWire->name));
+                log_debug("[neighbour wire] %s --> %s\n", log_id(lhsWire->name), log_id(rhsWire->name));
 
                 // apparently we don't actually need to reverse this, we're ok to just map lhs -> rhs
                 // despite doing backwards BFS
                 wireConnections[lhsWire].insert(rhsWire);
             }
         } else {
-            log("Either RHS(%s) or LHS(%s) SigSpec is not a wire, skipping\n", log_signal(rhs),
+            log_debug("Either RHS(%s) or LHS(%s) SigSpec is not a wire, skipping\n", log_signal(rhs),
                 log_signal(lhs));
         }
     }
 
-    log("\nDone, located %zu neighbours from %zu cells\n", wireConnections.size(),
+    log_debug("\nDone, located %zu neighbours from %zu cells\n", wireConnections.size(),
         module->selected_cells().size());
 
     return std::make_pair(wireConnections, signalConnections);
@@ -203,9 +209,42 @@ RTLILConnections tamara::analyseAll(RTLIL::Module *module) {
 }
 
 void tamara::dumpAsync(const std::string &file, size_t line) {
+    // ignore dumpAsync if the environment variable TAMARA_NO_DUMP is set
+    if (getenv("TAMARA_NO_DUMP") != nullptr) {
+        return;
+    }
+
+    // strip the full path from the filename
     auto lastSlash = file.find_last_of('/');
     auto filename = (lastSlash == std::string::npos) ? file : file.substr(lastSlash + 1);
     auto topModuleName = std::string(Yosys::yosys_get_design()->top_module()->name.c_str());
-    Yosys::run_pass("show -colors 420 -format svg -prefix ./dump_" + topModuleName + "_@_" + filename + ":"
-        + std::to_string(line));
+
+    // auto unique = generateRandomHex(16);
+    auto unique = std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::high_resolution_clock::now().time_since_epoch())
+            .count());
+
+    auto graphName = "./dump_" + unique + "_" + topModuleName + "_@_" + filename + ":" + std::to_string(line);
+    // auto graphName = "./dump_" + unique;
+
+    Yosys::run_pass("show -colors 420 -format png -prefix " + graphName);
+
+    // delete the residual .dot file
+    std::filesystem::remove(graphName + ".dot");
+}
+
+std::string tamara::generateRandomHex(size_t len) {
+    // based on https://stackoverflow.com/a/60198074
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, 15);
+
+    std::stringstream ss;
+    ss << std::hex;
+
+    for (size_t i = 0; i < len; i++) {
+        ss << dis(gen);
+    }
+
+    return ss.str();
 }
