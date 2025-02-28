@@ -8,7 +8,6 @@
 #include "ankerl/unordered_dense.hpp"
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
-#include <random>
 #include <variant>
 
 USING_YOSYS_NAMESPACE;
@@ -25,22 +24,35 @@ namespace tamara {
 //! Crashes the application, indicating that the feature is not yet implemented
 #define TODO log_error("TaMaRa internal error: Feature not yet implemented!\n");
 
-//! Debug command to dump the graph of the design
+/// Debug command to dump the graph of the design. Will only dump if the environment variable
+/// TAMARA_DEBUG_DUMP is set.
 #ifdef TAMARA_DEBUG
-#define DUMP Yosys::run_pass("show -colors 420 -pause -long");
+#define DUMP                                                                                                 \
+    do {                                                                                                     \
+        if (getenv("TAMARA_DEBUG_DUMP") != nullptr) {                                                        \
+            Yosys::run_pass("show -colors 420 -pause -long");                                                \
+        }                                                                                                    \
+    } while (0);
 #else
 #define DUMP
 #endif
 
-//! Debug command to dump the RTLIL of the design
+/// Debug command to dump the RTLIL of the design. Will only dump if the environment variable
+/// TAMARA_DEBUG_DUMP is set.
 #ifdef TAMARA_DEBUG
-#define DUMP_RTLIL Yosys::run_pass("write_rtlil");
+#define DUMP_RTLIL                                                                                           \
+    do {                                                                                                     \
+        if (getenv("TAMARA_DEBUG_DUMP") != nullptr) {                                                        \
+            Yosys::run_pass("write_rtlil");                                                                  \
+        }                                                                                                    \
+    } while (0);
 #else
 #define DUMP_RTLIL
 #endif
 
-//! Same as @ref DUMP, but runs in the background and does not halt the program
-#if defined(TAMARA_DEBUG) && !defined(TAMARA_NO_DUMP)
+/// Same as @ref DUMP, but runs in the background and does not halt the program. Will only dump if the
+/// environment variable TAMARA_DEBUG_ASYNC_DUMP is set.
+#ifdef TAMARA_DEBUG
 #define DUMPASYNC tamara::dumpAsync(__FILE__, __LINE__);
 #else
 #define DUMPASYNC

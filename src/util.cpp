@@ -14,6 +14,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <filesystem>
+#include <random>
 #include <sstream>
 #include <vector>
 
@@ -209,8 +210,8 @@ RTLILConnections tamara::analyseAll(RTLIL::Module *module) {
 }
 
 void tamara::dumpAsync(const std::string &file, size_t line) {
-    // ignore dumpAsync if the environment variable TAMARA_NO_DUMP is set
-    if (getenv("TAMARA_NO_DUMP") != nullptr) {
+    // only dump if the environment variable TAMARA_DEBUG_DUMP is set
+    if (getenv("TAMARA_DEBUG_DUMP_ASYNC") == nullptr) {
         return;
     }
 

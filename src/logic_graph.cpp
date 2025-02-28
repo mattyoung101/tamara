@@ -175,15 +175,6 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
         ptr);
 }
 
-/// Determines if the given list of sigSpecs contains an RTLIL::SigChunk
-template <std::ranges::range T>
-bool containsSigChunk(const T &sigSpecs) {
-    return std::ranges::any_of(sigSpecs, [](const RTLIL::SigSpec &spec) {
-        // make sure this spec is a chunk, and it has more than one chunk in it
-        return spec.is_chunk() && spec.chunks().size() > 1;
-    });
-}
-
 } // namespace
 
 TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(

@@ -145,6 +145,20 @@ To run the regression test suite, you will need the Python `pyyaml`, `colorama` 
 from the build directory, invoke `../tests/regress.py`. The specific tests to run are defined in
 `tests/regress.yaml`.
 
+### Debugging
+When TaMaRa is compiled in debug mode (`-DCMAKE_BUILD_TYPE=Debug`), there are some environment variables you
+can set to enable debugging functionality at runtime. The value of the environment variables doesn't matter,
+just that they are set.
+
+- `TAMARA_DEBUG_DUMP_ASYNC`: TaMaRa will verbosely dump timestamped PNG files of the netlist throughout the
+algorithm in the current directory, without blocking the main algorithm. Files will be named like:
+`dump_1740721386986_\cones_min_@_voter_builder.cpp:208.png`. This is invoked by the `DUMPASYNC` macro in the
+code.
+- `TAMARA_DEBUG_SKIP_VOTER`: TaMaRa will skip voter generation and just pass through the value on the 'A'
+port of the voter, and set 'err' to a constant zero.
+- `TAMARA_DEBUG_DUMP`: TaMaRa can pause execution at points where the `DUMP` macro is set and display the
+netlist as a graph. This is only intended for development usage.
+
 ## Compiling papers
 This repo also includes various papers including the proposal draft, presentation slides, and the actual
 thesis itself. The papers are all written in [Typst](https://github.com/typst/typst).

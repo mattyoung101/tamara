@@ -196,11 +196,14 @@ void MultiDriverFixer::reconnect(RTLIL::Wire *target, RTLIL::Cell *input, RTLIL:
 
             // we need to apparently make an intermediary wire too
             auto *wire = input->module->addWire(NEW_ID_SUFFIX("MultiDriverFixer"), connWire->width);
+            DUMPASYNC;
 
             // finalise the connection
             // FIXME I think this can cause problems on some circuits
             input->setPort(name, wire);
+            DUMPASYNC;
             output->setPort(outputCellPort, wire);
+            DUMPASYNC;
 
             input->check();
             output->check();

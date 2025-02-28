@@ -9,6 +9,7 @@
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
 #include "tamara/util.hpp"
+#include <cstdlib>
 
 USING_YOSYS_NAMESPACE;
 
@@ -44,6 +45,23 @@ void build(RTLIL::Module *module, RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c
     RTLIL::Wire *err) {
     // N.B. This is all based on the Logisim design (tests/manual_tests/simple_tmr.circ)
     DUMPASYNC;
+
+#if defined(TAMARA_DEBUG)
+    if (getenv("TAMARA_DEBUG_SKIP_VOTER") != nullptr) {
+        log_warning("TAMARA_DEBUG_SKIP_VOTER environment variable is set, bypassing voter generation\n");
+        // connect 'a' straight to out
+        [[maybe_unused]] WIRE(a, out);
+
+        // hardwire err to 0
+        RTLIL::SigSpec sigSpec(RTLIL::Const(0, 1));
+        [[maybe_unused]] WIRE(sigSpec, err);
+
+        module->check();
+
+        DUMPASYNC;
+        return;
+    }
+#endif
 
     log("Generating voter:\n  a: %s\n  b: %s\n  c: %s\n  out: %s\n  err: %s\n", log_id(a->name),
         log_id(b->name), log_id(c->name), log_id(out->name), log_id(err->name));
@@ -153,7 +171,6 @@ void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::
         auto *w_c = makeAsVoter(module->addWire(NEW_ID_SUFFIX("C")));
         auto *w_out = makeAsVoter(module->addWire(NEW_ID_SUFFIX("OUT")));
         auto *w_err = makeAsVoter(module->addWire(NEW_ID_SUFFIX("ERR")));
-
         DUMPASYNC;
 
         // attach SigChunks to voter wires
@@ -163,7 +180,6 @@ void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::
         module->connect(chunk_out, w_out);
         module->connect(chunk_err, w_err);
         module->check();
-
         DUMPASYNC;
 
         // construct voter
@@ -180,13 +196,13 @@ void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::
 
     // output from the intermediate (will be used in the OR)
     auto *err_intermediate_out = makeAsVoter(module->addWire(NEW_ID_SUFFIX("ERR_INTER_OUT")));
+    DUMPASYNC;
 
     // insert $reduce_or reduction to OR every err bit in the voter
     makeAsVoter(module->addReduceOr(NEW_ID_SUFFIX("REDUCE"), err_intermediate, err_intermediate_out));
 
     // store as a reduction that we'll access later in finalise
     reductions.push_back(err_intermediate_out);
-
     DUMPASYNC;
 
     module->check();
