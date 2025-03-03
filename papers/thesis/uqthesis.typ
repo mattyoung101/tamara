@@ -68,7 +68,7 @@
 #counter(page).update(1)
 
 // From now on, display top level headers as "Chapter XX"
-#set heading(numbering: "1.")
+#set heading(numbering: "1.", supplement: "Chapter")
 #show heading.where(level: 1): it => uqHeaderChapter(it)
 
 // Thesis chapters
@@ -88,12 +88,14 @@
 #pagebreak()
 
 // Return to headers without chapter numbers
-#set heading(numbering: none)
+#set heading(numbering: none, supplement: none)
 #show heading.where(level: 1): it => uqHeaderNoChapter(it)
 
 // Appendices
-#include "pages/appendices/example.typ"
-#pagebreak()
+#appendices[
+    #include "pages/appendices/example.typ"
+    #pagebreak()
+]
 
 // Bibliography
 #include "pages/bibliography.typ"
