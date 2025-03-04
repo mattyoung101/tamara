@@ -34,6 +34,29 @@ constexpr T makeAsVoter(T obj) {
     return obj;
 }
 
+//! Inserts the custom voter cell type into the module
+RTLIL::Cell *insertVoterCell(RTLIL::Module *module, const RTLIL::SigSpec &a, const RTLIL::SigSpec &b,
+    const RTLIL::SigSpec &c, const RTLIL::SigSpec &out, const RTLIL::SigSpec &err) {
+    // RTLIL::Cell *cell = addCell(name, _type);
+    // cell->parameters[ID::WIDTH] = sig_a.size();
+    // cell->setPort(ID::A, sig_a);
+    // cell->setPort(ID::Y, sig_y);
+    // cell->set_src_attribute(src);
+    // return cell;
+
+    RTLIL::Cell *cell = module->addCell(NEW_ID_SUFFIX("voter"), ID(VOTER));
+    cell->setPort(ID::A, a);
+    cell->setPort(ID::B, b);
+    cell->setPort(ID::C, c);
+    cell->setPort(ID(OUT), out);
+    cell->setPort(ID(ERR), err);
+    cell->set_bool_attribute(VOTER_ANNOTATION);
+    cell->set_bool_attribute(ID::blackbox);
+    cell->check();
+
+    return cell;
+}
+
 }; // namespace
 
 namespace {
@@ -47,15 +70,10 @@ void build(RTLIL::Module *module, RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c
     DUMPASYNC;
 
 #if defined(TAMARA_DEBUG)
-    if (getenv("TAMARA_DEBUG_SKIP_VOTER") != nullptr) {
-        log_warning("TAMARA_DEBUG_SKIP_VOTER environment variable is set, bypassing voter generation\n");
-        // connect 'a' straight to out
-        [[maybe_unused]] WIRE(a, out);
+    if (getenv("TAMARA_DEBUG_BYPASS_VOTER") != nullptr) {
+        log_warning("TAMARA_DEBUG_BYPASS_VOTER environment variable is set, bypassing voter generation\n");
 
-        // hardwire err to 0
-        RTLIL::SigSpec sigSpec(RTLIL::Const(0, 1));
-        [[maybe_unused]] WIRE(sigSpec, err);
-
+        insertVoterCell(module, a, b, c, out, err);
         module->check();
 
         DUMPASYNC;
@@ -199,6 +217,7 @@ void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::
     DUMPASYNC;
 
     // insert $reduce_or reduction to OR every err bit in the voter
+    // FIXME don't do this if the voter is 1-bit (https://github.com/mattyoung101/tamara/issues/24)
     makeAsVoter(module->addReduceOr(NEW_ID_SUFFIX("REDUCE"), err_intermediate, err_intermediate_out));
 
     // store as a reduction that we'll access later in finalise

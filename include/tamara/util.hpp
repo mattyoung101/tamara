@@ -42,7 +42,7 @@ namespace tamara {
 #ifdef TAMARA_DEBUG
 #define DUMP_RTLIL                                                                                           \
     do {                                                                                                     \
-        if (getenv("TAMARA_DEBUG_DUMP") != nullptr) {                                                        \
+        if (getenv("TAMARA_DEBUG_DUMP_RTLIL") != nullptr) {                                                  \
             Yosys::run_pass("write_rtlil");                                                                  \
         }                                                                                                    \
     } while (0);

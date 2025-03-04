@@ -7,6 +7,7 @@
 #include "kernel/log.h"
 #include "kernel/register.h"
 #include "kernel/rtlil.h"
+#include "kernel/yosys.h"
 #include "kernel/yosys_common.h"
 #include "tamara/logic_graph.hpp"
 #include "tamara/termcolour.hpp"
@@ -85,6 +86,16 @@ struct TamaraTMRPass : public Pass {
         // tag memories as ignore
         log_header(design, "Locating and marking memories as ignored\n");
         markMemoriesIgnored(module);
+
+#if defined(TAMARA_DEBUG)
+        if (getenv("TAMARA_DEBUG_BYPASS_VOTER") != nullptr) {
+            log_header(design, "Preparing voter technology map");
+            log("TAMARA_DEBUG_BYPASS_VOTER is set, so we need to load in the voter technology map, which we "
+                "will do now.\n");
+            // Yosys::run_pass("techmap -map ../src/voter.v;;");
+            Yosys::run_pass("read_verilog -lib -specify ../src/voter.v");
+        }
+#endif
 
         // analyse wire connections, this is used later by the logic cone code for neighbour calculations
         // I thought that we might be able to get this through RTLIL directly, but I think we have to compute

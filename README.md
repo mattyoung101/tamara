@@ -154,10 +154,12 @@ just that they are set.
 algorithm in the current directory, without blocking the main algorithm. Files will be named like:
 `dump_1740721386986_\cones_min_@_voter_builder.cpp:208.png`. This is invoked by the `DUMPASYNC` macro in the
 code.
-- `TAMARA_DEBUG_SKIP_VOTER`: TaMaRa will skip voter generation and just pass through the value on the 'A'
-port of the voter, and set 'err' to a constant zero.
-- `TAMARA_DEBUG_DUMP`: TaMaRa can pause execution at points where the `DUMP` macro is set and display the
-netlist as a graph. This is only intended for development usage.
+- `TAMARA_DEBUG_BYPASS_VOTER`: TaMaRa will bypass voter generation and instead generate a custom `$VOTER`
+cell type with 3 inputs and 2 outputs, as a blackboxed cell. This can be used to debug voter wiring.
+- `TAMARA_DEBUG_DUMP_BLOCK`: TaMaRa can pause execution at points where the `DUMP` macro is set and display the
+netlist as a graph. This enables that functionality.
+- `TAMARA_DEBUG_DUMP_RTLIL`: TaMaRa will dump the RTLIL text representation to the console at various points
+where the `DUMP_RTLIL` macro is called. This will not block the main algorithm.
 
 ## Compiling papers
 This repo also includes various papers including the proposal draft, presentation slides, and the actual
