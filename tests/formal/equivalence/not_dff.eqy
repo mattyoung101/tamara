@@ -4,6 +4,7 @@
 [gold]
 read_verilog -sv ../tests/verilog/not_dff_tmr.sv
 prep -top not_dff_tmr
+setundef -init -zero
 flatten
 rename -top design
 
@@ -13,13 +14,14 @@ read_verilog -DTAMARA -sv ../tests/verilog/not_dff_tmr.sv
 hierarchy -top not_dff_tmr
 rename -top design
 prep
+setundef -init -zero
 tamara_tmr
 
-# [strategy sby]
-# use sby
-# depth 2
-# engine smtbmc yices
-
-[strategy sat]
-use sat
+[strategy sby]
+use sby
 depth 15
+engine smtbmc yices
+
+# [strategy sat]
+# use sat
+# depth 15

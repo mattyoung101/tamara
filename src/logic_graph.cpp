@@ -12,7 +12,6 @@
 #include "tamara/termcolour.hpp"
 #include "tamara/util.hpp"
 #include "tamara/voter_builder.hpp"
-#include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <memory>

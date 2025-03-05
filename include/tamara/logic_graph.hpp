@@ -323,7 +323,7 @@ private:
     /// from that ! terminal. however, we could still encounter multiple terminals, hence the list.
     std::vector<TMRGraphNode::Ptr> inputNodes;
 
-    /// a cone has only one output (so far)
+    /// output node of the cone; a cone has only one output (at the moment)
     TMRGraphNode::Ptr outputNode;
 
     /// list of logic cone elements, to be replicated (does not include terminals)

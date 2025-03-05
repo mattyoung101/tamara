@@ -228,7 +228,7 @@ void tamara::dumpAsync(const std::string &file, size_t line) {
     auto graphName = "./dump_" + unique + "_" + topModuleName + "_@_" + filename + ":" + std::to_string(line);
     // auto graphName = "./dump_" + unique;
 
-    Yosys::run_pass("show -colors 420 -format png -prefix " + graphName);
+    Yosys::run_pass("show -long -colors 420 -format png -prefix " + graphName);
 
     // delete the residual .dot file
     std::filesystem::remove(graphName + ".dot");

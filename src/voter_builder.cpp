@@ -34,16 +34,9 @@ constexpr T makeAsVoter(T obj) {
     return obj;
 }
 
-//! Inserts the custom voter cell type into the module
+//! Inserts the custom voter cell type into the module. Currently this is only used for debug.
 RTLIL::Cell *insertVoterCell(RTLIL::Module *module, const RTLIL::SigSpec &a, const RTLIL::SigSpec &b,
     const RTLIL::SigSpec &c, const RTLIL::SigSpec &out, const RTLIL::SigSpec &err) {
-    // RTLIL::Cell *cell = addCell(name, _type);
-    // cell->parameters[ID::WIDTH] = sig_a.size();
-    // cell->setPort(ID::A, sig_a);
-    // cell->setPort(ID::Y, sig_y);
-    // cell->set_src_attribute(src);
-    // return cell;
-
     RTLIL::Cell *cell = module->addCell(NEW_ID_SUFFIX("voter"), ID(VOTER));
     cell->setPort(ID::A, a);
     cell->setPort(ID::B, b);
@@ -51,7 +44,6 @@ RTLIL::Cell *insertVoterCell(RTLIL::Module *module, const RTLIL::SigSpec &a, con
     cell->setPort(ID(OUT), out);
     cell->setPort(ID(ERR), err);
     cell->set_bool_attribute(VOTER_ANNOTATION);
-    cell->set_bool_attribute(ID::blackbox);
     cell->check();
 
     return cell;
@@ -192,11 +184,17 @@ void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::
         DUMPASYNC;
 
         // attach SigChunks to voter wires
+        // FIXME I think this block is broken when multiple voters are involved
         module->connect(w_a, chunk_a);
+        DUMPASYNC;
         module->connect(w_b, chunk_b);
+        DUMPASYNC;
         module->connect(w_c, chunk_c);
+        DUMPASYNC;
         module->connect(chunk_out, w_out);
+        DUMPASYNC;
         module->connect(chunk_err, w_err);
+        DUMPASYNC;
         module->check();
         DUMPASYNC;
 
