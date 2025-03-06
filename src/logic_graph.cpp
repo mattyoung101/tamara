@@ -101,12 +101,13 @@ bool shouldAddNeighbours(const TMRGraphNode::Ptr &node) {
 
 //! Replicates the node if it's not an IONode. We can't replicate IONodes as they are inputs to the entire
 //! circuit.
-void replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *module) {
-    if (dynamic_pointer_cast<IONode>(node) == nullptr) {
-        log("Input node %s is not IONode, replicating it\n", log_id(getNodeName(node)));
+void replicateIfNotWire(const TMRGraphNode::Ptr &node, RTLIL::Module *module) {
+    if (dynamic_pointer_cast<IONode>(node) == nullptr
+        && dynamic_pointer_cast<ElementWireNode>(node) == nullptr) {
+        log("Input node %s is not wire, replicating it\n", log_id(getNodeName(node)));
         node->replicate(module);
     } else {
-        log("Input node %s is IONode, it will NOT be replicated\n", log_id(getNodeName(node)));
+        log("Input node %s is wire, it will NOT be replicated\n", log_id(getNodeName(node)));
     }
 }
 
@@ -205,9 +206,8 @@ TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(
 void ElementCellNode::replicate(RTLIL::Module *module) {
     log("    Replicating %s %s\n", identify().c_str(), log_id(cell->name));
     if (cell->has_attribute(CONE_ANNOTATION)) {
-        log("When replicating %s %s in cone %u: Already replicated in logic cone %s\n",
-            identify().c_str(), log_id(cell->name), getConeID(),
-            cell->get_string_attribute(CONE_ANNOTATION).c_str());
+        log("When replicating %s %s in cone %u: Already replicated in logic cone %s\n", identify().c_str(),
+            log_id(cell->name), getConeID(), cell->get_string_attribute(CONE_ANNOTATION).c_str());
         return;
     }
 
@@ -232,32 +232,12 @@ void ElementCellNode::replicate(RTLIL::Module *module) {
 }
 
 void ElementWireNode::replicate(RTLIL::Module *module) {
-    log("    Replicating ElementWireNode %s\n", log_id(wire->name));
-    if (wire->has_attribute(CONE_ANNOTATION)) {
-        log("When replicating ElementWireNode %s in cone %u: Already replicated in logic cone %s\n",
-            log_id(wire->name), getConeID(), wire->get_string_attribute(CONE_ANNOTATION).c_str());
-        return;
-    }
-
-    auto id = std::to_string(getConeID());
-
-    auto *replica1 = module->addWire(NEW_ID_SUFFIX(wire->name.str() + "__replica1_cone" + id + "__"), wire);
-    auto *replica2 = module->addWire(NEW_ID_SUFFIX(wire->name.str() + "__replica2_cone" + id + "__"), wire);
-
-    replica1->set_string_attribute(CONE_ANNOTATION, id);
-    replica2->set_string_attribute(CONE_ANNOTATION, id);
-    wire->set_string_attribute(CONE_ANNOTATION, id);
-
-    wire->set_bool_attribute(ORIGINAL_ANNOTATION);
-
-    module->check();
-
-    replicas.push_back(replica1);
-    replicas.push_back(replica2);
+    // this shouldn't happen since we call replicateIfNotWire
+    log_error("TaMaRa internal error: Cannot replicate ElementWireNode!\n");
 }
 
 void IONode::replicate([[maybe_unused]] RTLIL::Module *module) {
-    // this shouldn't happen since we call replicateIfNotIO
+    // this shouldn't happen since we call replicateIfNotWire
     log_error("TaMaRa internal error: Cannot replicate IO node!\n");
 }
 
@@ -382,15 +362,18 @@ void LogicCone::replicate(RTLIL::Module *module) {
     DUMPASYNC;
     log("%sReplicating %zu collected items for logic cone %u%s\n", COLOUR(Blue), cone.size(), id, RESET());
     for (const auto &item : cone) {
-        item->replicate(module);
+        // skip wires
+        if (dynamic_pointer_cast<ElementWireNode>(item) == nullptr) {
+            item->replicate(module);
+        }
     }
 
     // special case for end points (IOs and FFs) -> only replicate FFs, don't replicate IOs
     log("%sChecking terminals%s\n", COLOUR(Cyan), RESET());
     for (const auto &node : inputNodes) {
-        replicateIfNotIO(node, module);
+        replicateIfNotWire(node, module);
     }
-    replicateIfNotIO(outputNode, module);
+    replicateIfNotWire(outputNode, module);
 
     DUMPASYNC;
 }
@@ -460,7 +443,7 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILConnections &connections,
         // extractReplicaWire again
 
         // auto *outNodeWire = extractReplicaWire(outputNode->getRTLILObjPtr());
-        auto *outNodeWire = std::get<RTLIL::Wire*>(outputNode->getRTLILObjPtr());
+        auto *outNodeWire = std::get<RTLIL::Wire *>(outputNode->getRTLILObjPtr());
         DUMPASYNC;
 
         // locate SigSpecs associated with the output node wire

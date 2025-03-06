@@ -191,12 +191,7 @@ public:
     }
 
     std::vector<RTLILAnyPtr> getReplicas() override {
-        std::vector<RTLILAnyPtr> out {};
-        out.reserve(replicas.size());
-        for (const auto &replica : replicas) {
-            out.emplace_back(replica);
-        }
-        return out;
+        log_error("TaMaRa internal error: Cannot get replicas of an ElementWireNode!");
     }
 
     int getWidth() override {
@@ -211,7 +206,6 @@ public:
 private:
     RTLIL::Wire *wire;
     std::vector<RTLIL::SigSpec> sigSpecs;
-    std::vector<RTLIL::Wire *> replicas;
 };
 
 //! Flip flop node in the graph
