@@ -205,9 +205,8 @@ TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(
 void ElementCellNode::replicate(RTLIL::Module *module) {
     log("    Replicating %s %s\n", identify().c_str(), log_id(cell->name));
     if (cell->has_attribute(CONE_ANNOTATION)) {
-        log("When replicating %s %s in cone %u: Already replicated in logic cone %s\n",
-            identify().c_str(), log_id(cell->name), getConeID(),
-            cell->get_string_attribute(CONE_ANNOTATION).c_str());
+        log("When replicating %s %s in cone %u: Already replicated in logic cone %s\n", identify().c_str(),
+            log_id(cell->name), getConeID(), cell->get_string_attribute(CONE_ANNOTATION).c_str());
         return;
     }
 
@@ -229,6 +228,7 @@ void ElementCellNode::replicate(RTLIL::Module *module) {
 
     replicas.push_back(replica1);
     replicas.push_back(replica2);
+    DUMPASYNC;
 }
 
 void ElementWireNode::replicate(RTLIL::Module *module) {
@@ -254,6 +254,8 @@ void ElementWireNode::replicate(RTLIL::Module *module) {
 
     replicas.push_back(replica1);
     replicas.push_back(replica2);
+
+    DUMPASYNC;
 }
 
 void IONode::replicate([[maybe_unused]] RTLIL::Module *module) {
@@ -368,7 +370,6 @@ void LogicCone::search(const RTLILConnections &connections) {
 
     verifyInputNodes();
     log("%sSearch complete for cone %u, have %zu items\n%s", COLOUR(Blue), id, cone.size(), RESET());
-    DUMPASYNC;
 }
 
 void LogicCone::replicate(RTLIL::Module *module) {
@@ -413,14 +414,17 @@ std::optional<RTLIL::Wire *> LogicCone::insertVoter(
     // gets overwritten basically)
     auto *out_w = extractReplicaWire(voterCutPoint->get()->getRTLILObjPtr());
 
-    // log("a_w replicas[0]\n");
     auto *a_w = extractReplicaWire(replicas.at(0));
-
-    // log("b_w replicas[1]\n");
     auto *b_w = extractReplicaWire(replicas.at(1));
-
-    // log("c_w replicas[2]\n");
     auto *c_w = extractReplicaWire(replicas.at(2));
+
+    log("Voter info dump:\n  voterCutPoint: %s\n  replicas[0]: %s\n  replicas[1]: %s\n  replicas[2]: %s\n",
+        logRTLILName(voterCutPoint->get()->getRTLILObjPtr()), logRTLILName(replicas.at(0)),
+        logRTLILName(replicas.at(1)), logRTLILName(replicas.at(2)));
+
+    // FIXME for some reason here, in cones_min.ys, out_w == c_w ??
+    // this might be because the cut point is wrong?
+
     builder.build(a_w, b_w, c_w, out_w);
     DUMPASYNC;
 
@@ -460,7 +464,7 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILConnections &connections,
         // extractReplicaWire again
 
         // auto *outNodeWire = extractReplicaWire(outputNode->getRTLILObjPtr());
-        auto *outNodeWire = std::get<RTLIL::Wire*>(outputNode->getRTLILObjPtr());
+        auto *outNodeWire = std::get<RTLIL::Wire *>(outputNode->getRTLILObjPtr());
         DUMPASYNC;
 
         // locate SigSpecs associated with the output node wire

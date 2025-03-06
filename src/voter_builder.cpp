@@ -161,8 +161,8 @@ void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::
     // make an intermediate signal
     auto *err_intermediate = module->addWire(NEW_ID_SUFFIX("ERR_INTERMEDIATE"), bits);
 
-    log("Inserting voter in module %s for:\n  a: %s\n  b: %s\n  c: %s\n", log_id(module->name),
-        log_id(a->name), log_id(b->name), log_id(c->name));
+    log("Inserting voter in module %s for:\n  a: %s\n  b: %s\n  c: %s\n  out: %s\n", log_id(module->name),
+        log_id(a->name), log_id(b->name), log_id(c->name), log_id(out->name));
 
     // generate one unique voter per bit
     for (int bit = 0; bit < bits; bit++) {

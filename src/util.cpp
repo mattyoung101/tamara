@@ -209,7 +209,7 @@ RTLILConnections tamara::analyseAll(RTLIL::Module *module) {
     return out;
 }
 
-void tamara::dumpAsync(const std::string &file, size_t line) {
+void tamara::dumpAsync(const std::string &file, const std::string &function, size_t line) {
     // only dump if the environment variable TAMARA_DEBUG_DUMP is set
     if (getenv("TAMARA_DEBUG_DUMP_ASYNC") == nullptr) {
         return;
@@ -225,7 +225,8 @@ void tamara::dumpAsync(const std::string &file, size_t line) {
         std::chrono::high_resolution_clock::now().time_since_epoch())
             .count());
 
-    auto graphName = "./dump_" + unique + "_" + topModuleName + "_@_" + filename + ":" + std::to_string(line);
+    auto graphName = "./dump_" + unique + "_" + topModuleName + "_@_" + filename + ":" + function + ":"
+        + std::to_string(line);
     // auto graphName = "./dump_" + unique;
 
     Yosys::run_pass("show -long -colors 420 -format png -prefix " + graphName);

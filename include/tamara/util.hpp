@@ -53,7 +53,7 @@ namespace tamara {
 /// Same as @ref DUMP, but runs in the background and does not halt the program. Will only dump if the
 /// environment variable TAMARA_DEBUG_ASYNC_DUMP is set.
 #ifdef TAMARA_DEBUG
-#define DUMPASYNC tamara::dumpAsync(__FILE__, __LINE__);
+#define DUMPASYNC tamara::dumpAsync(__FILE__, __FUNCTION__, __LINE__);
 #else
 #define DUMPASYNC
 #endif
@@ -132,7 +132,7 @@ std::vector<RTLILAnyPtr> signalInverseLookup(
     const RTLILAnySignalConnections &connections, const RTLIL::SigSpec &target);
 
 //! Called by the @ref DUMPASYNC macro to write out a dump to disk. Do not invoke manually.
-void dumpAsync(const std::string &file, size_t line);
+void dumpAsync(const std::string &file, const std::string &function, size_t line);
 
 //! Generates random hex characters of the output length len
 std::string generateRandomHex(size_t len);

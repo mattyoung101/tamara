@@ -161,9 +161,13 @@ void MultiDriverFixer::rewire(RTLIL::Wire *wire, const RTLILWireConnections &con
 
     auto lhsReplica1 = findByApproxName(inputs, "replica1");
     auto rhsReplica1 = findByApproxName(outputs, "replica1");
+    log("Wire '%s':\n  LHS replica1: %s\n  RHS replica1: %s\n", log_id(wire->name),
+        getRTLILName(lhsReplica1).c_str(), getRTLILName(rhsReplica1).c_str());
 
     auto lhsReplica2 = findByApproxName(inputs, "replica2");
     auto rhsReplica2 = findByApproxName(outputs, "replica2");
+    log("Wire '%s':\n  LHS replica2: %s\n  RHS replica2: %s\n", log_id(wire->name),
+        getRTLILName(lhsReplica2).c_str(), getRTLILName(rhsReplica2).c_str());
 
     // TODO is this std::get ok?? can we be sure it's a cell??
     reconnect(wire, std::get<RTLIL::Cell *>(lhsReplica1), std::get<RTLIL::Cell *>(rhsReplica1));
@@ -180,7 +184,7 @@ void MultiDriverFixer::reconnect(RTLIL::Wire *target, RTLIL::Cell *input, RTLIL:
     // find the port in the cell that is connected to the problematic wire
     // so input is basically going to be a cell that has an output going into our wire
 
-    log("Reconnecting target '%s' with input '%s' output '%s'\n", log_id(target->name), log_id(input->name),
+    log("Reconnecting target '%s'\n  input '%s'\n  output '%s'\n", log_id(target->name), log_id(input->name),
         log_id(output->name));
 
     for (const auto &connection : input->connections()) {
