@@ -1,7 +1,7 @@
-# TaMaRa: An automated triple modular redundancy EDA flow for Yosys
+# TaMaRa: An automated Triple Modular Redundancy EDA flow for Yosys
 By Matt Young <m.young2@student.uq.edu.au>
 
-_BCompSc(Hons) thesis, University of Queensland, 2024-2025_
+_BCompSc(Hons) thesis, University of Queensland (Australia), 2024-2025_
 
 <!-- mtoc-start -->
 
@@ -9,12 +9,16 @@ _BCompSc(Hons) thesis, University of Queensland, 2024-2025_
 * [Building](#building)
   * [Setup](#setup)
   * [Compile and run](#compile-and-run)
-  * [Usage in Yosys](#usage-in-yosys)
+* [Usage in Yosys](#usage-in-yosys)
+  * [Limitations](#limitations)
+  * [Circuit preparation](#circuit-preparation)
+  * [Synthesis preparation](#synthesis-preparation)
 * [Testing and verification](#testing-and-verification)
   * [Formal verification](#formal-verification)
   * [Fault-injection simulation](#fault-injection-simulation)
   * [Bitstream fault injection using ecp5_shotgun](#bitstream-fault-injection-using-ecp5_shotgun)
   * [Fuzzing and regression pipe](#fuzzing-and-regression-pipe)
+  * [Debugging](#debugging)
 * [Compiling papers](#compiling-papers)
 * [Licence](#licence)
 
@@ -27,7 +31,8 @@ aerospace, medicine and defence.
 
 TODO: thesis abstract here
 
-For more information, please see my thesis: TODO
+TaMaRa was developed for my Bachelor of Computer Science (Honours) thesis at the University of Queensland,
+Australia, during 2024 and 2025. For more information, please see my thesis submission: TODO
 
 ## Building
 ### Setup
@@ -55,16 +60,16 @@ git submodule update --init --recursive --remote
 ```
 
 ### Compile and run
-
 Generate the project (assuming you've installed Ninja, otherwise omit `-G Ninja`):
 
 ```bash
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release  # or Debug
 ```
 
-Build (in `build` directory):
+Build:
 
 ```bash
+cd build
 ninja
 ```
 
@@ -86,8 +91,69 @@ ninja && yosys -m libtamara.so
 If you have Yosys installed on your system, you can run `ninja install` to install TaMaRa as a global plugin.
 (TODO this is not yet true)
 
-### Usage in Yosys
-TODO
+## Usage in Yosys
+### Limitations
+The goal of TaMaRa is to be compatible with roughly the same set of circuits that Yosys can process. That is,
+if Yosys successfully can synthesise a circuit, TaMaRa should be able to add TMR to it. That being said,
+TaMaRa currently has the following limitations:
+
+- Does not triplicate memory cells
+- TaMaRa is a thesis project, and although every effort has been made, correctness cannot be guaranteed. If
+you encounter any bugs, please report them :)
+
+### Circuit preparation
+Designs that are being processed with TaMaRa should declare exactly one 1-bit signal as the voter error sink
+using the `(* tamara_error_sink *)` Verilog annotation. For example:
+
+```verilog
+module my_module(
+    input a,
+    input b,
+    (* tamara_error_sink *)
+    input err
+);
+endmodule
+```
+
+Make sure that you do _not_ connect the error signal yourself; TaMaRa will handle that, so just leave it
+unconnected. The error sink can be omitted, but TaMaRa will produce a warning.
+
+This signal will be set to '1' when any voter in the circuit detects an error, and is '0' otherwise. This can
+be used to trigger a reconfiguration or reset when an error is detected on FPGAs, or to take other corrective
+action on an ASIC. TaMaRa intentionally leaves this up to the end user, and does not perform any scrubbing or
+reconfiguration itself.
+
+### Synthesis preparation
+Although the circuit does not need to be substantially modified, the synthesis script does need to be.
+
+Unlike in normal Yosys synthesis scripts, the design can't be lowered directly to FPGA/ASIC primitives (LUTs,
+standard cells, etc). It first needs to be lowered to abstract logic primitives (AND gates, NOT gates, etc)
+that TaMaRa can process. Then, TaMaRa can be run, after which the design can be lowered to FPGA primitives.
+
+TaMaRa currently also requires you to run the `splitcells` and `splitnets` command before it is invoked.
+
+TaMaRa is run through the `tamara_tmr`, which first needs to be loaded using `plugin -i libtamara.so`.
+
+Factoring in all the above, an example synthesis script that processes `design.v` for the Lattice ECP5 might
+look like this:
+
+```bash
+# Read design
+read_verilog design.v
+hierarchy -top top
+
+# Lower to abstract AND gates etc
+prep
+splitcells
+splitnets
+
+# Run TaMaRa
+plugin -i libtamara.so
+tamara_tmr
+
+# Lower to ECP5
+synth_ecp5 -json netlist.json
+```
 
 ## Testing and verification
 ### Formal verification

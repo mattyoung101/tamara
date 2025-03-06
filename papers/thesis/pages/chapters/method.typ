@@ -2,19 +2,23 @@
 
 = Methodology <chap:method>
 == Concept
-In the previous chapter, I presented a comprehensive literature review of existing automated TMR approaches.
+In the previous @chap:lit, I presented a comprehensive literature review of existing automated TMR approaches.
 One of the main limitations that these algorithms have is that none are specifically integrated into the Yosys
-synthesis tool. The closest is SpyDrNet @Skouson2020, which reads/writes the EDIF format. While Yosys can
-indeed read and write EDIF, SpyDrNet-TMR requires special Python scripts to process a netlist and insert
-voters. Additionally, it has its own intermediate representation distinct from Yosys' RTLIL. I propose that
-integrating a TMR algorithm directly into Yosys would create a platform for both researchers and industry
-users to experiment with Triple Modular Redundancy. As the most popular open-source EDA synthesis tool, Yosys
-has a large community of users and developers working with it, and so has a large number of plugins and
-resources. As a Yosys plugin, TaMaRa end users can seamlessly take advantage of these plugins and resources;
-including formal verification, logic optimisation and debugging/inspection. I envision TaMaRa as a platform
-that provides a baseline TMR implementation that other researchers can extend upon, and that industry users
-can experiment with, all the while supported both FPGAs/ASICs and being fully integrated as part of a widely
-used open-source EDA synthesis tool.
+synthesis tool. The closest is SpyDrNet @Skouson2020, which reads/writes to the EDIF format. While Yosys can
+indeed read and write EDIF files, SpyDrNet's TMR implementation also requires special Python scripts to
+process a netlist and insert voters, rather than executing a single command. Additionally, it has its own
+intermediate representation distinct from Yosys' RTLIL, and hence distinct from the other optimisation and
+verification passes that Yosys has available. I propose that TaMaRa, being a TMR algorithm directly integrated
+into Yosys, would create a platform for both researchers and industry users to experiment with TMR design and
+verification in the broader context of the Yosys tool suite. As the most popular open-source EDA synthesis
+tool, Yosys has a large community of users and developers working with it, and so has a large number of
+plugins and resources available. As a Yosys plugin, TaMaRa end users can seamlessly take advantage of these
+plugins and resources; including formal verification, logic optimisation and debugging/inspection. I envision
+TaMaRa as a platform that provides a baseline TMR implementation that other researchers can extend upon, and
+that industry users can experiment with, all the while supported both FPGAs/ASICs and being fully integrated
+as part of a widely used open-source EDA synthesis tool. Operating directly on Yosys' RTLIL intermediate
+representation ensures that any future optimisations Yosys gains, or any languages it supports in future, can
+be immediately also supported by TaMaRa.
 
 To design the TaMaRa algorithm, I synthesise existing approaches from the literature review to form a novel
 approach suitable for implementation in Yosys. Specifically, I synthesise the voter insertion algorithms of
@@ -24,12 +28,13 @@ methodology. Based on the dichotomy identified in @section:litintro, TaMaRa will
 _netlist-level_ approach, as the algorithms are designed by treating the design as a circuit (rather than
 HDL).
 
-I propose a modification to the synthesis flow that inserts TaMaRa before technology mapping. This means
-that the circuit can be processed at a low level, with less concerns about optimisation removing the redundant
-TMR logic. However, as shown in , some Yosys synthesis scripts do perform additional optimisation _after_
-technology mapping, which again risks the removal of the TMR logic. Yet, we also cannot operate after
-technology mapping, since TaMaRa voter circuits are described using relatively high level circuit primitives
-(AND gates, NOT gates, etc) instead of vendor-specific FPGA primitives like LUTs.
+I propose a modification to the synthesis flow that inserts TaMaRa before technology mapping. This means that
+the circuit can be processed at a low level, with less concerns about optimisation removing the redundant TMR
+logic, as has been observed in other approaches @Lee2017 and through conversation with the Yosys developers
+@Engelhardt2024. However, as shown in *FIX ME FIX ME FIX ME FIXME*, some Yosys synthesis scripts do perform
+additional optimisation _after_ technology mapping, which again risks the removal of the TMR logic. Yet, we
+also cannot operate after technology mapping, since TaMaRa voter circuits are described using relatively high
+level circuit primitives (AND gates, NOT gates, etc) instead of vendor-specific FPGA primitives like LUTs.
 #TODO("whatever the solution for this is")
 
 Whilst TaMaRa aims to be compatible with all existing designs with minimal changes, some preconditions are
@@ -46,10 +51,10 @@ signal to. In SystemVerilog, this uses the `(* tamara_error_sink *)` annotation,
 
 #figure(
     ```systemverilog
-    module mod(
+    module my_module(
         input logic a,
         (* tamara_error_sink *)
-        output logic b
+        output logic err
     );
     ```,
     caption: [ SystemVerilog snippet demonstrating the use of the `(* tamara_error_sink *)` annotation ]
@@ -58,9 +63,17 @@ signal to. In SystemVerilog, this uses the `(* tamara_error_sink *)` annotation,
 End users are then free to implement configuration scrubbing using the tool and methodology appropriate to
 their platform.
 
+Additionally, while TaMaRa aims to require minimal or no changes to the circuit itself, there are changes
+necessary to the synthesis pipeline. Unlike in normal Yosys synthesis scripts, the design cannot be lowered
+directly to FPGA/ASIC primitives (LUTs, standard cells, etc). It first needs to be lowered to abstract logic
+primitives (AND gates, NOT gates, etc) that TaMaRa can process, particularly, that it can generate voter
+circuits in. Then, TaMaRa can be run, after which the design can be lowered to FPGA primitives or ASIC
+standard cells. TaMaRa currently also requires the user to run the `splitcells` and `splitnets` commands
+before it is invoked to split apart multi-bit buses and cells, which are not yet directly supported.
+
 == Implementation
 Over the course of this thesis, TaMaRa was successfully written from the ground up as a Yosys plugin. This
-plugin consists of around 2000 lines of C++20, and introduces one new command to Yosys: `tamara_tmr`.
+plugin consists of around 2,300 lines of C++20, and introduces one new command to Yosys: `tamara_tmr`.
 
 === Yosys background
 Yosys supports dynamically loading plugins at runtime. These plugins are compiled against the Yosys codebase,
