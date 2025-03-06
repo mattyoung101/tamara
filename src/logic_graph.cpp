@@ -174,6 +174,21 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
         ptr);
 }
 
+/// Returns true if the RTLILAnyPtr is an acceptable neighbour to use in the search
+bool isAcceptableNeighbour(const RTLILAnyPtr &ptr, const RTLILWireConnections &wireConnections) {
+    return std::visit(
+        [&, wireConnections](auto &&arg) {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
+                return true;
+            }
+            if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
+                return isWireIO(arg, wireConnections);
+            }
+        },
+        ptr);
+}
+
 } // namespace
 
 TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(
@@ -195,8 +210,8 @@ TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(
                     // this is actually an IO
                     return static_cast<TMRGraphNode::Ptr>(std::make_shared<IONode>(arg, localId));
                 }
-                // it's a wire, but just a regular element node -> not an IO
-                return static_cast<TMRGraphNode::Ptr>(std::make_shared<ElementWireNode>(arg, localId));
+                log_error("TaMaRa internal error: Tried to instantiate TMRGraphNode from non-IO Wire '%s'!\n",
+                    log_id(arg->name));
             }
         },
         ptr);
@@ -205,9 +220,8 @@ TMRGraphNode::Ptr TMRGraphNode::newLogicGraphNeighbour(
 void ElementCellNode::replicate(RTLIL::Module *module) {
     log("    Replicating %s %s\n", identify().c_str(), log_id(cell->name));
     if (cell->has_attribute(CONE_ANNOTATION)) {
-        log("When replicating %s %s in cone %u: Already replicated in logic cone %s\n",
-            identify().c_str(), log_id(cell->name), getConeID(),
-            cell->get_string_attribute(CONE_ANNOTATION).c_str());
+        log("When replicating %s %s in cone %u: Already replicated in logic cone %s\n", identify().c_str(),
+            log_id(cell->name), getConeID(), cell->get_string_attribute(CONE_ANNOTATION).c_str());
         return;
     }
 
@@ -231,31 +245,6 @@ void ElementCellNode::replicate(RTLIL::Module *module) {
     replicas.push_back(replica2);
 }
 
-void ElementWireNode::replicate(RTLIL::Module *module) {
-    log("    Replicating ElementWireNode %s\n", log_id(wire->name));
-    if (wire->has_attribute(CONE_ANNOTATION)) {
-        log("When replicating ElementWireNode %s in cone %u: Already replicated in logic cone %s\n",
-            log_id(wire->name), getConeID(), wire->get_string_attribute(CONE_ANNOTATION).c_str());
-        return;
-    }
-
-    auto id = std::to_string(getConeID());
-
-    auto *replica1 = module->addWire(NEW_ID_SUFFIX(wire->name.str() + "__replica1_cone" + id + "__"), wire);
-    auto *replica2 = module->addWire(NEW_ID_SUFFIX(wire->name.str() + "__replica2_cone" + id + "__"), wire);
-
-    replica1->set_string_attribute(CONE_ANNOTATION, id);
-    replica2->set_string_attribute(CONE_ANNOTATION, id);
-    wire->set_string_attribute(CONE_ANNOTATION, id);
-
-    wire->set_bool_attribute(ORIGINAL_ANNOTATION);
-
-    module->check();
-
-    replicas.push_back(replica1);
-    replicas.push_back(replica2);
-}
-
 void IONode::replicate([[maybe_unused]] RTLIL::Module *module) {
     // this shouldn't happen since we call replicateIfNotIO
     log_error("TaMaRa internal error: Cannot replicate IO node!\n");
@@ -272,7 +261,9 @@ std::vector<TMRGraphNode::Ptr> TMRGraphNode::computeNeighbours(
     out.reserve(neighbours.size());
     for (const auto &neighbour : neighbours) {
         // we're passing nullopt here for the sigSpec, since we may not have an easy way of getting to it
-        out.push_back(newLogicGraphNeighbour(neighbour, connections));
+        if (isAcceptableNeighbour(neighbour, connections)) {
+            out.push_back(newLogicGraphNeighbour(neighbour, connections));
+        }
     }
     return out;
 }
@@ -461,7 +452,7 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILConnections &connections,
         // extractReplicaWire again
 
         // auto *outNodeWire = extractReplicaWire(outputNode->getRTLILObjPtr());
-        auto *outNodeWire = std::get<RTLIL::Wire*>(outputNode->getRTLILObjPtr());
+        auto *outNodeWire = std::get<RTLIL::Wire *>(outputNode->getRTLILObjPtr());
         DUMPASYNC;
 
         // locate SigSpecs associated with the output node wire

@@ -156,64 +156,6 @@ private:
     std::vector<RTLIL::Cell *> replicas;
 };
 
-//! Also a logic element in the graph, but a wire not a cell. See ElementNode.
-class ElementWireNode : public TMRGraphNode {
-public:
-    explicit ElementWireNode(RTLIL::Wire *wire, uint32_t id)
-        : TMRGraphNode(id)
-        , wire(wire) {
-    }
-
-    ElementWireNode(RTLIL::Wire *wire, const std::vector<RTLIL::SigSpec> &spec, uint32_t id)
-        : TMRGraphNode(id)
-        , wire(wire) {
-        for (const auto &sig : spec) {
-            sigSpecs.push_back(sig);
-        }
-    }
-
-    RTLIL::Wire *getWire() const {
-        return wire;
-    }
-
-    void replicate(RTLIL::Module *module) override;
-
-    std::string identify() override {
-        return "ElementWireNode";
-    }
-
-    RTLILAnyPtr getRTLILObjPtr() override {
-        return wire;
-    }
-
-    std::vector<RTLIL::SigSpec> getSigSpecs() override {
-        return sigSpecs;
-    }
-
-    std::vector<RTLILAnyPtr> getReplicas() override {
-        std::vector<RTLILAnyPtr> out {};
-        out.reserve(replicas.size());
-        for (const auto &replica : replicas) {
-            out.emplace_back(replica);
-        }
-        return out;
-    }
-
-    int getWidth() override {
-        return wire->width;
-    }
-
-    size_t hash() const override {
-        return std::hash<RTLIL::Wire *>()(wire);
-        // return std::hash<std::string>()(wire->name.c_str());
-    }
-
-private:
-    RTLIL::Wire *wire;
-    std::vector<RTLIL::SigSpec> sigSpecs;
-    std::vector<RTLIL::Wire *> replicas;
-};
-
 //! Flip flop node in the graph
 class FFNode : public ElementCellNode {
     // functionally identical to ElementNode, we just need the class to distinguish from ElementNode
