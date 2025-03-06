@@ -225,7 +225,7 @@ private:
 
         if (!errorSink.has_value()) {
             log_warning("No error sink found for top module. The 'err' signal from TaMaRa voters will not be "
-                        "routed anywhere! You should add (* tamara_error_sink *) to a wire.\n");
+                        "routed anywhere!\nYou should add (* tamara_error_sink *) to a wire.\n");
         }
     }
 } const TamaraTMRPass;

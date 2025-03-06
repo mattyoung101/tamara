@@ -113,7 +113,7 @@ void replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *module) {
 /// Taking an RTLILAnyPtr that came from a call to replicate(), returns the relevant output wire associated
 /// with it
 RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
-    log("Extracting wire for replica '%s'\n", logRTLILName(ptr));
+    log_debug("Extracting wire for replica '%s'\n", logRTLILName(ptr));
     return std::visit(
         [](auto &&arg) {
             using T = std::decay_t<decltype(arg)>;
@@ -271,7 +271,6 @@ std::vector<TMRGraphNode::Ptr> TMRGraphNode::computeNeighbours(
     std::vector<TMRGraphNode::Ptr> out {};
     out.reserve(neighbours.size());
     for (const auto &neighbour : neighbours) {
-        // we're passing nullopt here for the sigSpec, since we may not have an easy way of getting to it
         out.push_back(newLogicGraphNeighbour(neighbour, connections));
     }
     return out;

@@ -12,7 +12,7 @@ splitcells
 splitnets
 write_rtlil
 
-tamara_tmr
+debug tamara_tmr
 check -assert
 write_rtlil
 write_verilog

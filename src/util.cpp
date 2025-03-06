@@ -68,7 +68,7 @@ std::pair<RTLILWireConnections, RTLILAnySignalConnections> tamara::analyseConnec
             continue;
         }
 
-        log("Checking connections for cell: %s (%zu connections)\n", log_id(cell->name),
+        log_debug("Checking connections for cell: %s (%zu connections)\n", log_id(cell->name),
             cell->connections().size());
 
         // find wires that this is connected to
