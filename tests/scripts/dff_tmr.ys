@@ -10,6 +10,7 @@ check
 write_rtlil
 
 tamara_tmr
+opt_clean
 check
 write_rtlil
 # write_verilog

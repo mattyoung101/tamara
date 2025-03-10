@@ -8,5 +8,6 @@ prep
 splitcells
 splitnets
 tamara_tmr
+opt_clean
 check
 

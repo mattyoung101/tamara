@@ -150,6 +150,7 @@ splitnets
 # Run TaMaRa
 plugin -i libtamara.so
 tamara_tmr
+opt_clean
 
 # Lower to ECP5
 synth_ecp5 -json netlist.json
