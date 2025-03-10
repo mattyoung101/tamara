@@ -12,7 +12,7 @@ verification passes that Yosys has available. I propose that TaMaRa, being a TMR
 into Yosys, would create a platform for both researchers and industry users to experiment with TMR design and
 verification in the broader context of the Yosys tool suite. As the most popular open-source EDA synthesis
 tool, Yosys has a large community of users and developers working with it, and so has a large number of
-plugins and resources available. As a Yosys plugin, TaMaRa end users can seamlessly take advantage of these
+plugins and resources available. As a Yosys plugin, TaMaRa end users could seamlessly take advantage of these
 plugins and resources; including formal verification, logic optimisation and debugging/inspection. I envision
 TaMaRa as a platform that provides a baseline TMR implementation that other researchers can extend upon, and
 that industry users can experiment with, all the while supported both FPGAs/ASICs and being fully integrated
@@ -211,10 +211,19 @@ extensive verification methodology is required not just as a once-off, but throu
 verification methodology is covered throughout @section:verification, there are some important software
 engineering considerations about _how_ this was implemented.
 
+In particular, I implemented a regression test suite, which is common in large-scale software projects. The
+regression test script is written in Python, and reads the list of tests to run from a YAML document. This
+script is capable of running both Yosys script tests as well as formal equivalence checking tests using the
+`eqy` tool. The script also keeps track of prior results, so that regressions can be easily detected. This
+tool was an essential part of the TaMaRa development process, as it allowed major refactors to be performed
+without the worry of breaking any prior tests.
+
+Another issue that was encountered during the development of TaMaRa was the problems associated with
+maintaining a codebase over a long-term period.
+
 #TODO("")
 - Poor design decisions that we had initially (RTLILWireConnections)
 - Not using SigSpec
-- Regression test suite
 
 == Verification <section:verification>
 Due to its use in safety critical sectors like aerospace and defence, comprehensive verification and testing
