@@ -144,7 +144,7 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
                         // then rip up the existing wire and redirect it
                         // then return this wire
                         auto *wire
-                            = cell->module->addWire(NEW_ID_SUFFIX("extractReplicaWire"), GetSize(signal));
+                            = cell->module->addWire(tamaraId("extractReplicaWire"), GetSize(signal));
 
                         DUMPASYNC;
 
@@ -212,8 +212,8 @@ void ElementCellNode::replicate(RTLIL::Module *module) {
 
     auto id = std::to_string(getConeID());
 
-    auto *replica1 = module->addCell(NEW_ID_SUFFIX(cell->name.str() + "__replica1_cone" + id + "__"), cell);
-    auto *replica2 = module->addCell(NEW_ID_SUFFIX(cell->name.str() + "__replica2_cone" + id + "__"), cell);
+    auto *replica1 = module->addCell(RTLIL::IdString(cell->name.str() + "$replica1_cone" + id), cell);
+    auto *replica2 = module->addCell(RTLIL::IdString(cell->name.str() + "$replica2_cone" + id), cell);
 
     replica1->set_string_attribute(CONE_ANNOTATION, id);
     replica2->set_string_attribute(CONE_ANNOTATION, id);
@@ -241,8 +241,8 @@ void ElementWireNode::replicate(RTLIL::Module *module) {
 
     auto id = std::to_string(getConeID());
 
-    auto *replica1 = module->addWire(NEW_ID_SUFFIX(wire->name.str() + "__replica1_cone" + id + "__"), wire);
-    auto *replica2 = module->addWire(NEW_ID_SUFFIX(wire->name.str() + "__replica2_cone" + id + "__"), wire);
+    auto *replica1 = module->addWire(RTLIL::IdString(wire->name.str() + "$replica1_cone" + id), wire);
+    auto *replica2 = module->addWire(RTLIL::IdString(wire->name.str() + "$replica2_cone" + id), wire);
 
     replica1->set_string_attribute(CONE_ANNOTATION, id);
     replica2->set_string_attribute(CONE_ANNOTATION, id);

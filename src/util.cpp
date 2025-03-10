@@ -250,3 +250,7 @@ std::string tamara::generateRandomHex(size_t len) {
 
     return ss.str();
 }
+
+RTLIL::IdString tamara::tamaraId(const std::string &name) {
+    return "$tmr$" + name + "$" + std::to_string(Yosys::autoidx++);
+}

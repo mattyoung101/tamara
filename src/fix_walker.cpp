@@ -199,7 +199,7 @@ void MultiDriverFixer::reconnect(RTLIL::Wire *target, RTLIL::Cell *input, RTLIL:
             auto outputCellPort = locateInputPortConnectedToTarget(target, output, cellTypes);
 
             // we need to apparently make an intermediary wire too
-            auto *wire = input->module->addWire(NEW_ID_SUFFIX("MultiDriverFixer"), connWire->width);
+            auto *wire = input->module->addWire(tamaraId("MultiDriverFixer"), connWire->width);
             DUMPASYNC;
 
             // finalise the connection

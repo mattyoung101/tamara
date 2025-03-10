@@ -14,10 +14,10 @@
 USING_YOSYS_NAMESPACE;
 
 // NOLINTBEGIN(bugprone-macro-parentheses) These macros do not need parentheses
-#define WIRE(A, B) auto A##_##B##_wire = makeAsVoter(module->addWire(NEW_ID_SUFFIX(#A "_" #B "_wire")));
-#define NOT(number, A, B) makeAsVoter(module->addLogicNot(NEW_ID_SUFFIX("not" #number), A, B))
-#define AND(number, A, B, Y) makeAsVoter(module->addLogicAnd(NEW_ID_SUFFIX("and" #number), A, B, Y))
-#define OR(number, A, B, Y) makeAsVoter(module->addLogicOr(NEW_ID_SUFFIX("or" #number), A, B, Y))
+#define WIRE(A, B) auto A##_##B##_wire = makeAsVoter(module->addWire(tamaraId(#A "_" #B "_wire")));
+#define NOT(number, A, B) makeAsVoter(module->addLogicNot(tamaraId("not" #number), A, B))
+#define AND(number, A, B, Y) makeAsVoter(module->addLogicAnd(tamaraId("and" #number), A, B, Y))
+#define OR(number, A, B, Y) makeAsVoter(module->addLogicOr(tamaraId("or" #number), A, B, Y))
 // NOLINTEND(bugprone-macro-parentheses)
 
 using namespace tamara;
@@ -37,7 +37,7 @@ constexpr T makeAsVoter(T obj) {
 //! Inserts the custom voter cell type into the module. Currently this is only used for debug.
 RTLIL::Cell *insertVoterCell(RTLIL::Module *module, const RTLIL::SigSpec &a, const RTLIL::SigSpec &b,
     const RTLIL::SigSpec &c, const RTLIL::SigSpec &out, const RTLIL::SigSpec &err) {
-    RTLIL::Cell *cell = module->addCell(NEW_ID_SUFFIX("voter"), ID(VOTER));
+    RTLIL::Cell *cell = module->addCell(tamaraId("voter"), ID(VOTER));
     cell->setPort(ID::A, a);
     cell->setPort(ID::B, b);
     cell->setPort(ID::C, c);
@@ -159,7 +159,7 @@ void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::
     // the ERROR wire is as wide as the number of input bits, we'll $reduce_or this down later; and then later
     // route it to the global module error signal
     // make an intermediate signal
-    auto *err_intermediate = module->addWire(NEW_ID_SUFFIX("ERR_INTERMEDIATE"), bits);
+    auto *err_intermediate = module->addWire(tamaraId("ERR_INTERMEDIATE"), bits);
 
     log("Inserting voter in module %s for:\n  a: %s\n  b: %s\n  c: %s\n  out: %s\n", log_id(module->name),
         log_id(a->name), log_id(b->name), log_id(c->name), log_id(out->name));
@@ -176,11 +176,11 @@ void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::
         RTLIL::SigChunk chunk_err(err_intermediate, bit, 1);
 
         // create wire bits
-        auto *w_a = makeAsVoter(module->addWire(NEW_ID_SUFFIX("A")));
-        auto *w_b = makeAsVoter(module->addWire(NEW_ID_SUFFIX("B")));
-        auto *w_c = makeAsVoter(module->addWire(NEW_ID_SUFFIX("C")));
-        auto *w_out = makeAsVoter(module->addWire(NEW_ID_SUFFIX("OUT")));
-        auto *w_err = makeAsVoter(module->addWire(NEW_ID_SUFFIX("ERR")));
+        auto *w_a = makeAsVoter(module->addWire(tamaraId("A")));
+        auto *w_b = makeAsVoter(module->addWire(tamaraId("B")));
+        auto *w_c = makeAsVoter(module->addWire(tamaraId("C")));
+        auto *w_out = makeAsVoter(module->addWire(tamaraId("OUT")));
+        auto *w_err = makeAsVoter(module->addWire(tamaraId("ERR")));
         DUMPASYNC;
 
         // attach SigChunks to voter wires
@@ -211,12 +211,12 @@ void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::
     // OR'ing them all together, but that happens in finalise()
 
     // output from the intermediate (will be used in the OR)
-    auto *err_intermediate_out = makeAsVoter(module->addWire(NEW_ID_SUFFIX("ERR_INTER_OUT")));
+    auto *err_intermediate_out = makeAsVoter(module->addWire(tamaraId("ERR_INTER_OUT")));
     DUMPASYNC;
 
     // insert $reduce_or reduction to OR every err bit in the voter
     // FIXME don't do this if the voter is 1-bit (https://github.com/mattyoung101/tamara/issues/24)
-    makeAsVoter(module->addReduceOr(NEW_ID_SUFFIX("REDUCE"), err_intermediate, err_intermediate_out));
+    makeAsVoter(module->addReduceOr(tamaraId("REDUCE"), err_intermediate, err_intermediate_out));
 
     // store as a reduction that we'll access later in finalise
     reductions.push_back(err_intermediate_out);
@@ -248,15 +248,15 @@ void VoterBuilder::finalise(RTLIL::Wire *err) {
     for (size_t i = 1; i < reductions.size(); i++) {
         if (prev == nullptr) {
             // initially, start off by OR'ing together reductions[0] and reductions[1], and storing this
-            auto *orOut = makeAsVoter(module->addWire(NEW_ID_SUFFIX("initial_or_out")));
-            makeAsVoter(module->addLogicOr(NEW_ID_SUFFIX("initial_or"), reductions[0], reductions[1], orOut));
+            auto *orOut = makeAsVoter(module->addWire(tamaraId("initial_or_out")));
+            makeAsVoter(module->addLogicOr(tamaraId("initial_or"), reductions[0], reductions[1], orOut));
             prev = orOut;
         } else {
             // otherwise, continue the OR chain by building an OR that takes prev and cur
             auto *orOut
-                = makeAsVoter(module->addWire(NEW_ID_SUFFIX("or_tree_" + std::to_string(i) + "_out")));
+                = makeAsVoter(module->addWire(tamaraId("or_tree_" + std::to_string(i) + "_out")));
             makeAsVoter(module->addLogicOr(
-                NEW_ID_SUFFIX("or_tree_" + std::to_string(i)), prev, reductions[i], orOut));
+                tamaraId("or_tree_" + std::to_string(i)), prev, reductions[i], orOut));
             prev = orOut;
         }
     }

@@ -137,6 +137,9 @@ void dumpAsync(const std::string &file, const std::string &function, size_t line
 //! Generates random hex characters of the output length len
 std::string generateRandomHex(size_t len);
 
+//! Generates a TaMaRa formatted RTLIL::IdString
+RTLIL::IdString tamaraId(const std::string &name);
+
 } // namespace tamara
 
 namespace std {
