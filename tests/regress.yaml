@@ -21,6 +21,8 @@ eqy:
   - mux_1bit
   - mux_2bit
   - bug7
+  - not_swizzle_low
+  - not_swizzle_high
 
 # Yosys scripts (from the scripts directory with .ys extension)
 scripts:
