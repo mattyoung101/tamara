@@ -102,6 +102,15 @@ def main(quiet: bool = False):
                         print(f"\n{Fore.RED + Style.BRIGHT}⚠️ ⚠️ YOU HAVE REGRESSED! ⚠️ ⚠️{Style.RESET_ALL}")
                         print(f"\nTest {latest} had {prior_result['failed']} failed tests, which is"
                               f" {failed - prior_result['failed']} less than you have now.\n")
+
+                        # figure out what tests failed
+                        print("Newly failing tests:")
+                        cur_failed = set(failed_tests)
+                        prior_failed = set(prior_result["failed_tests"])
+                        newly_failed = cur_failed - prior_failed
+
+                        for test in newly_failed:
+                            print(f"- {test}")
                     else:
                         print(f"\n{Fore.GREEN}You have not regressed :){Style.RESET_ALL}")
                 else:
@@ -114,7 +123,8 @@ def main(quiet: bool = False):
     date = datetime.now().strftime("%Y-%d-%H-%M-%S.%f")
     result = {
         "passed": passed,
-        "failed": failed
+        "failed": failed,
+        "failed_tests": failed_tests
     }
     with open(f"tamara-regress-{date}.json", "w") as f:
         json.dump(result, f)
