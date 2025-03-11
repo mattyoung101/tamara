@@ -17,6 +17,7 @@ rename -top design
 splitcells
 splitnets
 tamara_tmr
+opt_clean
 
 [strategy sby]
 use sby

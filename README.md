@@ -227,6 +227,8 @@ cell type with 3 inputs and 2 outputs, as a blackboxed cell. This can be used to
 netlist as a graph. This enables that functionality.
 - `TAMARA_DEBUG_DUMP_RTLIL`: TaMaRa will dump the RTLIL text representation to the console at various points
 where the `DUMP_RTLIL` macro is called. This will not block the main algorithm.
+- `TAMARA_DEBUG_AGGRESSIVE_CLEAN`: Runs the `opt_clean` command inside `ElementWireNode::replicate` to quickly
+  cleanup unused wires and make visual debugging less cluttered
 
 ## Compiling papers
 This repo also includes various papers including the proposal draft, presentation slides, and the actual

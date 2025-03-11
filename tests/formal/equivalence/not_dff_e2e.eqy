@@ -13,6 +13,7 @@ hierarchy -top not_dff_tmr
 rename -top design
 prep
 tamara_tmr
+opt_clean
 
 write_verilog /tmp/not_dff_e2e.v
 design -reset

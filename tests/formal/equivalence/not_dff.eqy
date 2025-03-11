@@ -16,6 +16,7 @@ rename -top design
 prep
 setundef -init -zero
 tamara_tmr
+opt_clean
 
 [strategy sby]
 use sby

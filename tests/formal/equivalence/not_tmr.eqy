@@ -14,6 +14,7 @@ hierarchy -top inverter
 rename -top design
 prep
 tamara_tmr
+opt_clean
 
 [strategy sat]
 use sat

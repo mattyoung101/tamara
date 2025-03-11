@@ -13,6 +13,7 @@ read_verilog -DTAMARA -sv ../tests/verilog/not_dff_tmr.sv
 hierarchy -top not_dff_tmr
 prep
 tamara_tmr
+opt_clean
 
 [strategy sby]
 use sby

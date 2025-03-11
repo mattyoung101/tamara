@@ -10,6 +10,7 @@
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
 #include "tamara/util.hpp"
+#include "tamara/termcolour.hpp"
 #include <string>
 
 USING_YOSYS_NAMESPACE;
@@ -17,6 +18,9 @@ USING_YOSYS_NAMESPACE;
 namespace {
 
 using namespace tamara;
+
+#define COLOUR(the_colour) (termcolour::colour(termcolour::Colour::the_colour).c_str())
+#define RESET() (termcolour::reset().c_str())
 
 /// Finds the RTLILAnyPtr object in the collection that has the partial contents of the string "name". If not
 /// found, crashes.
@@ -114,7 +118,7 @@ void MultiDriverFixer::processWire(
         // all outputs must be of the same cell type (OPTIONAL, TODO do later)
 
         if (!connections.contains(wire)) {
-            log("Not present in RTLILWireConnections\n");
+            log("%sNot present in RTLILWireConnections.%s\n", COLOUR(Red), RESET());
             return;
         }
 
@@ -122,7 +126,7 @@ void MultiDriverFixer::processWire(
         for (const auto &conn : connections.at(wire)) {
             auto *attr = toAttrObject(conn);
             if (!attr->has_attribute(CONE_ANNOTATION)) {
-                log("Missing cone annotation.\n");
+                log("%sMissing cone annotation.%s\n", COLOUR(Red), RESET());
                 return;
             }
         }
@@ -132,12 +136,12 @@ void MultiDriverFixer::processWire(
         for (const auto &node : inverse) {
             auto *attr = toAttrObject(node);
             if (!attr->has_attribute(CONE_ANNOTATION)) {
-                log("Missing cone annotation.\n");
+                log("%sMissing cone annotation.%s\n", COLOUR(Red), RESET());
                 return;
             }
         }
 
-        log("Confirmed.\n");
+        log("%sConfirmed.%s\n", COLOUR(Green), RESET());
 
         // confirmed it, so now we need to apply our re-wiring logic
         rewire(wire, connections);

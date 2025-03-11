@@ -54,25 +54,24 @@ struct TamaraTMRPass : public Pass {
         log("    tamara_tmr\n");
         log("\n");
 
-        log("TaMaRa is an automated Triple Modular Redundancy flow for Yosys.\n");
-        log("The 'tamara_tmr' command processes exactly one selected module in the\n");
-        log("design, which should be the top module. It will apply TMR and insert\n");
-        log("majority voters.\n\n");
-
-        log("The 'tamara_tmr' command should be run after synthesis but before\n");
-        log("technology mapping. TaMaRa aims to be able to process all\n");
-        log("Yosys-compatible designs, but requires a small amount of special preparation\n");
-        log("to work correctly. In particular, the 'split_cells' and 'split_nets'\n");
-        log("commands must be run _before_ TaMaRa, and the user should define a\n");
-        log("wire in the top module as the error signal using the (* tamara_error_sink*)\n");
-        log("annotation. More information is available in the official documentation.\n\n");
-
-        log("For more information, please read the TaMaRa documentation, which is\n");
-        log("available at: https://github.com/mattyoung101/tamara\n\n");
-
-        log("TaMaRa is (c) 2024-2025 Matt Young, available under the MPL 2.0 licence.\n");
-        log("It was developed as part of a Bachelor of Computer Science (Honours) thesis\n");
-        log("at the University of Queensland, Australia.\n");
+        log("TaMaRa is an automated Triple Modular Redundancy flow for Yosys. The\n");
+        log("'tamara_tmr' command processes exactly one selected module in the design, which\n");
+        log("should be the top module. It will apply TMR and insert majority voters.\n");
+        log("\n");
+        log("The 'tamara_tmr' command should be run after synthesis but before technology\n");
+        log("mapping. TaMaRa aims to be able to process all Yosys-compatible designs, but\n");
+        log("requires a small amount of special preparation to work correctly. In particular,\n");
+        log("the 'split_cells' and 'split_nets' commands must be run _before_ TaMaRa, and the\n");
+        log("user should define a wire in the top module as the error signal using the (*\n");
+        log("tamara_error_sink*) annotation. It is advised to run `opt_clean` after TaMaRa,\n");
+        log("but strictly no. other optimisation passes, as they remove the TMR logic.\n");
+        log("\n");
+        log("For more information, please read the TaMaRa documentation, which is available\n");
+        log("at: https://github.com/mattyoung101/tamara\n");
+        log("\n");
+        log("TaMaRa is (c) 2024-2025 Matt Young, available under the MPL 2.0 licence. It was\n");
+        log("developed as part of a Bachelor of Computer Science (Honours) thesis at the\n");
+        log("University of Queensland, Australia.\n");
     }
 
     void execute(std::vector<std::string> args, RTLIL::Design *design) override {

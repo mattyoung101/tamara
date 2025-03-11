@@ -25,12 +25,6 @@ mkdir -p $VERISMITH_DIR
 echo "Generating data..."
 seq -w 0 $TESTS | parallel --progress ./verismith generate --config ../tests/fuzz/tiny.toml ">" $VERISMITH_DIR/{}.v
 
-# Prepend (* tamara_triplicate *) to each file
-echo "Prepending (* tamara_triplicate *) annotation..."
-for filename in $VERISMITH_DIR/*.v; do
-    printf '%s\n%s\n' "(* tamara_triplicate *)" "$(cat $filename)" > $filename
-done
-
 # Run TaMaRa in parallel and capture failures
 echo "Running TaMaRa..."
 # Redirect errors using parallel, so that we capture ASan output as well

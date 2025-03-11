@@ -26,6 +26,7 @@ splitnets
 write_rtlil
 
 tamara_tmr
+opt_clean
 check -assert
 write_rtlil
 write_verilog
@@ -51,6 +52,7 @@ rename -top design
 splitcells
 splitnets
 tamara_tmr
+opt_clean
 
 [strategy sby]
 use sby
