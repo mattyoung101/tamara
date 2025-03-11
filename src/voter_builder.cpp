@@ -184,7 +184,6 @@ void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::
         DUMPASYNC;
 
         // attach SigChunks to voter wires
-        // FIXME I think this block is broken when multiple voters are involved
         module->connect(w_a, chunk_a);
         DUMPASYNC;
         module->connect(w_b, chunk_b);
@@ -214,9 +213,12 @@ void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::
     auto *err_intermediate_out = makeAsVoter(module->addWire(tamaraId("ERR_INTER_OUT")));
     DUMPASYNC;
 
-    // insert $reduce_or reduction to OR every err bit in the voter
-    // FIXME don't do this if the voter is 1-bit (https://github.com/mattyoung101/tamara/issues/24)
-    makeAsVoter(module->addReduceOr(tamaraId("REDUCE"), err_intermediate, err_intermediate_out));
+    // insert $reduce_or reduction to OR every err bit in the voter (only for multi-bit voters)
+    if (bits > 1) {
+        makeAsVoter(module->addReduceOr(tamaraId("REDUCE"), err_intermediate, err_intermediate_out));
+    } else {
+        module->connect(err_intermediate, err_intermediate_out);
+    }
 
     // store as a reduction that we'll access later in finalise
     reductions.push_back(err_intermediate_out);
