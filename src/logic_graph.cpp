@@ -143,8 +143,7 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
                         // Now what we should do is make a new wire, which will be our output
                         // then rip up the existing wire and redirect it
                         // then return this wire
-                        auto *wire
-                            = cell->module->addWire(tamaraId("extractReplicaWire"), GetSize(signal));
+                        auto *wire = cell->module->addWire(tamaraId("extractReplicaWire"), GetSize(signal));
 
                         DUMPASYNC;
 
@@ -292,7 +291,7 @@ void LogicCone::verifyInputNodes() const {
 void LogicCone::search(const RTLILConnections &connections) {
     // check that we're starting the search from scratch on this cone
     log_assert(frontier.empty());
-    log_assert(cone.empty()); // NOLINT(bugprone-unused-return-value)
+    log_assert(cone.empty());
     log_assert(inputNodes.empty());
 
     frontier.push(outputNode);
@@ -339,17 +338,24 @@ void LogicCone::search(const RTLILConnections &connections) {
                 log("    %sSkip adding %s to cone (first: %s)%s\n", COLOUR(Red), node->identify().c_str(),
                     first ? "true" : "false", RESET());
             }
-
-            // select voter cut point: the first node that we find on the backwards BFS (not the initial node)
-            if (!voterCutPoint.has_value() && !first) {
-                voterCutPoint = node;
-                log("    %sSet voter cut point to this node%s\n", COLOUR(Cyan), RESET());
-            }
         } else {
             // found terminal, start wrapping up search -> don't add neighbours, and don't add elements to
             // cone
             log("    %s%s %s is a terminal, wrapping up search%s\n", COLOUR(Yellow), node->identify().c_str(),
                 log_id(getNodeName(node)), RESET());
+        }
+
+        // select voter cut point: the first node that we find on the backwards BFS (not the initial node)
+        if (!voterCutPoint.has_value() && !first) {
+            // we don't really support setting ElementWireNodes or IONode as voters
+            // see https://github.com/mattyoung101/tamara/issues/22#issuecomment-2711490999
+            if (dynamic_pointer_cast<ElementWireNode>(node) != nullptr
+                || dynamic_pointer_cast<IONode>(node) != nullptr) {
+                log("    Would have set this node as cut point, but it's a wire or IO. Skipping.\n");
+            } else {
+                voterCutPoint = node;
+                log("    %sSet voter cut point to this node%s\n", COLOUR(Cyan), RESET());
+            }
         }
 
         if (!frontier.empty()) {
@@ -441,6 +447,7 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILConnections &connections,
 
     // connect voter between output and firstReplicated
     log_assert(voterCutPoint.has_value() && "Voter cut point not set!");
+    log("Voter cut point: %s\n", logRTLILName(voterCutPoint.value()));
     auto replicas = voterCutPoint->get()->getReplicas();
     log_assert(replicas.size() == 2 && "Expected 2 replicas");
 
