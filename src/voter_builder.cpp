@@ -34,6 +34,7 @@ constexpr T makeAsVoter(T obj) {
     return obj;
 }
 
+#ifdef TAMARA_DEBUG
 //! Inserts the custom voter cell type into the module. Currently this is only used for debug.
 RTLIL::Cell *insertVoterCell(RTLIL::Module *module, const RTLIL::SigSpec &a, const RTLIL::SigSpec &b,
     const RTLIL::SigSpec &c, const RTLIL::SigSpec &out, const RTLIL::SigSpec &err) {
@@ -48,6 +49,7 @@ RTLIL::Cell *insertVoterCell(RTLIL::Module *module, const RTLIL::SigSpec &a, con
 
     return cell;
 }
+#endif
 
 }; // namespace
 

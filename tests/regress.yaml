@@ -61,3 +61,4 @@ scripts:
   # - picorv32
   - memory
   - memory_simple
+  - count_lead_zero

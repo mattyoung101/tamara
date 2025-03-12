@@ -254,6 +254,12 @@ void ElementWireNode::replicate(RTLIL::Module *module) {
     replicas.push_back(replica1);
     replicas.push_back(replica2);
 
+#ifdef TAMARA_DEBUG
+    if (getenv("TAMARA_DEBUG_AGGRESSIVE_CLEAN") != nullptr) {
+        Yosys::run_pass("opt_clean");
+    }
+#endif
+
     DUMPASYNC;
 }
 
@@ -443,10 +449,12 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILConnections &connections,
         log("%sSkipping wiring of cone %u - internal elements empty%s\n", COLOUR(Red), id, RESET());
         return;
     }
+    if (!voterCutPoint.has_value()) {
+        log_error("TaMaRa internal error: Voter cut point not set!\n");
+    }
     DUMPASYNC;
 
     // connect voter between output and firstReplicated
-    log_assert(voterCutPoint.has_value() && "Voter cut point not set!");
     log("Voter cut point: %s\n", logRTLILName(voterCutPoint.value()));
     auto replicas = voterCutPoint->get()->getReplicas();
     log_assert(replicas.size() == 2 && "Expected 2 replicas");
@@ -470,12 +478,11 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILConnections &connections,
         // if it's a cell, then we probably want to find the output port and use that - maybe something like
         // extractReplicaWire again
 
-        // auto *outNodeWire = extractReplicaWire(outputNode->getRTLILObjPtr());
-        auto *outNodeWire = std::get<RTLIL::Wire *>(outputNode->getRTLILObjPtr());
+        auto *outNodeWire = extractReplicaWire(outputNode->getRTLILObjPtr());
+        // auto *outNodeWire = std::get<RTLIL::Wire *>(outputNode->getRTLILObjPtr());
         DUMPASYNC;
 
         // locate SigSpecs associated with the output node wire
-        // FIXME this then blows up if the above is a SigSpec, so we really might have to convert it to a wire
         RTLILSigSpecSet attachedSigSpecs = getOrDefault(connections.signals, outNodeWire, RTLILSigSpecSet());
 
         // check if we have multiple attached SigChunk (see https://github.com/mattyoung101/tamara/issues/13)

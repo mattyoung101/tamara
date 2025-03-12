@@ -64,7 +64,7 @@ struct TamaraTMRPass : public Pass {
         log("the 'split_cells' and 'split_nets' commands must be run _before_ TaMaRa, and the\n");
         log("user should define a wire in the top module as the error signal using the (*\n");
         log("tamara_error_sink*) annotation. It is advised to run `opt_clean` after TaMaRa,\n");
-        log("but strictly no. other optimisation passes, as they remove the TMR logic.\n");
+        log("but strictly no other optimisation passes, as they remove the TMR logic.\n");
         log("\n");
         log("For more information, please read the TaMaRa documentation, which is available\n");
         log("at: https://github.com/mattyoung101/tamara\n");

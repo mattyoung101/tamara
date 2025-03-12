@@ -77,7 +77,13 @@ std::pair<RTLILWireConnections, RTLILAnySignalConnections> tamara::analyseConnec
 
             Wire *wire = sigSpecToWire(signal);
             if (wire == nullptr) {
-                log_warning("Trouble accessing wire from connection '%s'\n", log_id(name));
+                // usually this occurs if the signal is const, so only log the warning if something unexpected
+                // happened
+                if (!signal.is_fully_const()) {
+                    log_warning("Trouble accessing wire from connection that we expected to be able to "
+                                "access: '%s'. Signal: '%s'\n",
+                        log_id(name), log_signal(signal));
+                }
                 continue;
             }
 
