@@ -214,9 +214,9 @@ engineering considerations about _how_ this was implemented.
 In particular, I implemented a regression test suite, which is common in large-scale software projects. The
 regression test script is written in Python, and reads the list of tests to run from a YAML document. This
 script is capable of running both Yosys script tests as well as formal equivalence checking tests using the
-`eqy` tool. The script also keeps track of prior results, so that regressions can be easily detected. This
-tool was an essential part of the TaMaRa development process, as it allowed major refactors to be performed
-without the worry of breaking any prior tests.
+`eqy` tool. The script also keeps track of prior results and recently failed tests, so that regressions can be
+easily detected. This tool was an essential part of the TaMaRa development process, as it allowed major
+refactors to be performed without the worry of breaking any prior tests.
 
 Another issue that was encountered during the development of TaMaRa was the problems associated with
 maintaining a codebase over a long-term period.

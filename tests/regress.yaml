@@ -27,6 +27,7 @@ eqy:
 # Yosys scripts (from the scripts directory with .ys extension)
 scripts:
   - bug7
+  - bug39
   - gen_2bit_voter
   - gen_4bit_voter
   - gen_voter
