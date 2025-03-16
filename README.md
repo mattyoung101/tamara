@@ -230,6 +230,8 @@ where the `DUMP_RTLIL` macro is called. This will not block the main algorithm.
 - `TAMARA_DEBUG_AGGRESSIVE_CLEAN`: Runs the `opt_clean` command inside `ElementWireNode::replicate` to quickly
   cleanup unused wires and make visual debugging less cluttered. **Can cause significant problems (i.e. break)
   certain circuits**
+- `TAMARA_DISABLE_CONE_COLOURS`: Disables the colouring of cones in debug output, which can sometimes be
+annoying
 
 ## Compiling papers
 This repo also includes various papers including the proposal draft, presentation slides, and the actual

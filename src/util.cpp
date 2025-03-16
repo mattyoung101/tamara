@@ -235,7 +235,8 @@ void tamara::dumpAsync(const std::string &file, const std::string &function, siz
         + std::to_string(line);
     // auto graphName = "./dump_" + unique;
 
-    Yosys::run_pass("show -long -colors 420 -format png -prefix " + graphName);
+    Yosys::run_pass(
+        "show -long -colors 420 -format png " + tamara::generateColours() + " -prefix " + graphName);
 
     // delete the residual .dot file
     std::filesystem::remove(graphName + ".dot");
@@ -259,4 +260,17 @@ std::string tamara::generateRandomHex(size_t len) {
 
 RTLIL::IdString tamara::tamaraId(const std::string &name) {
     return "$tmr$" + name + "$" + std::to_string(Yosys::autoidx++);
+}
+
+std::string tamara::generateColours() {
+    if (getenv("TAMARA_DISABLE_CONE_COLOURS") != nullptr) {
+        return " ";
+    }
+
+    // TODO cache this
+    std::string showColours;
+    for (size_t i = 0; i < CONE_COLOURS.size(); i++) {
+        showColours += "-color " + CONE_COLOURS.at(i) + " a:tamara_cone=" + std::to_string(i) + " ";
+    }
+    return showColours;
 }

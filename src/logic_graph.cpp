@@ -144,12 +144,10 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
                         // then rip up the existing wire and redirect it
                         // then return this wire
                         auto *wire = cell->module->addWire(tamaraId("extractReplicaWire"), GetSize(signal));
-
                         DUMPASYNC;
 
                         // rip up the existing wire, and add our own
                         cell->setPort(name, wire);
-
                         log("Generated replacement wire '%s' for cell '%s'\n", log_id(wire->name),
                             log_id(cell->name));
 
@@ -474,12 +472,7 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILConnections &connections,
 
         DUMPASYNC;
 
-        // FIXME fix this garbage (https://github.com/mattyoung101/tamara/issues/22)
-        // if it's a cell, then we probably want to find the output port and use that - maybe something like
-        // extractReplicaWire again
-
         auto *outNodeWire = extractReplicaWire(outputNode->getRTLILObjPtr());
-        // auto *outNodeWire = std::get<RTLIL::Wire *>(outputNode->getRTLILObjPtr());
         DUMPASYNC;
 
         // locate SigSpecs associated with the output node wire
@@ -492,7 +485,6 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILConnections &connections,
                 log_signal(outNodeWire), attachedSigSpecs.size());
 
             // lookup the SigSpecs that are the _output_ of the voter cut point, on the _original_ circuit
-            // FIXME sketchy std::get call
             auto *voterCutCell = std::get<RTLIL::Cell *>(voterCutPoint.value()->getRTLILObjPtr());
             // the important part here is that this routine runs on the original circuit before we modify it,
             // hence why we're looking up into connections.cellOutputs (which is calculated by

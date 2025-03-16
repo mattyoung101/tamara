@@ -30,7 +30,7 @@ namespace tamara {
 #define DUMP                                                                                                 \
     do {                                                                                                     \
         if (getenv("TAMARA_DEBUG_DUMP") != nullptr) {                                                        \
-            Yosys::run_pass("show -colors 420 -pause -long");                                                \
+            Yosys::run_pass("show -colors 420 " + tamara::generateColours() + " -pause -long");              \
         }                                                                                                    \
     } while (0);
 #else
@@ -110,6 +110,20 @@ constexpr RTLIL::AttrObject *toAttrObject(const RTLILAnyPtr &ptr) {
         ptr);
 }
 
+/// Mapping between a cone ID and the colour it should be displayed as
+// clang-format off
+constexpr std::array<std::string, 8> CONE_COLOURS = {
+    "darkgreen",
+    "blue",
+    "purple",
+    "coral",
+    "darkcyan",
+    "darksalmon",
+    "mistyrose",
+    "red"
+};
+// clang-format on
+
 //! Returns the RTLIL ID for a RTLILAnyPtr
 RTLIL::IdString getRTLILName(const RTLILAnyPtr &ptr);
 
@@ -139,6 +153,9 @@ std::string generateRandomHex(size_t len);
 
 //! Generates a TaMaRa formatted RTLIL::IdString
 RTLIL::IdString tamaraId(const std::string &name);
+
+//! Gets, or generates if required, the string of colours to pass to the 'show' command
+std::string generateColours();
 
 } // namespace tamara
 

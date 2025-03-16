@@ -9,8 +9,8 @@
 #include "kernel/log.h"
 #include "kernel/rtlil.h"
 #include "kernel/yosys_common.h"
-#include "tamara/util.hpp"
 #include "tamara/termcolour.hpp"
+#include "tamara/util.hpp"
 #include <string>
 
 USING_YOSYS_NAMESPACE;
