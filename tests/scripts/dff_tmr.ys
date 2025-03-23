@@ -13,5 +13,4 @@ tamara_tmr
 opt_clean
 check -assert
 write_rtlil
-# write_verilog
-show -colors 420
+show -colors 420 -color darkgreen a:tamara_cone=0 -color blue a:tamara_cone=1 -color purple a:tamara_cone=2 -color coral a:tamara_cone=3 -color darkcyan a:tamara_cone=4 -color darksalmon a:tamara_cone=5 -color mistyrose a:tamara_cone=6 -color red a:tamara_cone=7

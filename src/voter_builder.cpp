@@ -219,7 +219,16 @@ void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::
     if (bits > 1) {
         makeAsVoter(module->addReduceOr(tamaraId("REDUCE"), err_intermediate, err_intermediate_out));
     } else {
-        module->connect(err_intermediate, err_intermediate_out);
+        // NOTE as per https://github.com/mattyoung101/tamara/issues/44
+        // there is something wrong for some reason with using module->connect, it makes the circuit look
+        // weird; somehow `opt_clean` cleans this up, but I'm not sure how as the original diagram looks
+        // invalid.
+        // SO, as a quick fix, we are going to insert a $buf cell here, which should not add as much critical
+        // path delay as a $reduce_or; but ideally we should fix this
+        makeAsVoter(module->addBuf(tamaraId("REDUCE"), err_intermediate, err_intermediate_out));
+        // TODO fix the statement below
+        //
+        // module->connect(err_intermediate, err_intermediate_out);
     }
 
     // store as a reduction that we'll access later in finalise
@@ -243,6 +252,7 @@ void VoterBuilder::finalise(RTLIL::Wire *err) {
         log("Special case (direct wiring) since reductions.size() == 1\n");
         module->connect(err, reductions[0]);
         module->check();
+        DUMPASYNC;
         return;
     }
 
@@ -255,6 +265,7 @@ void VoterBuilder::finalise(RTLIL::Wire *err) {
             auto *orOut = makeAsVoter(module->addWire(tamaraId("initial_or_out")));
             makeAsVoter(module->addLogicOr(tamaraId("initial_or"), reductions[0], reductions[1], orOut));
             prev = orOut;
+            DUMPASYNC;
         } else {
             // otherwise, continue the OR chain by building an OR that takes prev and cur
             auto *orOut
@@ -262,6 +273,7 @@ void VoterBuilder::finalise(RTLIL::Wire *err) {
             makeAsVoter(module->addLogicOr(
                 tamaraId("or_tree_" + std::to_string(i)), prev, reductions[i], orOut));
             prev = orOut;
+            DUMPASYNC;
         }
     }
 
@@ -269,4 +281,5 @@ void VoterBuilder::finalise(RTLIL::Wire *err) {
     NOTNULL(prev);
     module->connect(prev, err);
     module->check();
+    DUMPASYNC;
 }

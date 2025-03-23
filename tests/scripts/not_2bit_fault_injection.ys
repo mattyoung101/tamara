@@ -1,0 +1,26 @@
+# Tests applying fault injection to the not_2bit circuit
+plugin -i libtamara.so
+
+read_verilog -sv ../tests/verilog/not_2bit.sv
+hierarchy -top inverter
+
+prep
+splitcells
+splitnets
+write_rtlil
+
+tamara_tmr
+opt_clean
+check -assert
+
+# select only input signals
+select % a:tamara_voter %d
+# apply mutation (fault injection)
+mutate -seed 420 -list 1 -mode inv -o /tmp/tamara_fault_injection
+# deselect, go back to top module
+select -clear
+# execute the fault injection command
+script /tmp/tamara_fault_injection
+
+show -colors 420
+shell

@@ -201,6 +201,13 @@ struct TamaraTMRPass : public Pass {
             termcolour::reset().c_str());
         log("===============================\n");
         log_pop();
+
+#if TAMARA_DEBUG
+        if (getenv("TAMARA_DEBUG_AGGRESSIVE_CLEAN") != nullptr) {
+            Yosys::run_pass("opt_clean");
+        }
+#endif
+        DUMPASYNC;
     }
 
 private:

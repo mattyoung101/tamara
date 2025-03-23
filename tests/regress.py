@@ -22,6 +22,9 @@ import argparse
 # This script runs a regression test, based on the scripts listed in regress.yaml
 # Must be run from the build dir, like: ../tests/regress.py
 
+# Number of times to run each fault injection test (simulates a new type of fault each time)
+FAULT_INJECTION_SAMPLES = 10
+
 passed = 0
 failed = 0
 failed_tests = []
@@ -64,6 +67,17 @@ def run_script_tests(tests: List[str], quiet: bool = False):
         invoke(["yosys", f"../tests/scripts/{test}.ys"], quiet)
 
 
+def run_fault_injection_tests(tests: List[str], quiet: bool = False):
+    for test in tests:
+        for i in range(FAULT_INJECTION_SAMPLES):
+            print(
+                f"{Fore.BLUE}Running fault injection test: {test} "
+                f"(sample {i + 1}/{FAULT_INJECTION_SAMPLES})... ",
+                end="", flush=True)
+            invoke(["eqy", "-j", str(multiprocessing.cpu_count()), "-f",
+                    f"../tests/formal/fault/{test}.eqy"], quiet)
+
+
 def main(quiet: bool = False):
     if "tamara/build" not in os.getcwd():
         raise RuntimeError("Must be run from tamara/build directory.")
@@ -79,6 +93,7 @@ def main(quiet: bool = False):
         doc = yaml.safe_load(f)
         run_eqy_tests(doc["eqy"], quiet)
         run_script_tests(doc["scripts"], quiet)
+        run_fault_injection_tests(doc["fault"], quiet)
 
     print(f"{Fore.LIGHTGREEN_EX}{passed} passed{Style.RESET_ALL} {Fore.RED}{failed} failed{Style.RESET_ALL}")
     print(f"{Fore.CYAN}{int(round((passed / (passed + failed) * 100.0)))}% success{Style.RESET_ALL}")
