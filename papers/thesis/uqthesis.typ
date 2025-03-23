@@ -93,7 +93,7 @@
 
 // Appendices
 #appendices[
-    #include "pages/appendices/example.typ"
+    #include "pages/appendices/source_code.typ"
     #pagebreak()
 ]
 
