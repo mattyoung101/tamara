@@ -148,6 +148,7 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
 
                         // rip up the existing wire, and add our own
                         cell->setPort(name, wire);
+                        DUMPASYNC;
                         log("Generated replacement wire '%s' for cell '%s'\n", log_id(wire->name),
                             log_id(cell->name));
 
@@ -432,8 +433,11 @@ std::optional<RTLIL::Wire *> LogicCone::insertVoter(
         logRTLILName(voterCutPoint->get()->getRTLILObjPtr()), logRTLILName(replicas.at(0)),
         logRTLILName(replicas.at(1)), logRTLILName(replicas.at(2)));
 
-    // FIXME for some reason here, in cones_min.ys, out_w == c_w ??
-    // this might be because the cut point is wrong?
+    if (a_w == b_w || a_w == c_w || b_w == c_w || a_w == out_w || b_w == out_w || c_w == out_w) {
+        log("%sWIRING FAULT DETECTED%s\n", COLOUR(Red), RESET());
+        log_warning("TaMaRa internal warning: One of a_w, b_w, c_w and/or out_w are NOT unique. This will "
+                    "probably cause a wiring problem.\n");
+    }
 
     builder.build(a_w, b_w, c_w, out_w);
     DUMPASYNC;

@@ -13,8 +13,8 @@ splitnets
 write_rtlil
 
 tamara_tmr
-opt_clean
-show -colors 420
+# opt_clean
+show -colors 420 -long
 
 check -assert
 write_rtlil
