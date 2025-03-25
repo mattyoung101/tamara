@@ -38,6 +38,7 @@ bool tamara::isDFF(const RTLIL::Cell *cell) {
 }
 
 RTLIL::Wire *tamara::sigSpecToWire(const RTLIL::SigSpec &sigSpec) {
+    log("sigSpecToWire(%s)\n", log_signal(sigSpec));
     if (sigSpec.is_wire()) {
         return sigSpec.as_wire();
     }

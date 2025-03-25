@@ -344,7 +344,7 @@ private:
     //! From a node under consideration, inserts a voter into the cone.
     //! @param replicas Replicas for this node, should be of length 3 (includes the node itself).
     //! @returns The output wire, or none if no voter was inserted.
-    std::optional<RTLIL::Wire *> insertVoter(VoterBuilder &builder, const std::vector<RTLILAnyPtr> &replicas);
+    std::optional<RTLIL::SigSpec> insertVoter(VoterBuilder &builder, const std::vector<RTLILAnyPtr> &replicas);
 
     FixWalkerManager fixWalkers;
     // PERF This might be a little non-optimal, should be static

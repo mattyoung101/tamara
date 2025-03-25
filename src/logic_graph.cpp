@@ -110,9 +110,9 @@ void replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *module) {
     }
 }
 
-/// Taking an RTLILAnyPtr that came from a call to replicate(), returns the relevant output wire associated
+/// Taking an RTLILAnyPtr that came from a call to replicate(), returns the relevant output SigSpec associated
 /// with it
-RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
+RTLIL::SigSpec extractReplicaSpec(const RTLILAnyPtr &ptr) {
     log_debug("Extracting wire for replica '%s'\n", logRTLILName(ptr));
     return std::visit(
         [](auto &&arg) {
@@ -124,49 +124,33 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
 
                 CellTypes cellTypes(cell->module->design);
 
-                Wire *out = nullptr;
+                std::optional<RTLIL::SigSpec> out;
 
                 for (const auto &connection : cell->connections()) {
                     const auto &[name, signal] = connection;
 
                     // is this the output wire?
                     if (cellTypes.cell_output(cell->type, name)) {
-                        if (out != nullptr) {
+                        if (out.has_value()) {
                             log_error("TaMaRa internal error: Cell '%s' has multiple output ports - can't "
                                       "yet handle this\n",
                                 log_id(cell->name));
                         }
-                        // find the wire that the signal connected to
-                        auto *conn = sigSpecToWire(signal);
-                        NOTNULL(conn);
-
-                        // Now what we should do is make a new wire, which will be our output
-                        // then rip up the existing wire and redirect it
-                        // then return this wire
-                        auto *wire = cell->module->addWire(tamaraId("extractReplicaWire"), GetSize(signal));
-                        DUMPASYNC;
-
-                        // rip up the existing wire, and add our own
-                        cell->setPort(name, wire);
-                        DUMPASYNC;
-                        log("Generated replacement wire '%s' for cell '%s'\n", log_id(wire->name),
-                            log_id(cell->name));
-
-                        out = wire;
+                        out = signal;
                     }
                 }
 
-                if (out == nullptr) {
+                if (!out.has_value()) {
                     log_error("TaMaRa internal error: Failed to locate output wire for cell '%s'\n",
                         log_id(cell->name));
                 }
 
                 DUMPASYNC;
-                return out;
+                return out.value();
             }
             if constexpr (std::is_same_v<T, RTLIL::Wire *>) {
                 // if it's just a wire, we can return that
-                return dynamic_cast<RTLIL::Wire *>(arg);
+                return RTLIL::SigSpec(arg);
             }
         },
         ptr);
@@ -407,7 +391,7 @@ void LogicCone::replicate(RTLIL::Module *module) {
     DUMPASYNC;
 }
 
-std::optional<RTLIL::Wire *> LogicCone::insertVoter(
+std::optional<RTLIL::SigSpec> LogicCone::insertVoter(
     VoterBuilder &builder, const std::vector<RTLILAnyPtr> &replicas) {
     log("%sInserting voter into logic cone %u%s\n", COLOUR(Blue), id, RESET());
     if (cone.empty()) {
@@ -423,11 +407,11 @@ std::optional<RTLIL::Wire *> LogicCone::insertVoter(
     // log("out_w voterCutPoint\n");
     // NOTE: It is VERY important that out_w runs first, otherwise the wires are not connected correctly (c
     // gets overwritten basically)
-    auto *out_w = extractReplicaWire(voterCutPoint->get()->getRTLILObjPtr());
+    auto out_w = extractReplicaSpec(voterCutPoint->get()->getRTLILObjPtr());
 
-    auto *a_w = extractReplicaWire(replicas.at(0));
-    auto *b_w = extractReplicaWire(replicas.at(1));
-    auto *c_w = extractReplicaWire(replicas.at(2));
+    auto a_w = extractReplicaSpec(replicas.at(0));
+    auto b_w = extractReplicaSpec(replicas.at(1));
+    auto c_w = extractReplicaSpec(replicas.at(2));
 
     log("Voter info dump:\n  voterCutPoint: %s\n  replicas[0]: %s\n  replicas[1]: %s\n  replicas[2]: %s\n",
         logRTLILName(voterCutPoint->get()->getRTLILObjPtr()), logRTLILName(replicas.at(0)),
@@ -472,15 +456,17 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILConnections &connections,
     // connected output wire
     if (voterOutWire.has_value()) {
         log("Connecting cone output '%s' to voter output '%s'\n", logRTLILName(outputNode),
-            log_id(voterOutWire.value()->name));
+            log_signal(voterOutWire.value()));
 
         DUMPASYNC;
 
-        auto *outNodeWire = extractReplicaWire(outputNode->getRTLILObjPtr());
+        auto outNodeWire = extractReplicaSpec(outputNode->getRTLILObjPtr());
         DUMPASYNC;
 
         // locate SigSpecs associated with the output node wire
-        RTLILSigSpecSet attachedSigSpecs = getOrDefault(connections.signals, outNodeWire, RTLILSigSpecSet());
+        NOTNULL(sigSpecToWire(outNodeWire));
+        RTLILSigSpecSet attachedSigSpecs
+            = getOrDefault(connections.signals, sigSpecToWire(outNodeWire), RTLILSigSpecSet());
 
         // check if we have multiple attached SigChunk (see https://github.com/mattyoung101/tamara/issues/13)
         // in that case, special wiring will be required

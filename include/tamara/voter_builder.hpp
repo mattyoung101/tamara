@@ -23,7 +23,8 @@ public:
 
     //! Insert one voter into the design. The voter will use the number of bits in the input wires.
     //! You specify the `a, b` and `c` wires, as well as the output wire.
-    void build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::Wire *out);
+    void build(
+        const RTLIL::SigSpec &a, const RTLIL::SigSpec &b, const RTLIL::SigSpec &c, const RTLIL::SigSpec &out);
 
     //! Finalises all of the voters in this module by OR'ing together all the intermediate error signals into
     //! a final error signal.

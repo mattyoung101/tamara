@@ -146,17 +146,14 @@ void build(RTLIL::Module *module, RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c
 }; // namespace
 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity) Sorry, this function is just complicated
-void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::Wire *out) {
+void VoterBuilder::build(
+    const RTLIL::SigSpec &a, const RTLIL::SigSpec &b, const RTLIL::SigSpec &c, const RTLIL::SigSpec &out) {
     NOTNULL(module);
-    NOTNULL(a);
-    NOTNULL(b);
-    NOTNULL(c);
-    NOTNULL(out);
-    log_assert((a->width == b->width && a->width == c->width && b->width == c->width)
+    log_assert((a.size() == b.size() && a.size() == c.size() && b.size() == c.size())
         && "Mismatch between input wire sizes");
 
-    auto bits = a->width;
-    log_assert(out->width == bits && "Output wire size mismatch");
+    auto bits = a.size();
+    log_assert(out.size() == bits && "Output wire size mismatch");
 
     // the ERROR wire is as wide as the number of input bits, we'll $reduce_or this down later; and then later
     // route it to the global module error signal
@@ -164,18 +161,24 @@ void VoterBuilder::build(RTLIL::Wire *a, RTLIL::Wire *b, RTLIL::Wire *c, RTLIL::
     auto *err_intermediate = module->addWire(tamaraId("ERR_INTERMEDIATE"), bits);
 
     log("Inserting voter in module %s for:\n  a: %s\n  b: %s\n  c: %s\n  out: %s\n", log_id(module->name),
-        log_id(a->name), log_id(b->name), log_id(c->name), log_id(out->name));
+        log_signal(a), log_signal(b), log_signal(c), log_signal(out));
 
     // generate one unique voter per bit
     for (int bit = 0; bit < bits; bit++) {
         log("Adding voter for bit %d\n", bit);
 
+        NOTNULL(sigSpecToWire(a));
+        NOTNULL(sigSpecToWire(b));
+        NOTNULL(sigSpecToWire(c));
+        NOTNULL(sigSpecToWire(out));
+        NOTNULL(sigSpecToWire(err_intermediate));
+
         // build SigChunks (these select bits from the wires)
-        RTLIL::SigChunk chunk_a(a, bit, 1);
-        RTLIL::SigChunk chunk_b(b, bit, 1);
-        RTLIL::SigChunk chunk_c(c, bit, 1);
-        RTLIL::SigChunk chunk_out(out, bit, 1);
-        RTLIL::SigChunk chunk_err(err_intermediate, bit, 1);
+        RTLIL::SigChunk chunk_a(sigSpecToWire(a), bit, 1);
+        RTLIL::SigChunk chunk_b(sigSpecToWire(b), bit, 1);
+        RTLIL::SigChunk chunk_c(sigSpecToWire(c), bit, 1);
+        RTLIL::SigChunk chunk_out(sigSpecToWire(out), bit, 1);
+        RTLIL::SigChunk chunk_err(sigSpecToWire(err_intermediate), bit, 1);
 
         // create wire bits
         auto *w_a = makeAsVoter(module->addWire(tamaraId("A")));
@@ -268,10 +271,9 @@ void VoterBuilder::finalise(RTLIL::Wire *err) {
             DUMPASYNC;
         } else {
             // otherwise, continue the OR chain by building an OR that takes prev and cur
-            auto *orOut
-                = makeAsVoter(module->addWire(tamaraId("or_tree_" + std::to_string(i) + "_out")));
-            makeAsVoter(module->addLogicOr(
-                tamaraId("or_tree_" + std::to_string(i)), prev, reductions[i], orOut));
+            auto *orOut = makeAsVoter(module->addWire(tamaraId("or_tree_" + std::to_string(i) + "_out")));
+            makeAsVoter(
+                module->addLogicOr(tamaraId("or_tree_" + std::to_string(i)), prev, reductions[i], orOut));
             prev = orOut;
             DUMPASYNC;
         }
