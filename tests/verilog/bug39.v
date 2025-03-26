@@ -19,5 +19,5 @@ module bug39  (y, clk, wire3, wire2, wire1, wire0);
     @(posedge clk) begin
       reg6 <= (wire0 ? (wire1 & reg5) : (wire4 ? wire4 : (8'ha0)));
     end
-  assign wire7 = $signed((~|reg5));
+  assign wire7 = $signed((|reg5));
 endmodule

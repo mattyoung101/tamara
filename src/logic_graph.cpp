@@ -112,10 +112,10 @@ void replicateIfNotIO(const TMRGraphNode::Ptr &node, RTLIL::Module *module) {
 
 /// Taking an RTLILAnyPtr that came from a call to replicate(), returns the relevant output wire associated
 /// with it
-RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
+RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr, const RTLILConnections &connections) {
     log_debug("Extracting wire for replica '%s'\n", logRTLILName(ptr));
     return std::visit(
-        [](auto &&arg) {
+        [&](auto &&arg) {
             using T = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<T, RTLIL::Cell *>) {
                 DUMPASYNC;
@@ -136,15 +136,21 @@ RTLIL::Wire *extractReplicaWire(const RTLILAnyPtr &ptr) {
                                       "yet handle this\n",
                                 log_id(cell->name));
                         }
-                        // find the wire that the signal connected to
-                        auto *conn = sigSpecToWire(signal);
-                        NOTNULL(conn);
-
                         // Now what we should do is make a new wire, which will be our output
                         // then rip up the existing wire and redirect it
                         // then return this wire
-                        auto *wire = cell->module->addWire(tamaraId("extractReplicaWire"), GetSize(signal));
+                        // auto *wire = cell->module->addWire(
+                        //     tamaraId("extractReplicaWire_" + std::string(cell->name.c_str())),
+                        //     GetSize(signal));
+
+                        auto *wire = cell->module->addWire(tamaraId("eRW"), GetSize(signal));
                         DUMPASYNC;
+
+                        auto connected = signalInverseLookup(connections.signals, signal);
+                        log("Before ripping up '%s', originally connected was:\n", log_id(cell->name));
+                        for (const auto &con : connected) {
+                            log("- %s\n", logRTLILName(con));
+                        }
 
                         // rip up the existing wire, and add our own
                         cell->setPort(name, wire);
@@ -408,7 +414,7 @@ void LogicCone::replicate(RTLIL::Module *module) {
 }
 
 std::optional<RTLIL::Wire *> LogicCone::insertVoter(
-    VoterBuilder &builder, const std::vector<RTLILAnyPtr> &replicas) {
+    VoterBuilder &builder, const std::vector<RTLILAnyPtr> &replicas, const RTLILConnections &connections) {
     log("%sInserting voter into logic cone %u%s\n", COLOUR(Blue), id, RESET());
     if (cone.empty()) {
         log("%sSkipping voter insertion into cone %u - internal elements empty%s\n", COLOUR(Red), id,
@@ -423,11 +429,11 @@ std::optional<RTLIL::Wire *> LogicCone::insertVoter(
     // log("out_w voterCutPoint\n");
     // NOTE: It is VERY important that out_w runs first, otherwise the wires are not connected correctly (c
     // gets overwritten basically)
-    auto *out_w = extractReplicaWire(voterCutPoint->get()->getRTLILObjPtr());
+    auto *out_w = extractReplicaWire(voterCutPoint->get()->getRTLILObjPtr(), connections);
 
-    auto *a_w = extractReplicaWire(replicas.at(0));
-    auto *b_w = extractReplicaWire(replicas.at(1));
-    auto *c_w = extractReplicaWire(replicas.at(2));
+    auto *a_w = extractReplicaWire(replicas.at(0), connections);
+    auto *b_w = extractReplicaWire(replicas.at(1), connections);
+    auto *c_w = extractReplicaWire(replicas.at(2), connections);
 
     log("Voter info dump:\n  voterCutPoint: %s\n  replicas[0]: %s\n  replicas[1]: %s\n  replicas[2]: %s\n",
         logRTLILName(voterCutPoint->get()->getRTLILObjPtr()), logRTLILName(replicas.at(0)),
@@ -467,7 +473,7 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILConnections &connections,
     replicas.push_back(voterCutPoint->get()->getRTLILObjPtr());
 
     // handle voter insertion
-    auto voterOutWire = insertVoter(builder, replicas);
+    auto voterOutWire = insertVoter(builder, replicas, connections);
 
     // connected output wire
     if (voterOutWire.has_value()) {
@@ -476,7 +482,8 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILConnections &connections,
 
         DUMPASYNC;
 
-        auto *outNodeWire = extractReplicaWire(outputNode->getRTLILObjPtr());
+        // this is the extracted output wire for the cone
+        auto *outNodeWire = extractReplicaWire(outputNode->getRTLILObjPtr(), connections);
         DUMPASYNC;
 
         // locate SigSpecs associated with the output node wire
@@ -510,16 +517,18 @@ void LogicCone::wire(RTLIL::Module *module, const RTLILConnections &connections,
             auto first = *voterSpecs.begin();
             module->connect(first, voterOutWire.value());
             log("Connecting attached SigSpec to %s\n", log_signal(first));
+
+            DUMPASYNC;
         } else {
             log("Using regular wiring (only one attached SigChunk)\n");
             module->connect(outNodeWire, voterOutWire.value());
+
+            DUMPASYNC;
         }
     } else {
         log("No voter inserted (cone probably empty), skipping output connection\n");
     }
     module->check();
-
-    DUMPASYNC;
 
     // now, clean up by running the FixWalkers
     log("\n%sFixing up wiring%s\n", COLOUR(Blue), RESET());
