@@ -10,7 +10,9 @@ module not_dff_tmr(
     output logic err
 );
 
-logic ff;
+logic ff = 0;
+
+initial ff = 0;
 
 always_ff @(posedge clk) begin
     ff <= a;
@@ -21,5 +23,9 @@ assign o = !ff;
 `ifndef TAMARA
 assign err = 0;
 `endif
+
+initial begin
+    ff = 0;
+end
 
 endmodule

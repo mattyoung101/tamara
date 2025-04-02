@@ -8,19 +8,20 @@ acronyms:
   # - TaMaRa: The name of the TMR algorithm implemented for this thesis
   - SEU: Single Event Upset
   - HDL: Hardware Description Language
-  - SystemVerilog / SV: A specific hardware description language
-  - VHDL: A specific hardware description language
+  - SystemVerilog / SV: A hardware description language
+  - VHDL: A hardware description language
   - LUT: Lookup Table, combinatorial logic primitives of FPGAs
   - IC: Integrated Circuit
   - RTL: Register Transfer Level
-  - CMOS: Complementary metal-oxide semiconductor
+  - CMOS: Complementary Metal-Oxide Semiconductor
   - PPA: Power, Performance and Area
-  # - FD-SOI: Fully Depleted Silicon on Insulator
+  - FD-SOI: Fully Depleted Silicon-on-Insulator
   - COTS: Commercial Off The Shelf
   - PLL: Phase Locked Loop
-  - FF: D-Flip-Flop
+  - FF: Refers to a D-Flip-Flop
   - P&R / PnR: Place and Route
   - RTLIL: RTL Intermediate Language
   - Fab: Fabrication facility used to produce ICs
   - PDK: Process Design Kit
-
+  - CI: Continuous Integration
+  - SRAM: Static Random Access Memory

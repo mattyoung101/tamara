@@ -4,21 +4,11 @@
 == Concept
 In the previous @chap:lit, I presented a comprehensive literature review of existing automated TMR approaches.
 One of the main limitations that these algorithms have is that none are specifically integrated into the Yosys
-synthesis tool. The closest is SpyDrNet @Skouson2020, which reads/writes to the EDIF format. While Yosys can
-indeed read and write EDIF files, SpyDrNet's TMR implementation also requires special Python scripts to
-process a netlist and insert voters, rather than executing a single command. Additionally, it has its own
-intermediate representation distinct from Yosys' RTLIL, and hence distinct from the other optimisation and
-verification passes that Yosys has available. I propose that TaMaRa, being a TMR algorithm directly integrated
-into Yosys, would create a platform for both researchers and industry users to experiment with TMR design and
-verification in the broader context of the Yosys tool suite. As the most popular open-source EDA synthesis
-tool, Yosys has a large community of users and developers working with it, and so has a large number of
-plugins and resources available. As a Yosys plugin, TaMaRa end users could seamlessly take advantage of these
-plugins and resources; including formal verification, logic optimisation and debugging/inspection. I envision
-TaMaRa as a platform that provides a baseline TMR implementation that other researchers can extend upon, and
-that industry users can experiment with, all the while supported both FPGAs/ASICs and being fully integrated
-as part of a widely used open-source EDA synthesis tool. Operating directly on Yosys' RTLIL intermediate
-representation ensures that any future optimisations Yosys gains, or any languages it supports in future, can
-be immediately also supported by TaMaRa.
+synthesis tool. I envision TaMaRa as a platform that provides a baseline TMR implementation that other
+researchers can extend upon, and that industry users can experiment with, all the while supported both
+FPGAs/ASICs and being fully integrated as part of a widely used open-source EDA synthesis tool. Operating
+directly on Yosys' RTLIL intermediate representation ensures that any future optimisations Yosys gains, or any
+languages it supports in future, can be immediately also supported by TaMaRa.
 
 To design the TaMaRa algorithm, I synthesise existing approaches from the literature review to form a novel
 approach suitable for implementation in Yosys. Specifically, I synthesise the voter insertion algorithms of
@@ -31,10 +21,10 @@ HDL).
 I propose a modification to the synthesis flow that inserts TaMaRa before technology mapping. This means that
 the circuit can be processed at a low level, with less concerns about optimisation removing the redundant TMR
 logic, as has been observed in other approaches @Lee2017 and through conversation with the Yosys developers
-@Engelhardt2024. However, as shown in *FIX ME FIX ME FIX ME FIXME*, some Yosys synthesis scripts do perform
-additional optimisation _after_ technology mapping, which again risks the removal of the TMR logic. Yet, we
-also cannot operate after technology mapping, since TaMaRa voter circuits are described using relatively high
-level circuit primitives (AND gates, NOT gates, etc) instead of vendor-specific FPGA primitives like LUTs.
+@Engelhardt2024. However, some Yosys synthesis scripts do perform additional optimisation _after_ technology
+mapping, which again risks the removal of the TMR logic. Yet, we also cannot operate after technology mapping,
+since TaMaRa voter circuits are described using relatively high level circuit primitives (AND gates, NOT
+gates, etc) instead of vendor-specific FPGA primitives like LUTs.
 #TODO("whatever the solution for this is")
 
 Whilst TaMaRa aims to be compatible with all existing designs with minimal changes, some preconditions are
@@ -75,35 +65,6 @@ before it is invoked to split apart multi-bit buses and cells, which are not yet
 Over the course of this thesis, TaMaRa was successfully written from the ground up as a Yosys plugin. This
 plugin consists of around 2,300 lines of C++20, and introduces one new command to Yosys: `tamara_tmr`.
 
-=== Yosys background
-Yosys supports dynamically loading plugins at runtime. These plugins are compiled against the Yosys codebase,
-and are compiled into Unix shared objects (.so files). This allows users to define and register custom passes
-and frontends within the main Yosys application, without having to trouble the upstream maintainers with the
-maintenance of new code. This is precisely why the Yosys authors advised TaMaRa to be implemented as a Yosys
-plugin, rather than as an upstream contribution @Engelhardt2024. This plugin system is a unique and powerful
-part of Yosys, and one of the main advantages of the tool being open-source. End users are free to design and
-implement their own plugins, under their own choice of licence, to extend Yosys in any way they see fit.
-Comparatively, proprietary tools are limited to rather simple Tcl scripting, as was used by Benites
-@Benites2018.
-
-TaMaRa registers itself with Yosys by extending the `Yosys::Pass` interface, using a main
-`struct TamaraTMRPass` in `tamara_tmr_pass.cpp`.
-
-TaMaRa operates at the netlist level, which in the context of Yosys means operating on RTL Intermediate
-Language (RTLIL) circuits. In the Yosys hierarchy, RTLIL sits between the frontend and backend: it is
-generated by a Verilog frontend, optimised, then transformed into an FPGA-specific or ASIC-specific netlist
-using a backend. RTLIL is implemented as a set of C++ classes that describe the general structure of a netlist
-as wires (`RTLIL::Wire`) and cells (`RTLIL::Cell`). Wires may potentially be multi-bit, which introduces a
-challenge as TaMaRa voters are single-bit. Groups of wires and cells can be bundled into a module
-(`RTLIL::Module`). Modules are arranged in a tree structure, where the root of the tree is known as the top
-module. RTLIL is one of the most important and powerful parts of Yosys, because it allows plugins like TaMaRa
-to operate on a common intermediate representation of a circuit netlist, irrespective of the user's choice of
-input RTL language and/or output type. This means that TaMaRa can operate exactly the same for a user using
-VHDL for a Lattice iCE40 FPGA, and a user using Verilog for a Skywater 130 nm ASIC. RTLIL's importance is
-further elaborated on by Wolf @Wolf2013 and Shah et al. @Shah2019. In essence, the unique combination of Yosys
-being open-source, its runtime plugin system, and its RTLIL intermediate language is what makes it a powerful
-platform to develop TaMaRa for.
-
 TaMaRa is currently designed to only operate on one module, that being the top module. This is typical of
 space applications. For example, consider a Verilog top module called `cpu_top` that contains a 32-bit RISC-V
 CPU, along with its register file, ALU, memory and instruction decoder. To ensure full rad-hard reliability in
@@ -119,6 +80,8 @@ introduce some significant problems that will be elaborated on later.
 
 TaMaRa consists of multiple C++ classes (@fig:classdiagram). Broadly speaking, these classes combine together
 to form the following algorithm. This is also shown in @fig:algodiagram.
+
+#TODO("write each of these up as a separate section?")
 
 1. Analyse the RTLIL netlist to generate `tamara::RTLILWireConnections` mapping; which is a mapping between an
     RTLIL Cell or Wire and the other Cells or Wires it may be connected to.
@@ -137,8 +100,6 @@ to form the following algorithm. This is also shown in @fig:algodiagram.
     image("../../diagrams/algorithm.svg", width: 85%),
     caption: [ Logic flow of the TaMaRa TMR algorithm ]
 ) <fig:algodiagram>
-
-#TODO("need to cover what a logic cone actually is - or do we cover that enough earlier?")
 
 One of the most important aspects of the TaMaRa algorithm is its ability to handle multi-bit wiring. In Yosys'
 RTLIL representation, an `RTLIL::Wire` instance may also be a bus, not just a single bit wire. This
@@ -178,23 +139,7 @@ algorithm does not work as expected. This is achieved by a combination of detail
 and copious `assert` statements available in debug builds. For example, if a user specifies an error port
 marked `(* tamara_error_sink *)` that is multi-bit, which is not supported, TaMaRa will print an error
 explaining this in detail. The algorithm also performs self-checking using `assert` statements throughout the
-process to catch internal errors that may occur. For example, @lst:tamara_error demonstrates how logic
-cones are checked to conform with their specification (they may only start with an `IONode` or an `FFNode`).
-
-#figure(
-    ```cpp
-    void LogicCone::verifyInputNodes() const {
-        for (const auto &node : inputNodes) {
-            if (dynamic_pointer_cast<IONode>(node) == nullptr && dynamic_pointer_cast<FFNode>(node) == nullptr) {
-                log_error("TaMaRa internal error: Logic cone input node should be either IONode or FFNode, but "
-                          "instead it was %s %s!\n",
-                    node->identify().c_str(), log_id(getNodeName(node)));
-            }
-        }
-    }
-    ```,
-    caption: [ Example of TaMaRa internal error handling code ]
-) <lst:tamara_error>
+process to catch internal errors that may occur.
 
 The friendly error reporting is designed as a "first line of defence" for the most common user errors, and the
 addition of asserts plays an important role in debugging end user crashes. Ideally, TaMaRa will rather crash
@@ -228,10 +173,10 @@ maintaining a codebase over a long-term period.
 - Not using SigSpec
 
 == Verification <section:verification>
-Due to its use in safety critical sectors like aerospace and defence, comprehensive verification and testing
-of the TaMaRa flow is extremely important in this thesis. We want to verify to a very high level of accuracy
-that TaMaRa both works by preventing SEUs to an acceptable standard, and also does not change the underlying
-behaviour of the circuits it processes.
+Due to its potential for use in safety critical sectors like aerospace and defence, comprehensive verification
+and testing of the TaMaRa flow is extremely important in this thesis. We want to verify to a very high level
+of accuracy that TaMaRa both works by preventing SEUs to an acceptable standard, and also does not change the
+underlying behaviour of the circuits it processes.
 
 === Manual verification
 The design and use of RTL testbenches has, and continues to be important when designing FPGA and ASIC
@@ -280,78 +225,43 @@ was `not_dff_tmr.sv`, a simple NOT-gate into a D-flip-flop, whose SystemVerilog 
 ) <lst:notdfftmr>
 
 === Formal verification
-Formal verification is increasingly being pursued in the development of FPGAs and ASICs as part of a
-comprehensive design verification methodology. The foundations for the formal verification of digital circuits
-extend back to traditional Boolean algebra and set theory in discrete mathematics. Building on these
-foundations, digital circuit verification can be represented as a Boolean satisfiability ("SAT") problem.
-#TODO("Describe SAT in more detail")
-Via the Cook-Levin theorem, as proved by Karp @Karp1972, we know that SAT is an
-NP-complete problem (i.e. there is likely no polynomial time solution). Despite this, there exist a number of
-fast-enough SAT solvers @Sorensson2005 @Audemard2018, that make the verification of Boolean circuits
-using SAT a tractable problem.
-
-However, on large and complex designs, using SAT solvers directly on multi-bit buses can be slow. Instead,
-Satisfiability Modulo Theories (SMT) solvers can be used instead. SMT is a generalisation of SAT that
-introduces richer types such as bit vectors, integers, and reals @Barrett2018. Solving satisfiability modulo
-theories is still at least NP-complete, sometimes undecidable. Most SMT solvers either depend on or "call out"
-to an underlying SAT solver. One such SMT solver that uses this approach is Bitwuzla @Niemetz2023. Others,
-however, such as Z3 @Moura2008 include their own SAT logic and other methods for computing solutions. The
-speed of SMT solvers is very important when performing formal verification of digital circuits, and there is a
-yearly SMT solving competition to encourage the development and analysis of high-performance SMT solvers
-@Weber2019.
-
-For TaMaRa specifically, formal verification is abstracted through the use of Yosys' `eqy`, `mcy` and `sby`
-(SymbiYosys) tools. `eqy` is used for formal equivalence checking between two circuits, and is responsible for
-partitioning the input circuit to a form suitable for equivalence checking. This is then sent on to `sby`,
-which in turn transforms the circuit into a suitable SMT proof for an SMT solver. TaMaRa was going to use the
-Bitwuzla @Niemetz2023 solver, but due to upstream issues with both Yosys and Bitwuzla, settled for using the
-industry standard Yices @Dutertre2014, which is quite fast. `mcy`, Yosys' mutation coverage tool, was
-originally written to verify the correctness of self-checking testbenches and verify the coverage of a
-project's testbenches. Essentially, it injects faults into a design and verifies that the self-checking
-testbench correctly flags these mutated designs as invalid.
-#TODO("MCY and SBY")
+For TaMaRa specifically, formal verification is abstracted through the use of Yosys' `eqy` tool, and by
+extension its usage of the `sby`(SymbiYosys) tool. `eqy` is used for formal equivalence checking between two
+circuits, and is responsible for partitioning the input circuit to a form suitable for equivalence checking.
+This is then sent on to `sby`, which in turn transforms the circuit into a suitable SMT proof for an SMT
+solver. TaMaRa was going to use the Bitwuzla @Niemetz2023 solver, but due to upstream issues with both Yosys
+and Bitwuzla, settled for using the industry standard Yices @Dutertre2014, which is quite fast. Yosys also
+features a `mutate` command that was originally written to verify the correctness of self-checking
+testbenches. Essentially, it injects faults into a design and verifies that the self-checking testbench
+correctly flags these mutated designs as invalid.
 
 The purpose of applying equivalence checking to the TaMaRa verification flow is to formally prove (for
-specific circuits, at least) that the tool holds up one of its key properties: that it does not change the
-underlying behaviour of the circuit during processing. We could also check this using testbenches, or for
-simple combinatorial circuits by comparing the truth table manually, but SMT-based formal equivalence checking
-supports all circuit types and is much more reliable. If the formal equivalence check passes, we can be
-absolutely certain that the behaviour of the circuit has not changed, for all possible inputs; and for
-sequential circuits, for all possible inputs _and_ all possible states.
+specific circuits, at least) that the tool holds up two of its key guarantees: that it does not change the
+underlying behaviour of the circuit during processing, and that it actually protects the circuit from SEUs. We
+could also check this using testbenches, or for simple combinatorial circuits by comparing the truth table
+manually, but SMT-based formal equivalence checking supports all circuit types and is more robust and
+reliable. If the formal equivalence check passes, we can be absolutely certain that the behaviour of the
+circuit has not changed, for all possible inputs; and for sequential circuits, for all possible inputs _and_
+all possible states.
 
-Mutation coverage is slightly more complex, but essentially allows us to prove for a particular circuit that
-TaMaRa actually corrects a number of different variations of simulated SEUs. Using a technique developed by
-Engelhardt @mcyfault, we use `mcy`'s fault injection capabilities to #TODO("")
-
-=== Fault injection simulation
-While there are significant resources dedicated to ensuring that TaMaRa does not change the underlying
-behaviour of the circuit, we also need to prove that the algorithm works as intended; that is, it reduces or
-eliminates SEUs in digital circuits.
+The first guarantee, that the TaMaRa algorithm does not change the behaviour of the circuit, can be verified
+directly by using the formal equivalence checker and SMT solver. However, verifying the second guarantee -
+that TaMaRa actually protects against SEUs - is more challenging. To this, I devised a method that combines
+the `mutate` command with the equivalence checker. The _gold_ circuit (the circuit to be verified against) is
+set to be the original design, with no faults and no TaMaRa replicas. The _gate_ circuit (the circuit that is
+being verified) is set to the original circuit, with TaMaRa replicas, and then with a certain number of
+mutations. This methodology operates under the realisation that if the replicated circuit correctly masks
+faults, it should then also have the same behaviour as the non-replicated circuit minus the faults.
 
 === RTL fuzzing techniques
-In the software world, "fuzzing" refers to a process of randomly generating inputs designed to induce
-problematic behaviour in programs. Typically, fuzzing is started by referencing an initial corpus, and the
-program under test is then instrumented to add control flow tracking code. The goal of the fuzzer is to
-generate inputs such that the program reaches 100% instrumented branch coverage once the fuzzing process is
-completed.
+As mentioned in @section:rtlfuzz, RTL fuzzing is an emerging technique for generating large-scale coverage of
+Verilog design files for EDA tools. Hence, part of the TaMaRa verification flow involves using Verismith
+@Herklotz2020  to generate small random Verilog designs, and running TaMaRa end-to-end on these designs.
+Initially, we will be looking for crashes, assert failures and memory errors using AddressSanitizer, but later
+we will also use Yosys' eqy tool to prove that the designs stay the same before and after TaMaRa runs. Using
+the GNU Parallel tool, this work can be trivially distributed across multiple cores. Running TaMaRa with the
+Verismith fuzzer on 8192 small designs takes around 5 minutes on an AMD Ryzen 9 5950X workstation.
 
-While fuzzing is typically started from an initial corpus, there has also been interest in fuzzing languages
-directly without any initial examples, using information from the language's grammar. One example is Holler's
-LangFuzz @Holler2012, which uses a tree formed by the JavaScript grammar to generate random, but valid,
-JavaScript code. Mozilla developers have used LangFuzz successfully to find numerous bugs in their
-SpiderMonkey JavaScript engine. Generating code from the grammar directly also has the advantage of making the
-fuzzing process significantly more efficient, as the fuzzer tool has the _a priori_ knowledge necessary to
-"understand" the language. Compared to using a general purpose random fuzzer that typically generates and
-mutates test cases on a byte-by-byte basis @Fioraldi2020, grammar fuzzers should be able to get significantly
-higher coverage of a target program much more efficiently.
-
-Although these techniques are typically used for software projects, they can also be useful for hardware,
-particularly for EDA tools. Herklotz @Herklotz2020 describes "Verismith", a tool capable of generating random
-and correct Verilog RTL. This is useful for TaMaRa verification, because it allows us to investigate _en
-masse_ whether the tool changes the behaviour of the underlying circuit. Hence, part of the TaMaRa
-verification flow will involve using Verismith to generate small random Verilog designs, and running TaMaRa
-end-to-end on these designs. Initially, we will be looking for crashes, assert failures and memory errors
-using AddressSanitizer, but later we will also use Yosys' eqy tool to prove that the designs stay the same
-before and after TaMaRa runs. Using the GNU Parallel tool, this work can be trivially distributed across
-multiple cores. Running TaMaRa with the Verismith fuzzer on 1000 designs takes around 5 minutes on an AMD
-Ryzen 9 5950X workstation.
+To simplify the above, a shell script was developed to run this process end-to-end, and automatically clean up
+tests that did not fail; leaving only failed tests left over. With automatic timestamped directories, this is
+potentially a tool that could run as part of a continuous integration (CI) workflow for automatic validation.

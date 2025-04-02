@@ -1,3 +1,5 @@
+#import "../../util/macros.typ": *
+
 = Literature review <chap:lit>
 == Introduction, methodology and terminology <section:litintro>
 The automation of triple modular redundancy, as well as associated topics such as general fault-tolerant
@@ -334,6 +336,52 @@ resets in the netlist are suitable for TMR. In addition, parts of Beltrame's alg
 using other Yosys formal verification tools, particularly SymbiYosys. His terminology as well, particularly
 the use of "logic cones", will likely be critical in the development of TaMaRa.
 
-// TODO does yosys actually have clock detection code??
+== Formal verification
+Formal verification is increasingly being pursued in the development of FPGAs and ASICs as part of a
+comprehensive design verification methodology. The foundations for the formal verification of digital circuits
+extend back to traditional Boolean algebra and set theory in discrete mathematics. Building on these
+foundations, digital circuit verification can be represented as a Boolean satisfiability ("SAT") problem.
+#TODO("Describe SAT in more detail")
+Via the Cook-Levin theorem, as proved by Karp @Karp1972, we know that SAT is an
+NP-complete problem (i.e. there is likely no polynomial time solution). Despite this, there exist a number of
+fast-enough SAT solvers @Sorensson2005 @Audemard2018, that make the verification of Boolean circuits
+using SAT a tractable problem.
 
-// TODO("other verification papers?
+However, on large and complex designs, using SAT solvers directly on multi-bit buses can be slow. Instead,
+Satisfiability Modulo Theories (SMT) solvers can be used instead. SMT is a generalisation of SAT that
+introduces richer types such as bit vectors, integers, and reals @Barrett2018. Solving satisfiability modulo
+theories is still at least NP-complete, sometimes undecidable. Most SMT solvers either depend on or "call out"
+to an underlying SAT solver. One such SMT solver that uses this approach is Bitwuzla @Niemetz2023. Others,
+however, such as Z3 @Moura2008 include their own SAT logic and other methods for computing solutions. The
+speed of SMT solvers is very important when performing formal verification of digital circuits, and there is a
+yearly SMT solving competition to encourage the development and analysis of high-performance SMT solvers
+@Weber2019.
+
+Formal equivalence checking uses formal techniques to verify that two circuits are equivalent in
+functionality. #TODO("cite")
+
+== RTL fuzzing <section:rtlfuzz>
+In the software world, "fuzzing" refers to a process of randomly generating inputs designed to induce
+problematic behaviour in programs. Typically, fuzzing is started by referencing an initial corpus, and the
+program under test is then instrumented to add control flow tracking code. The goal of the fuzzer is to
+generate inputs such that the program reaches 100% instrumented branch coverage once the fuzzing process is
+completed.
+
+While fuzzing is typically started from an initial corpus, there has also been interest in fuzzing languages
+directly without any initial examples, using information from the language's grammar. One example is Holler's
+LangFuzz @Holler2012, which uses a tree formed by the JavaScript grammar to generate random, but valid,
+JavaScript code. Mozilla developers have used LangFuzz successfully to find numerous bugs in their
+SpiderMonkey JavaScript engine. Generating code from the grammar directly also has the advantage of making the
+fuzzing process significantly more efficient, as the fuzzer tool has the _a priori_ knowledge necessary to
+"understand" the language. Compared to using a general purpose random fuzzer that typically generates and
+mutates test cases on a byte-by-byte basis @Fioraldi2020, grammar fuzzers should be able to get significantly
+higher coverage of a target program much more efficiently.
+
+Although these techniques are typically used for software projects, they can also be useful for hardware,
+particularly for EDA tools; given that Verilog is more or less just another programming language. RTL fuzzing
+is an emerging technique that can be useful to generate large-scale coverage of Verilog design files for EDA
+tools. Herklotz @Herklotz2020 describes "Verismith", a tool capable of generating random and correct Verilog
+RTL. This is useful for TaMaRa verification, because it allows us to investigate _en masse_ whether the tool
+changes the behaviour of the underlying circuit. It also allows us to quickly find, reproduce, minimise and
+fix challenging designs, which should hopefully lead to a more reliable algorithm with better coverage of
+industry-standard designs.

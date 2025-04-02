@@ -44,7 +44,7 @@
             [*Abbreviation*], [*Meaning*],
         ),
 
-        ..for pair in acronyms.acronyms {
+        ..for pair in acronyms.acronyms.sorted(key: it => it.pairs())  {
             let key = pair.keys().at(0);
             let value = pair.values().at(0);
             (key, value)
