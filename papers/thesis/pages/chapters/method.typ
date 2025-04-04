@@ -81,17 +81,27 @@ introduce some significant problems that will be elaborated on later.
 TaMaRa consists of multiple C++ classes (@fig:classdiagram). Broadly speaking, these classes combine together
 to form the following algorithm. This is also shown in @fig:algodiagram.
 
-#TODO("write each of these up as a separate section?")
+*RTLIL netlist analysis*
+
+*Backwards breadth-first-search*
+
+*Combinatorial replication*
+
+*Voter insertion*
+
+*Wiring*
+
+*Search continuation*
+
+In summary, the algorithm can be briefly described as follows:
 
 1. Analyse the RTLIL netlist to generate `tamara::RTLILWireConnections` mapping; which is a mapping between an
     RTLIL Cell or Wire and the other Cells or Wires it may be connected to.
 2. For each output port in the top module:
     1. Perform a backwards breadth-first search through the RTLIL netlist to form a logic cone
-        (`tamara::LogicCone`)
     2. Replicate all combinatorial RTLIL primitives inside the logic cone
     3. Generate and insert the necessary voter(s) for each bit
     4. Wire up the newly formed netlist, including connected the voters and performing any necessary fixes
-        (see `tamara::FixWalker`, `tamara::FixWalkerManager` and `tamara::MultiDriverFixer`)
 3. With the initial search complete, compute any follow on/successor logic cones from the initial terminals
 4. Repeat step 2 but for each successor logic cone
 5. Continue until no more successors remain
