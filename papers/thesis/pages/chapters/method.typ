@@ -83,13 +83,89 @@ to form the following algorithm. This is also shown in @fig:algodiagram.
 
 *RTLIL netlist analysis*
 
-*Backwards breadth-first-search*
+In Yosys, although RTLIL is used to model the netlist, the connections between cells and wires are not
+immediately available for use in TaMaRa. Instead, we first perform a topological analysis of all the cells and
+wires in the netlist. We consider output and input ports for cells, and also uniquely consider wires as well.
+The aim is to construct a `tamara::RTLILWireConnections` object, which is a mapping between the name of a wire
+or cell (which is guaranteed to be unique in an RTLIL design), and the set of wires or cells it may be
+connected to on a backwards traversal. The last element is important, because this data structure also acts as
+an efficient cache to use when searching the circuit on a backwards-BFS. During this step, we also construct
+other similar data structures that are used to lookup `RTLIL::SigSpec` objects, which are unique in RTLIL and
+can be used to represent RTL concepts like constants and wires. An example of this construction is shown in
+@fig:rtlilset.
+
+#figure(
+    image("../../diagrams/rtlil_set.svg", width: 70%),
+    caption: [ Demonstration of RTLILWireConnections construction ]
+) <fig:rtlilset>
+
+*Backwards breadth-first search*
+
+The key step of the TaMaRa algorithm is mapping out and tracking the combinatorial logic primitives that are
+located in between sequential logic primitives in a given design. This enables us to correctly replicate the
+design, without introducing sequential delays that would invalidate the circuit's design. In order to achieve
+this, I perform a breadth-first search (BFS) search, operating backwards _from_ the output of the circuit
+_towards_ the input of the circuit. The reason we operate backwards is under the assumption that the _outputs_
+of a circuit naturally depend on both the combinatorial and sequential path through the circuit; so, by
+working from outputs backwards to inputs, we naturally cover only the essential circuit elements and guarantee
+we won't miss anything. This is the same approach used by Beltrame @Beltrame2015.
+
+On the backwards BFS, when we reach a flip-flop or an IO node (i.e. an input to the circuit), we wrap up the
+search #footnote([This is not quite the same as terminating the search immediately; it's important that we
+    consider remaining items in the BFS queue before instantly terminating the search.]) and declare the
+current collected RTLIL primitives as part of a single _logic cone_.
+
+TaMaRa's definition of a logic cone is shown in @fig:logiccone. The first combinatorial logic cone is shown in
+blue, the second in green; both of these would be discovered separately by the backwards BFS.
+
+#figure(
+    image("../../diagrams/logic_cone.svg", width: 85%),
+    caption: [ Description of TaMaRa's definition of logic cones ]
+) <fig:logiccone>
 
 *Combinatorial replication*
 
+Once we have formed a logic cone, we are able to replicate all of the components inside it. This is a
+relatively trivial operation and is simply a matter of using the Yosys API to instantiate two replicas for
+each original node. These replicas are also marked with special TaMaRa annotations to indicate that they are
+replicas, and what logic cone they belong to.
+
 *Voter insertion*
 
+With the combinatorial primitives in the circuit replicated, the next step is to generate and insert majority
+voters to vote on the redundant logic, and thereby actually implement TMR. In the very beginning, the voter
+circuit was designed manually; first by sketching the truth table by hand, then automatically converting this
+to a logic schematic using Logisim @Burch2024. The Logisim circuit was then transformed manually into a series
+of C++ macros that build an equivalent circuit in RTLIL. A formal equivalence check was performed between this
+RTLIL design and the original truth table sketched by hand, which was correct.
+
+#TODO("could we please be allowed a code snippet here to show this")
+
+TaMaRa voters are always single-bit. Handling multi-bit signals is a two-stage process. Firstly, before TaMaRa
+is run, the user is required to run the `splitcells` and `splitnets` commands, which break multi-bit cells and
+multi-bit wires respectively into multiple single-bit instances. Whilst this handles most of the internals of
+the circuit, the inputs/outputs to the circuit will still be multi-bit. For example, consider a module with an
+`input logic [3:0] a`; the port `a` will still be 4-bits wide. To work with this, the voter generator is able
+to split apart these multi-bit signals and attach a unique voter for each bit.
+
+- Use `$reduce_or` to collapse multi-bit OR signals into one-bit
+- Dynamically build OR chains to chain multiple logic cones together to vote on
+
+#TODO("Yosys 'show' result of VoterBuilder OR chain and $reduce_or")
+
 *Wiring*
+
+The most complex element of the TaMaRa algorithm is, by far, the wiring logic. As a generalised
+representation of RTL at various stages of synthesis, RTLIL is extremely complex. Handling complex, recurrent,
+multi-bit circuits with elements like bit-selects, slicing and splicing is very challenging.
+
+- We need to figure out how our actual hodge-podge wiring code works and put it in here
+
+*Wiring fix-up*
+
+TaMaRa's wiring logic is so complicated that often, it produces errors. Hence, TaMaRa wiring cannot simply be
+done in a single stage. Instead, a multi-stage process was developed that uses a second pass to detect and
+"fix-up" cases of invalid wiring.
 
 *Search continuation*
 
@@ -101,48 +177,16 @@ In summary, the algorithm can be briefly described as follows:
     1. Perform a backwards breadth-first search through the RTLIL netlist to form a logic cone
     2. Replicate all combinatorial RTLIL primitives inside the logic cone
     3. Generate and insert the necessary voter(s) for each bit
-    4. Wire up the newly formed netlist, including connected the voters and performing any necessary fixes
-3. With the initial search complete, compute any follow on/successor logic cones from the initial terminals
-4. Repeat step 2 but for each successor logic cone
-5. Continue until no more successors remain
+    4. Wire up the newly formed netlist, including connected the voters
+3. Perform any necessary fixes to the wiring, if required
+4. With the initial search complete, compute any follow on/successor logic cones from the initial terminals
+5. Repeat step 2 but for each successor logic cone
+6. Continue until no more successors remain
 
 #figure(
     image("../../diagrams/algorithm.svg", width: 85%),
     caption: [ Logic flow of the TaMaRa TMR algorithm ]
 ) <fig:algodiagram>
-
-One of the most important aspects of the TaMaRa algorithm is its ability to handle multi-bit wiring. In Yosys'
-RTLIL representation, an `RTLIL::Wire` instance may also be a bus, not just a single bit wire. This
-complicates matters, because the `tamara::VoterBuilder` class can only handle single bit voters. TaMaRa
-handles multi-bit wires through a mix of user commands and internal TaMaRa code. The user is instructed to run
-the Yosys commands `splitcells; splitnets;` beforehand as part of their synthesis script, which splits up
-internal multi-bit wires and cells into multiple single-bit wires and cells. This, however, still means that
-the output ports are multi-bit. To handle this, TaMaRa's `VoterBuilder` class has the ability to take an
-$N$-bit input signal, and split it into $N$ individual voters. Then, once all the $N$ voters have been
-generated, the `VoterBuilder` feeds the correct voter `out` bit to the output port. It is also capable of
-producing a correct error signal by OR'ing together all the voter error signals using a Yosys `$reduce_or`
-cell. Furthermore, the `VoterBuilder` is capable of OR'ing together multiple of these `$reduce_or` cells to
-handle multiple voters across multiple logic cones. This works by building an "OR chain", which is a chain of
-`$reduce_or` cells that are themselves OR'd together.
-
-#TODO("Yosys 'show' result of VoterBuilder OR chain and $reduce_or")
-
-#TODO("talk about the wiring process in (more) detail")
-
-Once wiring is completed, however, there is still more work the algorithm needs to do. There are many wiring
-edge cases that are not handled correctly by the initial pass, and so the `tamara::FixWalker` and
-`tamara::FixWalkerManager` was designed as a modular method to "fix up" specific wiring edge cases. The
-`FixWalkerManager` analyses the RTLIL netlist, and runs a number of callbacks for each provided `FixWalker` to
-consider individual cells, wires and modules. One important `FixWalker` instance is the `MultiDriverFixer`.
-When the algorithm replicates wires (`ElementWireNode` instances, specifically), it causes some wire instances
-to have three separate, conflicting drivers, which is not legal in an RTLIL netlist.
-
-Relatively speaking, the above description is only a minimal summary of the wiring logic of the TaMaRa
-algorithm. In reality, RTLIL wiring is highly complex and the logic to handle multi-bit wiring in all possible
-cases was hundreds of lines of code. One specific example that deserves attention is when an output signal is
-itself multi-bit, which requires an enormous procedure to detect available `RTLIL::SigBit`s and route the
-wires accordingly, plus the relevant error handling code. This was a complex task that took a significant
-amount of overall development time of the algorithm.
 
 In general, the TaMaRa code is designed to be robust to any and all user inputs, and easy to debug when the
 algorithm does not work as expected. This is achieved by a combination of detailed, friendly error reporting
