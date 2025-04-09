@@ -1,3 +1,5 @@
+#import "../../util/macros.typ": *
+
 = Introduction
 For safety-critical sectors such as aerospace, defence, and medicine, both Application Specific Integrated
 Circuits (ASICs) and Field Programmable Gate Array (FPGA) gateware must be designed to be fault tolerant to
@@ -81,7 +83,7 @@ Comparatively, proprietary tools are limited to rather simple Tcl scripting, as 
 away behind complex intellectual property (IP) rights, including patents, and non-disclosure agreements
 (NDAs).
 
-Yosys uses _frontends_ to read various
+Yosys uses _frontends_ to read various RTL languages #TODO("")
 
 TaMaRa operates at the netlist level, which in the context of Yosys means operating on RTL Intermediate
 Language (RTLIL) circuits. In the Yosys hierarchy, RTLIL sits between the frontend and backend: it is

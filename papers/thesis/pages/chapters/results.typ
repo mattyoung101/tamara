@@ -27,7 +27,29 @@
 === Multi-bit fault injection studies
 - Graph
   - X axis: Number of faults
-  - Y axis: Passing test cases #sym.div Number of cells in the circuit
+  - Y axis: Passing test cases #sym.div Number of cells + wires in the circuit post-TMR
+  - Normalised failure rate, higher is better
+
+#figure(
+  table(
+    columns: 4,
+    align: horizon,
+    stroke: 0.5pt,
+    [*Circuit name*],
+    [*Faults until failure*],
+    [*Normalisation \ factor*],
+    [*Normalised \ failure rate*],
+    [not\_2bit],
+    [7],
+    [63],
+    [0.11],
+    [not\_32bit],
+    [18],
+    [903],
+    [0.019]
+  ),
+  caption: [ Fault injection study results ]
+) <tab:faultinject>
 
 == RTL fuzzing
 - Unsure how to show this systematically either

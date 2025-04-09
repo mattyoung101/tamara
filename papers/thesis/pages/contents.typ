@@ -24,13 +24,27 @@
 
     #outline(
         title: none,
-        target: figure,
+        target: figure.where(kind: image)
+    )
+
+    #v(2em)
+
+    #outline(
+        title: none,
+        target: figure.where(kind: table)
+    )
+
+    #v(2em)
+
+    #outline(
+        title: none,
+        target: figure.where(kind: raw)
     )
 ]
 
-#pagebreak()
-= List of Tables
-// TODO
+// #pagebreak()
+// = List of Tables
+// // TODO
 
 #let acronyms = yaml("../acronyms.yaml")
 #if acronyms != none and acronyms.acronyms != none and acronyms.acronyms.len() > 0 [
