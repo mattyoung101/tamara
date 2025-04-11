@@ -88,8 +88,29 @@ schematic using Logisim @Burch2024. The Logisim circuit was then transformed man
 macros that build an equivalent circuit in RTLIL. A formal equivalence check was performed between this RTLIL
 design and the original truth table sketched by hand, which was correct.
 
+Given the single-bit inputs _a_, _b_, _c_, and the single-bit outputs _out_ and _err_; the truth table for a
+majority voter can be described as follows (@tab:sotrue):
+
+#TODO("generate this automatically")
+
+#figure(
+  table(
+    columns: 5,
+    align: horizon,
+    stroke: 0.5pt,
+    [*a*],
+    [*b*],
+    [*c*],
+    [*out*],
+    [*err*],
+    [0], [0], [0], [0], [0],
+  ),
+  caption: [ Truth table for a single-bit majority voter ]
+) <tab:sotrue>
+
+Using techniques such as Karnaugh mapping #TODO("cite")
+
 #TODO("")
-- Truth table
 - Logisim circuit
 - Verification results
 - Code snippet
@@ -236,37 +257,8 @@ licences for inclusion in the `test` directory. These designs include:
 
 In addition, I also wrote a number of much smaller testbenches to target specific bugs or specific features in
 TaMaRa. These were very important in the initial development and verification of the algorithm, as their tiny
-size allowed for visual debugging using Yosys' `show` command. For example, one of the most important tests
-was `not_dff_tmr.sv`, a simple NOT-gate into a D-flip-flop, whose SystemVerilog code is shown in
-@lst:notdfftmr.
-
-#figure(
-    ```systemverilog
-    (* tamara_triplicate *)
-    module not_dff_tmr(
-        input logic a,
-        input logic clk,
-        output logic o,
-        (* tamara_error_sink *)
-        output logic err
-    );
-
-    logic ff;
-
-    always_ff @(posedge clk) begin
-        ff <= a;
-    end
-
-    assign o = !ff;
-
-    `ifndef TAMARA
-    assign err = 0;
-    `endif
-
-    endmodule
-    ```,
-    caption: [ SystemVerilog source code for `not_dff_tmr`, a key initial testbench ]
-) <lst:notdfftmr>
+size allowed for visual debugging using Yosys' `show` command. These circuits are documented in full in
+@sec:testbenchsuite.
 
 === Formal verification
 For TaMaRa specifically, formal verification is abstracted through the use of Yosys' `eqy` tool, and by

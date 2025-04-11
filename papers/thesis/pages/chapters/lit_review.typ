@@ -340,12 +340,14 @@ the use of "logic cones", will likely be critical in the development of TaMaRa.
 Formal verification is increasingly being pursued in the development of FPGAs and ASICs as part of a
 comprehensive design verification methodology. The foundations for the formal verification of digital circuits
 extend back to traditional Boolean algebra and set theory in discrete mathematics. Building on these
-foundations, digital circuit verification can be represented as a Boolean satisfiability ("SAT") problem.
-#TODO("Describe SAT in more detail")
-Via the Cook-Levin theorem, as proved by Karp @Karp1972, we know that SAT is an
+foundations, digital circuit verification can be represented as a Boolean satisfiability ("SAT") problem. The
+SAT problem asks us to prove whether or not there is a consistent assignment of input variables to a circuit
+to make the circuit evaluate to _true_. This forms the basic primitive, the underlying problem to solve, for
+nearly all circuit formal verification tasks; including both formal property verification and equivalence
+checking. Despite SAT's usefulness, Karp @Karp1972 proved via the Cook-Levin theorem that it is an
 NP-complete problem (i.e. there is likely no polynomial time solution). Despite this, there exist a number of
-fast-enough SAT solvers @Sorensson2005 @Audemard2018, that make the verification of Boolean circuits
-using SAT a tractable problem.
+fast-enough SAT solvers @Sorensson2005 @Audemard2018, that make the verification of Boolean circuits using SAT
+a tractable problem.
 
 However, on large and complex designs, using SAT solvers directly on multi-bit buses can be slow. Instead,
 Satisfiability Modulo Theories (SMT) solvers can be used instead. SMT is a generalisation of SAT that
@@ -358,7 +360,7 @@ yearly SMT solving competition to encourage the development and analysis of high
 @Weber2019.
 
 Formal equivalence checking uses formal techniques to verify that two circuits are equivalent in
-functionality. #TODO("cite")
+functionality. #TODO("how does this work and cite; Miter circuits, etc")
 
 == RTL fuzzing <section:rtlfuzz>
 In the software world, "fuzzing" refers to a process of randomly generating inputs designed to induce
