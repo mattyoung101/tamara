@@ -1,0 +1,36 @@
+digraph "not_dff_tmr" {
+label="not_dff_tmr";
+rankdir="LR";
+remincross=true;
+n5 [ shape=octagon, label="a", color="black", fontcolor="black"];
+n6 [ shape=octagon, label="clk", color="black", fontcolor="black"];
+n7 [ shape=octagon, label="err", color="black", fontcolor="black"];
+n8 [ shape=diamond, label="ff", color="darkgreen", fontcolor="darkgreen"];
+n9 [ shape=diamond, label="ff$replica1_cone0", color="darkgreen", fontcolor="darkgreen"];
+n10 [ shape=diamond, label="ff$replica2_cone0", color="darkgreen", fontcolor="darkgreen"];
+n11 [ shape=octagon, label="o", color="black", fontcolor="black"];
+c15 [ shape=record, label="{{<p12> CLK|<p13> D}|$procdff$6$replica2_cone0\n$dff|{<p14> Q}}", color="darkgreen", fontcolor="darkgreen" ];
+c16 [ shape=record, label="{{<p12> CLK|<p13> D}|$procdff$6$replica1_cone0\n$dff|{<p14> Q}}", color="darkgreen", fontcolor="darkgreen" ];
+c19 [ shape=record, label="{{<p17> A}|$logic_not$../tests/verilog/not_dff_tmr.sv:21$2\n$logic_not|{<p18> Y}}", color="darkgreen", fontcolor="darkgreen" ];
+c20 [ shape=record, label="{{<p17> A}|$logic_not$../tests/verilog/not_dff_tmr.sv:21$2$replica1_cone0\n$logic_not|{<p18> Y}}", color="darkgreen", fontcolor="darkgreen" ];
+c21 [ shape=record, label="{{<p17> A}|$logic_not$../tests/verilog/not_dff_tmr.sv:21$2$replica2_cone0\n$logic_not|{<p18> Y}}", color="darkgreen", fontcolor="darkgreen" ];
+c22 [ shape=record, label="{{<p12> CLK|<p13> D}|$procdff$6\n$dff|{<p14> Q}}", color="darkgreen", fontcolor="darkgreen" ];
+n1 [ shape=diamond, label="$tmr$eRW$10" ];
+c19:p18:e -> n1:w [colorscheme="dark28", color="4", fontcolor="4", label=""];
+n2 [ shape=diamond, label="$tmr$eRW$9" ];
+c21:p18:e -> n2:w [colorscheme="dark28", color="3", fontcolor="3", label=""];
+n3 [ shape=diamond, label="$tmr$eRW$8" ];
+c20:p18:e -> n3:w [colorscheme="dark28", color="3", fontcolor="3", label=""];
+n5:e -> c15:p13:w [colorscheme="dark28", color="7", fontcolor="7", label=""];
+n5:e -> c16:p13:w [colorscheme="dark28", color="7", fontcolor="7", label=""];
+n5:e -> c22:p13:w [colorscheme="dark28", color="7", fontcolor="7", label=""];
+n6:e -> c15:p12:w [colorscheme="dark28", color="2", fontcolor="2", label=""];
+n6:e -> c16:p12:w [colorscheme="dark28", color="2", fontcolor="2", label=""];
+n6:e -> c22:p12:w [colorscheme="dark28", color="2", fontcolor="2", label=""];
+c15:p14:e -> n8:w [color="darkgreen", fontcolor="darkgreen", label=""];
+c16:p14:e -> n8:w [color="darkgreen", fontcolor="darkgreen", label=""];
+c22:p14:e -> n8:w [color="darkgreen", fontcolor="darkgreen", label=""];
+n8:e -> c19:p17:w [color="darkgreen", fontcolor="darkgreen", label=""];
+n8:e -> c20:p17:w [color="darkgreen", fontcolor="darkgreen", label=""];
+n8:e -> c21:p17:w [color="darkgreen", fontcolor="darkgreen", label=""];
+}

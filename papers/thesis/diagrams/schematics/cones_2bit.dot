@@ -1,0 +1,25 @@
+digraph "cones_2bit" {
+label="cones_2bit";
+rankdir="LR";
+remincross=true;
+n3 [ shape=octagon, label="a", color="black", fontcolor="black"];
+n4 [ shape=octagon, label="clk", color="black", fontcolor="black"];
+n5 [ shape=octagon, label="out", color="black", fontcolor="black"];
+n6 [ shape=diamond, label="stage1", color="black", fontcolor="black"];
+n7 [ shape=diamond, label="stage2", color="black", fontcolor="black"];
+c10 [ shape=record, label="{{<p8> A}|$9\n$not|{<p9> Y}}",  ];
+c11 [ shape=record, label="{{<p8> A}|$11\n$not|{<p9> Y}}",  ];
+c15 [ shape=record, label="{{<p12> CLK|<p13> D}|$12\n$dff|{<p14> Q}}",  ];
+c16 [ shape=record, label="{{<p12> CLK|<p13> D}|$13\n$dff|{<p14> Q}}",  ];
+x0 [shape=point, ];
+c10:p9:e -> c16:p13:w [colorscheme="dark28", color="4", fontcolor="4", style="setlinewidth(3)", label=""];
+c11:p9:e -> c15:p13:w [colorscheme="dark28", color="3", fontcolor="3", style="setlinewidth(3)", label=""];
+n3:e -> c10:p8:w [colorscheme="dark28", color="3", fontcolor="3", style="setlinewidth(3)", label=""];
+n4:e -> c15:p12:w [colorscheme="dark28", color="7", fontcolor="7", label=""];
+n4:e -> c16:p12:w [colorscheme="dark28", color="7", fontcolor="7", label=""];
+x0:e -> n5:w [colorscheme="dark28", color="2", fontcolor="2", style="setlinewidth(3)", label=""];
+c16:p14:e -> n6:w [colorscheme="dark28", color="6", fontcolor="6", style="setlinewidth(3)", label=""];
+n6:e -> c11:p8:w [colorscheme="dark28", color="6", fontcolor="6", style="setlinewidth(3)", label=""];
+c15:p14:e -> n7:w [colorscheme="dark28", color="6", fontcolor="6", style="setlinewidth(3)", label=""];
+n7:e -> x0:w [colorscheme="dark28", color="6", fontcolor="6", style="setlinewidth(3)", label=""];
+}

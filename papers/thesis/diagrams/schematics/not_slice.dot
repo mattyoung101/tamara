@@ -1,0 +1,19 @@
+digraph "not_slice" {
+label="not_slice";
+rankdir="LR";
+remincross=true;
+n1 [ shape=octagon, label="a", color="black", fontcolor="black"];
+n2 [ shape=octagon, label="b", color="black", fontcolor="black"];
+n3 [ shape=octagon, label="err", color="black", fontcolor="black"];
+n4 [ shape=octagon, label="out", color="black", fontcolor="black"];
+c7 [ shape=record, label="{{<p5> A}|$1\n$logic_not|{<p6> Y}}",  ];
+x0 [ shape=record, style=rounded, label="<s0> 0:0 - 0:0 ", colorscheme="dark28", color="1", fontcolor="1" ];
+c7:p6:e -> x0:w [arrowhead=odiamond, arrowtail=odiamond, dir=both, colorscheme="dark28", color="4", fontcolor="4", label=""];
+c8 [ shape=record, label="{{<p5> A}|$2\n$logic_not|{<p6> Y}}",  ];
+x1 [ shape=record, style=rounded, label="<s0> 0:0 - 1:1 ", colorscheme="dark28", color="4", fontcolor="4" ];
+c8:p6:e -> x1:w [arrowhead=odiamond, arrowtail=odiamond, dir=both, colorscheme="dark28", color="3", fontcolor="3", label=""];
+n1:e -> c8:p5:w [colorscheme="dark28", color="3", fontcolor="3", label=""];
+n2:e -> c7:p5:w [colorscheme="dark28", color="7", fontcolor="7", label=""];
+x0:s0:e -> n4:w [colorscheme="dark28", color="2", fontcolor="2", label=""];
+x1:s0:e -> n4:w [colorscheme="dark28", color="2", fontcolor="2", label=""];
+}

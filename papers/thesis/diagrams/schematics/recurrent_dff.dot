@@ -1,0 +1,13 @@
+digraph "recurrent_dff" {
+label="recurrent_dff";
+rankdir="LR";
+remincross=true;
+n2 [ shape=octagon, label="clk", color="black", fontcolor="black"];
+n3 [ shape=octagon, label="q", color="black", fontcolor="black"];
+c6 [ shape=record, label="{{<p4> A}|$2\n$not|{<p5> Y}}",  ];
+c10 [ shape=record, label="{{<p7> CLK|<p8> D}|$3\n$dff|{<p9> Q}}",  ];
+c6:p5:e -> c10:p8:w [colorscheme="dark28", color="4", fontcolor="4", label=""];
+n2:e -> c10:p7:w [colorscheme="dark28", color="3", fontcolor="3", label=""];
+c10:p9:e -> n3:w [colorscheme="dark28", color="3", fontcolor="3", label=""];
+n3:e -> c6:p4:w [colorscheme="dark28", color="3", fontcolor="3", label=""];
+}

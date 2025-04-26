@@ -1,0 +1,17 @@
+digraph "not_swizzle_low" {
+label="not_swizzle_low";
+rankdir="LR";
+remincross=true;
+n1 [ shape=octagon, label="a", color="black", fontcolor="black"];
+n2 [ shape=octagon, label="err", color="black", fontcolor="black"];
+n3 [ shape=octagon, label="out", color="black", fontcolor="black"];
+c6 [ shape=record, label="{{<p4> A}|$7\n$logic_not|{<p5> Y}}",  ];
+x0 [ shape=record, style=rounded, label="<s0> 0:0 - 1:1 ", colorscheme="dark28", color="1", fontcolor="1" ];
+c6:p5:e -> x0:w [arrowhead=odiamond, arrowtail=odiamond, dir=both, colorscheme="dark28", color="4", fontcolor="4", label=""];
+v1 [ label="1'0" ];
+x2 [ shape=record, style=rounded, label="<s0> 0:0 - 0:0 ", colorscheme="dark28", color="4", fontcolor="4" ];
+n1:e -> c6:p4:w [colorscheme="dark28", color="3", fontcolor="3", label=""];
+x0:s0:e -> n3:w [colorscheme="dark28", color="3", fontcolor="3", label=""];
+x2:s0:e -> n3:w [colorscheme="dark28", color="3", fontcolor="3", label=""];
+v1:e -> x2:w [colorscheme="dark28", color="7", fontcolor="7", label=""];
+}

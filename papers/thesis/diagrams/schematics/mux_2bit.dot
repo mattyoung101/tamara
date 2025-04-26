@@ -1,0 +1,14 @@
+digraph "mux_2bit" {
+label="mux_2bit";
+rankdir="LR";
+remincross=true;
+n1 [ shape=octagon, label="a", color="black", fontcolor="black"];
+n2 [ shape=octagon, label="b", color="black", fontcolor="black"];
+n3 [ shape=octagon, label="o", color="black", fontcolor="black"];
+n4 [ shape=octagon, label="sel", color="black", fontcolor="black"];
+c9 [ shape=record, label="{{<p5> A|<p6> B|<p7> S}|$2\n$mux|{<p8> Y}}",  ];
+n1:e -> c9:p6:w [colorscheme="dark28", color="4", fontcolor="4", style="setlinewidth(3)", label=""];
+n2:e -> c9:p5:w [colorscheme="dark28", color="3", fontcolor="3", style="setlinewidth(3)", label=""];
+c9:p8:e -> n3:w [colorscheme="dark28", color="3", fontcolor="3", style="setlinewidth(3)", label=""];
+n4:e -> c9:p7:w [colorscheme="dark28", color="7", fontcolor="7", label=""];
+}
