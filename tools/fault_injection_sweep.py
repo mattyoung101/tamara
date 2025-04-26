@@ -11,6 +11,7 @@ import os
 import argparse
 import tempfile
 import multiprocessing
+import random
 from colorama import init as colorama_init
 from colorama import Fore
 from colorama import Style
@@ -43,25 +44,25 @@ def main(faults: int, verilog_path: str, top: str, samples: int):
     for i in range(1, faults + 1):
         print(f"Testing with {i} faults... ", end="")
 
-        # apply template
-        with tempfile.NamedTemporaryFile(prefix="tamara_script_") as f:
-            # print(script.format(faults=i))
-            f.write(script_template.format(faults=i, script=verilog_path, top=top).encode("utf-8"))
-            f.flush()
+        # now invoke the script the number of sampled times
+        success = 0
+        failure = 0
+        for j in range(samples):
+            # apply template
+            with tempfile.NamedTemporaryFile(prefix="tamara_script_") as f:
+                # print(script.format(faults=i))
+                f.write(script_template.format(faults=i, script=verilog_path, top=top, seed=random.randint(0, 100000000)).encode("utf-8"))
+                f.flush()
 
-            # now invoke the script the number of sampled times
-            success = 0
-            failure = 0
-            for j in range(samples):
                 if invoke(["eqy", "-j", str(multiprocessing.cpu_count()), "-f", f.name]):
                     success += 1
                 else:
                     failure += 1
 
-            # green if >= 50% else red
-            colour = Fore.GREEN if ((success) / (success + failure)) >= 0.5 else Fore.RED
+        # green if >= 50% else red
+        colour = Fore.GREEN if ((success) / (success + failure)) >= 0.5 else Fore.RED
 
-            print(f"{colour}Success: {((success) / (success + failure)) * 100:.2f}%{Style.RESET_ALL}")
+        print(f"{colour}Success: {((success) / (success + failure)) * 100:.2f}%{Style.RESET_ALL}")
 
 
 if __name__ == "__main__":

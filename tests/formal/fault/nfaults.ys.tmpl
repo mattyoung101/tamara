@@ -27,7 +27,7 @@ check -assert
 # select only input signals
 select % a:tamara_voter %d
 # apply a random mutation (fault injection)
-mutate -list {faults} -o /tmp/tamara_fault_injection
+mutate -list {faults} -seed {seed} -o /tmp/tamara_fault_injection
 # deselect, go back to top module
 select -clear
 # execute the fault injection command
