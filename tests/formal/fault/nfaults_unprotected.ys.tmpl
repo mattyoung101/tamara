@@ -1,0 +1,35 @@
+# Python template to inject N faults into the not_2bit circuit
+
+# Original circuit
+[gold]
+read_verilog -sv {script}
+prep -top {top}
+rename -top design
+splitcells
+splitnets
+
+# With injected faults
+[gate]
+plugin -i libtamara.so
+
+read_verilog -sv -DTAMARA {script}
+hierarchy -top {top}
+
+prep
+rename -top design
+splitcells
+splitnets
+
+tamara_tmr
+opt_clean
+
+# apply a random mutation (fault injection)
+mutate -list {faults} -seed {seed} -o /tmp/tamara_fault_injection
+# execute the fault injection command
+script /tmp/tamara_fault_injection
+
+[strategy sby]
+use sby
+depth 2
+engine smtbmc yices
+

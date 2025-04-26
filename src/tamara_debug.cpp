@@ -37,7 +37,8 @@ struct TamaraDebug : public Pass {
         log("- mkvoter <bits>\n");
         log("- replicateNot\n");
         log("- mkMultiVoter\n");
-        log(" - count\n");
+        log("- countAll\n");
+        log("- percentageVoter\n");
     }
 
     void execute(std::vector<std::string> args, RTLIL::Design *design) override {
@@ -96,10 +97,29 @@ struct TamaraDebug : public Pass {
             // fake cone so we can try inserting a voter
             auto cone = tamara::LogicCone(notGate);
             // cone.insertVoter(top);
-        } else if (task == "count") {
+        } else if (task == "countAll") {
             log("%zu\n", design->top_module()->cells().size() + design->top_module()->wires().size());
+        } else if (task == "percentageVoter") {
+            // assuming voter is selected!
+
+            auto allCells = design->top_module()->cells();
+            auto allWires = design->top_module()->wires();
+
+            double total = allCells.size() + allWires.size();
+            double voter = 0.0;
+
+            for (const auto &cell : allCells) {
+                // if (design->selection().selected_) {
+                //
+                // }
+            }
+
+            // TODO
+
+            log("%.2f%%\n", (voter / total) * 100.);
         } else {
-            log_error("Unhandled debug task: '%s'\n", task.c_str());
+            log_warning("Unhandled debug task: '%s'\n", task.c_str());
+            help();
         }
 
         log_pop();
