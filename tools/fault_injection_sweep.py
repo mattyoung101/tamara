@@ -15,6 +15,7 @@ import random
 from colorama import init as colorama_init
 from colorama import Fore
 from colorama import Style
+from typing import Tuple
 
 # This script generates the graph of number of faults vs. % success
 
@@ -30,15 +31,28 @@ def invoke(cmd: List[str]):
     return result.returncode == 0
 
 
+# Processes a single sample and returns either true for success or false for failure
+def sample(verilog_path: str, top: str, num_faults: int) -> bool:
+    # read the script template file
+    with open("../tests/formal/fault/nfaults.ys.tmpl") as s:
+        script_template = s.read()
+
+    # apply template
+    with tempfile.NamedTemporaryFile(prefix="tamara_script_") as f:
+        f.write(script_template.format(faults=num_faults, script=verilog_path, top=top, seed=random.randint(0, 100000000)).encode("utf-8"))
+        f.flush()
+
+        if invoke(["eqy", "-j", str(multiprocessing.cpu_count()), "-f", f.name]):
+            return True
+        else:
+            return False
+
+
 def main(faults: int, verilog_path: str, top: str, samples: int):
     if "tamara/build" not in os.getcwd():
         raise RuntimeError("Must be run from tamara/build directory.")
 
     colorama_init()
-
-    # read the script template file
-    with open("../tests/formal/fault/nfaults.ys.tmpl") as s:
-        script_template = s.read()
 
     # now inject 1..N faults
     for i in range(1, faults + 1):
@@ -47,17 +61,16 @@ def main(faults: int, verilog_path: str, top: str, samples: int):
         # now invoke the script the number of sampled times
         success = 0
         failure = 0
-        for j in range(samples):
-            # apply template
-            with tempfile.NamedTemporaryFile(prefix="tamara_script_") as f:
-                # print(script.format(faults=i))
-                f.write(script_template.format(faults=i, script=verilog_path, top=top, seed=random.randint(0, 100000000)).encode("utf-8"))
-                f.flush()
 
-                if invoke(["eqy", "-j", str(multiprocessing.cpu_count()), "-f", f.name]):
-                    success += 1
-                else:
-                    failure += 1
+        pool = multiprocessing.Pool()
+        args = [[verilog_path, top, i]] * samples
+        results = pool.starmap(sample, args)
+
+        for result in results:
+            if result:
+                success += 1
+            else:
+                failure += 1
 
         # green if >= 50% else red
         colour = Fore.GREEN if ((success) / (success + failure)) >= 0.5 else Fore.RED
