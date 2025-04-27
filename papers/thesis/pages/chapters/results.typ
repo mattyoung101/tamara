@@ -424,6 +424,13 @@ correctly by the TaMaRa algorithm.
     stroke: 0.5pt,
     [*Circuit name*],
     [*Fault injection results*],
+    [
+        not\_tmr
+    ],
+    [
+        #image("../../diagrams/fault_protected_not_tmr.svg", width: 80%)
+    ],
+
     [not\_2bit],
     [
       #image("../../diagrams/fault_protected_not_2bit.svg", width: 80%)
@@ -490,6 +497,50 @@ samples per fault).
     stroke: 0.5pt,
     [*Circuit name*],
     [*Fault injection results*],
+    [
+        not\_tmr
+    ],
+    [
+        #image("../../diagrams/fault_unprotected_not_tmr.svg", width: 80%)
+    ],
+
+    [not\_2bit],
+    [
+      #image("../../diagrams/fault_unprotected_not_2bit.svg", width: 80%)
+    ],
+
+    [not\_32bit],
+    [
+      #image("../../diagrams/fault_unprotected_not_32bit.svg", width: 80%)
+    ],
+
+    [
+        mux_1bit
+    ],
+    [
+        #image("../../diagrams/fault_unprotected_mux_1bit.svg", width: 80%)
+    ],
+
+    [
+        mux_2bit
+    ],
+    [
+        #image("../../diagrams/fault_unprotected_mux_2bit.svg", width: 80%)
+    ],
+
+    [
+        not_swizzle_low
+    ],
+    [
+        #image("../../diagrams/fault_unprotected_not_swizzle_low.svg", width: 80%)
+    ],
+
+    [
+        not_swizzle_high
+    ],
+    [
+        #image("../../diagrams/fault_unprotected_not_swizzle_high.svg", width: 80%)
+    ],
   ),
   caption: [ Unprotected voter fault injection study results ]
 ) <tab:faultinjectunprotected>
@@ -521,6 +572,9 @@ suggests that area driven (or, alternatively, placement-driven) TMR approaches w
 investigate in future research. Regardless, since TaMaRa operates entirely in the synthesis phase without any
 knowledge or consideration of the final area the voter takes, it makes sense that high voter areas as per
 @tab:voterarea correspond with significantly reduced fault-tolerance in unprotected voter scenarios.
+
+=== Trends in fault injection
+#TODO("combined graphs")
 
 == RTL fuzzing
 - Unsure how to show this systematically either

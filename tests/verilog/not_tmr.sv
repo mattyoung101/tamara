@@ -1,6 +1,5 @@
 // Very simple example of a single bit inverter/NOT gate
 
-(* tamara_triplicate *)
 module inverter(
     input logic a,
     output logic o,
@@ -10,10 +9,8 @@ module inverter(
 
 assign o = !a;
 
-`ifndef TAMARA
+// `ifndef TAMARA
 assign err = 0;
-`endif
+// `endif
 
 endmodule
-
-

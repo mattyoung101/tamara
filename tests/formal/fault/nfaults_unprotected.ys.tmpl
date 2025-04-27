@@ -28,8 +28,12 @@ mutate -list {faults} -seed {seed} -o /tmp/tamara_fault_injection
 # execute the fault injection command
 script /tmp/tamara_fault_injection
 
-[strategy sby]
-use sby
-depth 2
-engine smtbmc yices
+## [strategy sby]
+## use sby
+## depth 2
+## engine smtbmc yices
+
+[strategy sat]
+use sat
+depth 15
 
