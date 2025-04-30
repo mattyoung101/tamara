@@ -385,6 +385,7 @@ endmodule
 === Fault injection
 - Description of fault injection setup, some circuit diagrams, and proof that it passes the formal
   verification
+- Establish a baseline to prove that fault injection on an unprotected circuit has 0 percent mitigated faults
 
 === Fault injection studies: Protected voter
 I propose two main classes of fault injection studies. In the first class of tests, known as "Protected voter
@@ -471,14 +472,6 @@ correctly by the TaMaRa algorithm.
   ),
   caption: [ Protected voter fault injection study results ]
 ) <tab:faultinjectprotected>
-
-// #cetz.canvas({
-//     import cetz.draw: *
-//     import cetz-plot: *
-//     plot.plot(size: (5, 4), x-tick-step: 1, y-tick-step: 1, {
-//         plot.add(((0,0), (1,1), (2,.5), (4,3)))
-//     })
-// })
 
 === Fault injection studies: Unprotected voter
 While the protected voter study in the prior section is useful for verifying the correctness of the voter

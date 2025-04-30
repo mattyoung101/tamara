@@ -1,16 +1,16 @@
-# Tests that checks the inverter in "not_tmr.sv" circuit, which is a simple NOT gate, is equivalent
+# Tests that checks the not_tmr in "not_tmr.sv" circuit, which is a simple NOT gate, is equivalent
 # before/after TaMaRa TMR
 
 [gold]
 read_verilog -sv ../tests/verilog/not_tmr.sv
-prep -top inverter
+prep -top not_tmr
 flatten
 rename -top design
 
 [gate]
 plugin -i libtamara.so
 read_verilog -DTAMARA -sv ../tests/verilog/not_tmr.sv
-hierarchy -top inverter
+hierarchy -top not_tmr
 rename -top design
 prep
 tamara_tmr

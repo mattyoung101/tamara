@@ -17,6 +17,9 @@ from colorama import Fore
 from colorama import Style
 import matplotlib.pyplot as plt
 import matplotlib.ticker
+import json
+from datetime import datetime
+import hashlib
 
 # This script generates the graph of number of faults vs. % success
 # The general method for running this tool is, from the TaMaRa build directory:
@@ -38,6 +41,11 @@ TYPST_TEMPLATE = """
 """
 
 DEBUG = False
+
+
+def sha256sum(filename):
+    with open(filename, 'rb', buffering=0) as f:
+        return hashlib.file_digest(f, 'sha256').hexdigest()
 
 
 def invoke(cmd: List[str]):
@@ -126,6 +134,21 @@ def main(faults: int, verilog_path: str, top: str, samples: int, type_: str):
 
     print("Rendering figure...")
     plt.savefig(f"../papers/thesis/diagrams/fault_{type_}_{top}.svg", bbox_inches='tight')
+
+    path = f"../papers/thesis/results/fault_{type_}_{top}.json"
+    print(f"Dumping JSON to {path}")
+    with open(path, "w") as f:
+        json.dump({
+            "faults": list(range(1, faults + 1)),
+            "results": all_results,
+            "date": str(datetime.now().astimezone()),
+            "verilog_file_hash": sha256sum(verilog_path),
+            "num_faults": faults,
+            "verilog_path": verilog_path,
+            "top": top,
+            "samples": samples,
+            "type_": type_
+        }, f, indent=4)
 
     print("Typst code:")
     print(TYPST_TEMPLATE.format(type=type_, top=top))

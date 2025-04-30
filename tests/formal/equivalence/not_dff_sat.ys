@@ -1,0 +1,34 @@
+# This uses Yosys' miter circuit functionality and built-in SAT solver, plus some design trickery to prove
+# equivalence
+
+plugin -i libtamara.so
+
+# gate (design under test)
+read_verilog -DTAMARA -sv ../tests/verilog/not_dff_tmr.sv
+prep -top not_dff_tmr
+tamara_tmr
+rename not_dff_tmr gate
+write_rtlil
+# we have to stash this design, because "prep" will remove the other module otherwise when it runs "opt_clean"
+design -stash stash
+
+# gold (reference model)
+read_verilog -DTAMARA -sv ../tests/verilog/not_dff_tmr.sv
+prep -top not_dff_tmr
+rename not_dff_tmr gold
+write_rtlil
+
+# merge designs
+# we copy the current design into the stash
+design -copy-to stash
+# and now we load the stash, replacing the current design
+design -load stash
+write_rtlil
+
+# miter and prove
+miter -equiv -make_assert -make_outputs gold gate miter
+flatten miter
+write_rtlil
+# sat -verify -prove-asserts -show-inputs -show-outputs miter
+select miter
+sat -tempinduct -set-init-undef -set-def-formal -set-def-inputs -maxsteps 15 -set-assumes -prove-asserts -show-public

@@ -3,7 +3,7 @@
 plugin -i libtamara.so
 
 read_verilog -DTAMARA -sv ../tests/verilog/not_tmr.sv
-hierarchy -top inverter
+hierarchy -top not_tmr
 
 prep
 check
