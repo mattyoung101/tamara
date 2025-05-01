@@ -1,42 +1,47 @@
-# Python template to inject N faults into the not_2bit circuit
-
-# Original circuit
-[gold]
-read_verilog -sv {script}
-prep -top {top}
-rename -top design
-splitcells
-splitnets
-
-# With injected faults
-[gate]
+# vi: ft=bash
+# This uses Yosys' miter circuit functionality and built-in SAT solver, plus some design trickery to prove
+# equivalence
 plugin -i libtamara.so
 
-read_verilog -sv -DTAMARA {script}
-hierarchy -top {top}
-
-prep
-rename -top design
-splitcells
-splitnets
-
+# gate (design under test)
+read_verilog -sv {script}
+prep -top {top}
 tamara_tmr
-opt_clean
+# delete error signal (https://github.com/mattyoung101/tamara/issues/47#issuecomment-2845210247)
+delete a:tamara_error_sink
+rename {top} gate
 
+# fault injection
 # select only input signals
 select % a:tamara_voter %d
 # apply a random mutation (fault injection)
-mutate -list {faults} -seed {seed} -o /tmp/tamara_fault_injection
+mutate -list {faults} -seed {seed} -o {mutate_script}
 # deselect, go back to top module
 select -clear
 # execute the fault injection command
-script /tmp/tamara_fault_injection
+script {mutate_script}
+write_rtlil
+# we have to stash this design, because "prep" will remove the other module otherwise when it runs "opt_clean"
+design -stash stash
 
-## [strategy sby]
-## use sby
-## depth 2
-## engine smtbmc yices
+# gold (reference model)
+read_verilog -sv {script}
+prep -top {top}
+# delete error signal
+delete a:tamara_error_sink
+rename {top} gold
+write_rtlil
 
-[strategy sat]
-use sat
-depth 15
+# merge designs
+# we copy the current design into the stash
+design -copy-to stash
+# and now we load the stash, replacing the current design
+design -load stash
+write_rtlil
+
+# miter and prove
+miter -equiv -make_assert -make_outputs gold gate miter
+flatten miter
+write_rtlil
+select miter
+sat -verify -tempinduct -set-init-undef -set-def-formal -set-def-inputs -maxsteps 15 -set-assumes -prove-asserts

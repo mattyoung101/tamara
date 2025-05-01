@@ -54,37 +54,73 @@ def invoke(cmd: List[str]):
     os.environ["YS_IGNORE_SHOW"] = "1"
     os.environ["TAMARA_NO_DUMP"] = "1"
     # print(f"Running {cmd}")
-    result = subprocess.run(cmd, capture_output=True, timeout=100)
-    if DEBUG:
-        print(result.stdout.decode("utf-8"))
-    return result.returncode == 0
+    try:
+        result = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,  # Redirect stderr into stdout
+            timeout=120
+        )
+
+        if DEBUG and result.returncode != 0:
+            print(f"{cmd} failed!")
+            print(result.stdout.decode("utf-8"))
+
+        return result.returncode == 0
+    except subprocess.TimeoutExpired:
+        # timeouts count as failures
+        print("Warning: Timed out!")
+        return 0
 
 
 # Processes a single sample and returns either true for success or false for failure
-def sample(verilog_path: str, top: str, num_faults: int, type_: str) -> bool:
+def sample(verilog_path: str, top: str, num_faults: int, type_: str, executor: str) -> bool:
+    if executor == "ys" or executor == "yosys":
+        path = f"../tests/formal/fault/nfaults_{type_}.ys.tmpl"
+    elif executor == "eqy":
+        path = f"../tests/formal/fault/eqy/nfaults_{type_}.eqy.tmpl"
+    else:
+        raise RuntimeError(f"Invalid executor {executor}")
+
     # read the script template file
-    with open(f"../tests/formal/fault/nfaults_{type_}.ys.tmpl") as s:
+    with open(path) as s:
         script_template = s.read()
 
     # apply template
-    with tempfile.NamedTemporaryFile(prefix="tamara_script_") as f:
-        f.write(
-            script_template.format(
-                faults=num_faults,
-                script=verilog_path,
-                top=top,
-                seed=random.randint(0, 100000000),
-            ).encode("utf-8")
-        )
-        f.flush()
+    with tempfile.NamedTemporaryFile(prefix="tamara_script_", delete=False) as f:
+        with tempfile.NamedTemporaryFile(prefix="tamara_mutate_") as mutate_script:
+            f.write(
+                script_template.format(
+                    faults=num_faults,
+                    script=verilog_path,
+                    top=top,
+                    seed=random.randint(0, 100000000),
+                    mutate_script=mutate_script.name
+                ).encode("utf-8")
+            )
+            f.flush()
 
-        if invoke(["eqy", "-j", str(multiprocessing.cpu_count()), "-f", f.name]):
-            return True
-        else:
-            return False
+            if executor == "yosys" or executor == "ys":
+                args = ["yosys", "-s", f.name]
+            elif executor == "eqy":
+                args = ["eqy", "-j", str(multiprocessing.cpu_count()), "-f", f.name]
+            else:
+                raise RuntimeError(f"Invalid executor {executor}")
+
+            if invoke(args):
+                # it works so we can delete it
+                os.unlink(f.name)
+                return True
+            else:
+                if DEBUG:
+                    print(f"{f.name} failed!")
+                    # don't unlink in debug mode
+                else:
+                    os.unlink(f.name)
+                return False
 
 
-def main(faults: int, verilog_path: str, top: str, samples: int, type_: str):
+def main(faults: int, verilog_path: str, top: str, samples: int, type_: str, no_write: bool, executor: str):
     if "tamara/build" not in os.getcwd():
         raise RuntimeError("Must be run from tamara/build directory.")
 
@@ -101,7 +137,7 @@ def main(faults: int, verilog_path: str, top: str, samples: int, type_: str):
         failure = 0
 
         pool = multiprocessing.Pool()
-        args = [[verilog_path, top, i, type_]] * samples
+        args = [[verilog_path, top, i, type_, executor]] * samples
         results = pool.starmap(sample, args)
 
         for result in results:
@@ -119,6 +155,9 @@ def main(faults: int, verilog_path: str, top: str, samples: int, type_: str):
         )
 
         all_results.append(ratio * 100)
+
+    if no_write:
+        return
 
     # plot results
     plt.figure(figsize=(8, 6), dpi=80)
@@ -166,21 +205,23 @@ if __name__ == "__main__":
     parser.add_argument(
         "--samples", help="Number of simulations to run", type=int, required=True
     )
-    parser.add_argument("--type", help="Protected or unprotected?", type=str, required=True)
-    parser.add_argument(
-        "--cleanup",
-        help="Runs 'rm -rf tamara_script' in the current dir",
-        action="store_true",
-    )
+    parser.add_argument("--type", help="'protected', 'unprotected', or 'unmitigated'", type=str, required=True)
     parser.add_argument(
         "--debug",
         help="Prints failure reason in run_eqy",
         action="store_true",
     )
+    parser.add_argument(
+        "--nowrite",
+        help="Do not write output files",
+        action="store_true"
+    )
+    parser.add_argument("--executor", help="Use Yosys SAT or eqy? (ys/eqy)", type=str, default="ys")
     args = parser.parse_args()
     DEBUG = args.debug
-    main(args.faults, args.verilog, args.top, args.samples, args.type)
 
-    if args.cleanup:
-        print("Cleaning up...")
+    main(args.faults, args.verilog, args.top, args.samples, args.type, args.nowrite, args.executor)
+
+    if args.executor == "eqy":
+        print("Cleaning up eqy junk...")
         os.system("/usr/bin/bash -c 'rm -rf tamara_script*'")

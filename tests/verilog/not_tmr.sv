@@ -13,7 +13,7 @@ module not_tmr(
 assign o = !a;
 
 // `ifndef TAMARA
-assign err = 0;
+// assign err = 0;
 // `endif
 
 endmodule

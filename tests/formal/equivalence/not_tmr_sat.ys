@@ -1,19 +1,33 @@
+# vi: ft=bash
 # This uses Yosys' miter circuit functionality and built-in SAT solver, plus some design trickery to prove
 # equivalence
 
 plugin -i libtamara.so
 
 # gate (design under test)
-read_verilog -DTAMARA -sv ../tests/verilog/not_tmr.sv
+read_verilog -sv ../tests/verilog/not_tmr.sv
 prep -top not_tmr
 tamara_tmr
 rename not_tmr gate
+
 write_rtlil
+
+# # fault injection
+# # select only input signals
+# select % a:tamara_voter %d
+# # apply a random mutation (fault injection)
+# mutate -list 5 -seed 1 -o /tmp/tamara_fault_injection
+# # deselect, go back to top module
+# select -clear
+# # execute the fault injection command
+# script /tmp/tamara_fault_injection
+# show -colors 420 -pause
+
 # we have to stash this design, because "prep" will remove the other module otherwise when it runs "opt_clean"
 design -stash stash
 
 # gold (reference model)
-read_verilog -DTAMARA -sv ../tests/verilog/not_tmr.sv
+read_verilog -sv ../tests/verilog/not_tmr.sv
 prep -top not_tmr
 rename not_tmr gold
 write_rtlil
@@ -29,4 +43,4 @@ write_rtlil
 miter -equiv -make_assert -make_outputs gold gate miter
 flatten miter
 select miter
-sat -tempinduct -set-init-undef -set-def-formal -set-def-inputs -maxsteps 15 -set-assumes -prove-asserts -show-public
+sat -verify -tempinduct -set-init-undef -set-def-formal -set-def-inputs -maxsteps 15 -set-assumes -prove-asserts -show-public
