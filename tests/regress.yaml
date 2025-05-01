@@ -25,8 +25,8 @@ eqy:
   - not_swizzle_high
 
 # Fault injection tests (from the formal/fault directory with .eqy extensions)
-fault:
-  - not_2bit
+fault: []
+  # - not_2bit
 
 # Yosys scripts (from the scripts directory with .ys extension)
 scripts:

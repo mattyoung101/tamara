@@ -2,7 +2,7 @@
 plugin -i libtamara.so
 
 read_verilog -sv ../tests/verilog/not_2bit.sv
-hierarchy -top inverter
+hierarchy -top not_2bit
 
 prep
 splitcells

@@ -1,7 +1,7 @@
 // Simple example of a 2 bit inverter which triggers the multi-bit wiring problem
 
 (* tamara_triplicate *)
-module inverter(
+module not_2bit(
     input logic[1:0] a,
     output logic[1:0] o,
     (* tamara_error_sink *)
