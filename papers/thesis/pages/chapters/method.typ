@@ -5,7 +5,7 @@
 In the previous @chap:lit, I presented a comprehensive literature review of existing automated TMR approaches.
 One of the main limitations that these algorithms have is that none are specifically integrated into the Yosys
 synthesis tool. I envision TaMaRa as a platform that provides a baseline TMR implementation that other
-researchers can extend upon, and that industry users can experiment with, all the while supported both
+researchers can extend upon, and that industry users can experiment with, all the while supporting both
 FPGAs/ASICs and being fully integrated as part of a widely used open-source EDA synthesis tool. Operating
 directly on Yosys' RTLIL intermediate representation ensures that any future optimisations Yosys gains, or any
 languages it supports in future, can be immediately also supported by TaMaRa.
@@ -30,11 +30,10 @@ gates, etc) instead of vendor-specific FPGA primitives like LUTs.
 Whilst TaMaRa aims to be compatible with all existing designs with minimal changes, some preconditions are
 necessary for the algorithm to process the circuit correctly.
 
-Since the algorithm wants to work with all possible circuits, it cannot predict what the end user wants to do
+Since the algorithm is intended to work with all possible circuits, it cannot predict what the end user wants to do
 with the voter error signal (if anything). As discussed in the literature review, the typical use case for the
 error signal is to perform configuration scrubbing when upsets are detected. This, however, is a highly
-vendor-specific process for FPGAs, and is not at all possible on ASICs. As TaMaRa targets FPGAs from any
-vendor, and ASICs as well, a more general approach is necessary. To solve this problem, TaMaRa does not aim to
+vendor-specific process for FPGAs, and is not at all possible on ASICs.  To solve this problem, TaMaRa does not aim to
 provide configuration scrubbing directly, instead leaving this for the end user. Instead, the end user can
 attach an HDL annotation to indicate an output port on a module that TaMaRa should wire a global voter error
 signal to. In SystemVerilog, this uses the `(* tamara_error_sink *)` annotation, as shown in @lst:errorsink:
@@ -59,7 +58,9 @@ directly to FPGA/ASIC primitives (LUTs, standard cells, etc). It first needs to 
 primitives (AND gates, NOT gates, etc) that TaMaRa can process, particularly, that it can generate voter
 circuits in. Then, TaMaRa can be run, after which the design can be lowered to FPGA primitives or ASIC
 standard cells. TaMaRa currently also requires the user to run the `splitcells` and `splitnets` commands
-before it is invoked to split apart multi-bit buses and cells, which are not yet directly supported.
+before it is invoked to split apart multi-bit buses and cells, which are not yet directly supported. These
+additional requirements may introduce a slight area overhead, but it would be possible to eliminate them in
+the future through better algorithm design.
 
 == Implementation
 Over the course of this thesis, TaMaRa was successfully written from the ground up as a Yosys plugin. This
@@ -312,8 +313,8 @@ A global set of successor nodes that have been already explored is maintained, s
 not produce infinite searching loops.
 
 #figure(
-    image("../../diagrams/search_continuation.svg", width: 70%),
-    caption: [ Demonstration of how search continuation for two circuits ]
+    image("../../diagrams/search_continuation.svg", width: 85%),
+    caption: [ Demonstration of search continuation for two circuits ]
 ) <fig:searchcontinuation>
 
 === Summary
