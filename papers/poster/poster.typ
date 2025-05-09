@@ -62,9 +62,8 @@
     #pop.column-box(heading: "Single Event Upsets")[
         #set text(size: 12pt)
         SEUs are caused by ionising radiation striking a CMOS transistor on an integrated circuit, and
-        inducing a small charge which can flip bits (@fig:seemechan). This is dangerous, as it can invalidate
-        the results of important calculations, potentially causing loss of life and/or property in
-        safety-critical scenarios.
+        inducing a small charge which can flip bits. This is dangerous, as it can invalidate the results of
+        important calculations, potentially causing loss of life and/or property in safety-critical scenarios.
     ]
 
     #colbreak()
@@ -79,11 +78,10 @@
             caption: [ Diagram demonstrating TMR being inserted into an abstract design ]
         ) <fig:tmr>
 
-        // Typically, TMR is
-        // manually designed at the Hardware Description Language (HDL) level, for example, by
-        // manually instantiating three copies of the target module, designing a voter circuit, and
-        // linking them all together. However, this approach is an additional time-consuming and
-        // potentially error-prone step in the already complex design pipeline.
+        // Typically, TMR is manually designed at the Hardware Description Language (HDL) level, for example,
+        // by manually instantiating three copies of the target module, designing a voter circuit, and linking
+        // them all together. However, this approach is an additional time-consuming and potentially
+        // error-prone step in the already complex design pipeline.
     ]
 
     #colbreak()
@@ -103,17 +101,16 @@
             image("images/algorithm.svg", width: 95%),
             caption: [ Description of the TaMaRa algorithm ]
         ) <fig:algo>
-
     ]
 ])
 
 #columns(3, [
-    #pop.column-box(heading: none)[
+    // TODO replace this with either:
+    // - initial ideas
+    // - prior work, existing literature
+    #pop.column-box(heading: [Prior literature])[
         #set text(size: 12pt)
-        #figure(
-            image("images/see_mechan.gif", width: 80%),
-            caption: [ Mechanism of SEUs affecting CMOS transistors ]
-        ) <fig:seemechan>
+        #lorem(100)
     ]
 
     #colbreak()

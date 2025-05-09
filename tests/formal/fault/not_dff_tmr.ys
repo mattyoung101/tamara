@@ -1,0 +1,73 @@
+# vi: ft=bash
+
+# This uses Yosys' miter circuit functionality and built-in SAT solver, plus some design trickery to prove
+# equivalence
+plugin -i libtamara.so
+
+# gate (design under test)
+read_verilog -DTAMARA -sv ../tests/verilog/not_dff_tmr.sv
+prep -top not_dff_tmr
+# tamara_tmr
+# delete error signal
+delete a:tamara_error_sink
+rename not_dff_tmr gate
+
+# fault injection
+# select only input signals
+# select % a:tamara_voter %d
+# apply a random mutation (fault injection)
+mutate -list 50 -seed 69420 -mode inv -o /tmp/mutate92e8a9e0-26a0-11f0-a0bd-a3ca25efbb2e
+# deselect, go back to top module
+# select -clear
+# execute the fault injection command
+script /tmp/mutate92e8a9e0-26a0-11f0-a0bd-a3ca25efbb2e
+write_rtlil
+show -colors 420 -pause
+# we have to stash this design, because "prep" will remove the other module otherwise when it runs "opt_clean"
+design -stash stash
+
+# gold (reference model)
+read_verilog -sv ../tests/verilog/not_dff_tmr.sv
+prep -top not_dff_tmr
+# delete error signal
+delete a:tamara_error_sink
+rename not_dff_tmr gold
+write_rtlil
+
+# merge designs
+# we copy the current design into the stash
+design -copy-to stash
+# and now we load the stash, replacing the current design
+design -load stash
+write_rtlil
+
+# miter and prove
+miter -equiv -make_assert -make_outputs gold gate miter
+flatten miter
+# write_rtlil
+select miter
+sat -verify -tempinduct -set-init-undef -set-def-formal -set-def-inputs -maxsteps 15 -set-assumes \
+    -prove-asserts -show-public -dump_vcd model.vcd
+
+# plugin -i libtamara.so
+#
+# # gate (design under test)
+# read_verilog -DTAMARA -sv ../tests/verilog/not_dff_tmr.sv
+# prep -top not_dff_tmr
+# tamara_tmr
+# # rename not_dff_tmr gate
+#
+# write_rtlil
+#
+# # fault injection
+# # select only input signals
+# select % a:tamara_voter %d
+# show -colors 420 -pause
+# # apply a random mutation (fault injection)
+# mutate -list 1 -seed 1 -o /tmp/tamara_fault_injection
+# # deselect, go back to top module
+# select -clear
+# # execute the fault injection command
+# script /tmp/tamara_fault_injection
+# show -colors 420 -pause
+# shell
