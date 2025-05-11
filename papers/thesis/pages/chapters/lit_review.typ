@@ -360,7 +360,7 @@ yearly SMT solving competition to encourage the development and analysis of high
 @Weber2019.
 
 Formal equivalence checking uses formal techniques to verify that two circuits are equivalent in
-functionality. #TODO("how does this work and cite; Miter circuits, etc")
+functionality. #TODO("how does this work and cite; Miter circuits, etc. particularly focus on miter")
 
 == RTL fuzzing <section:rtlfuzz>
 In the software world, "fuzzing" refers to a process of randomly generating inputs designed to induce

@@ -245,23 +245,58 @@ the voter builder dynamically inserts a Yosys `$reduce_or` cell to OR together a
 The voter builder is able to detect when this cell is necessary or not, and if it's not necessary, emits a
 `$buf` cell to improve PPA.
 
+#TODO("talk about the err signal in more detail")
+
 For multi-cone designs, the voter builder is also capable of building a tree structure of OR gates to bubble
 up the individual voter error signals to a global error signal. It is worth noting that this tree-like
 structure will significantly increase the combinatorial critical path delay of the circuit, and it would be
 better replaced with more optimal structures in future work.
 
+On any given logic cone, we define the "voter cut point" to be the location in the logic cone netlist where we
+should splice the circuit and insert the majority voter. Currently, TaMaRa determines the voter cut point
+during the backwards BFS. It is set to be the first node encountered on the backwards BFS that fulfills the
+following criteria:
+- It is not the very first node in the entire backwards BFS (i.e. this would be the output cell); and
+- It is not a _terminal node_ (i.e. not an `IONode` or an `FFNode`); and
+- It is not an `ElementWireNode`
+
+The voter cut point is set once and only once per node. Once it is set, it's not immediately used by the
+backwards BFS, but rather passed onto the wiring stage for later use.
+
 #TODO("Yosys 'show' result of VoterBuilder OR chain and $reduce_or")
 
-#TODO("talk about the err signal in more detail")
-
 === Wiring
-The most complex element of the TaMaRa algorithm is, by far, the wiring logic. As a generalised
-representation of RTL at various stages of synthesis, RTLIL is extremely complex. Handling complex, recurrent,
-multi-bit circuits with elements like bit-selects, slicing and splicing is very challenging. TaMaRa approaches
-this on a "best effort" basis, but is currently unable to handle all wiring types present in Yosys.
+The most complex (and error prone) element of the TaMaRa algorithm is, by far, the wiring logic. As a
+generalised representation of RTL at various stages of synthesis, RTLIL is extremely complex. Handling
+complex, recurrent, multi-bit circuits with elements like bit-selects, slicing and splicing is very
+challenging. TaMaRa approaches this on a "best effort" basis, but is currently unable to handle all wiring
+types present in Yosys. In essence, the wiring logic is similar to performing "surgery" on the circuit;
+cutting and splicing complicated RTLIL primitives that can be challenging to re-attach correctly. The wiring
+logic remains the single biggest limitation in the TaMaRa algorithm, and is often the sole reason that more
+complex circuits cannot yet be processed.
 
-#TODO("")
-- We need to figure out how our actual hodge-podge wiring code works and put it in here
+The first step of the wiring process is to insert the majority voter, which was covered separately in the
+prior section @sec:voterinsertion. Specifically, the voter cut point is determined from the earlier backwards
+BFS stage, and a procedure
+#footnote([
+    It should be noted that this procedure is one of the largest causes of errors and other crashes in circuit
+    processing, and should likely be overhauled in future work.
+])
+is used to extract the correct wires from replicated elements in the circuit to
+use as the `A`, `B`, `C`, `OUT` and `ERR` ports of the voter. This is then passed to the voter inserter to
+insert directly into the circuit.
+
+Once the voter has been inserted, and holding a reference to the RTLIL output wire of the circuit, the set of
+RTLIL `SigSpec`s attached to the output wire are located. This is mainly used to determine if multiple wires,
+bits, chunks or other similarly complex RTLIL primitives are attached to the wire. If there is only one single
+`SigSpec` attached, then wiring logic "stitches together" the voter output port directly to the original
+circuit. If there are multiple `SigSpecs`s, then the wiring logic finds the `SigSpec`s that are attached to
+the _output_ of the voter on the _original_ circuit before modification. Then, it stitches together this
+original `SigSpec` and the rest of the circuit. This is a very large (and poor) assumption, so we also warn
+the user if our assumptions do not hold; for example, if there are _multiple_ `SigSpec`s originally attached
+to the voter output wire, which is currently not handled.
+
+#TODO("decision tree or similar")
 
 === Wiring fix-up
 TaMaRa's wiring logic currently cannot handle the entire circuit in a single pass. Hence, TaMaRa wiring cannot
@@ -396,6 +431,8 @@ and Bitwuzla, settled for using the industry standard Yices @Dutertre2014, which
 features a `mutate` command that was originally written to verify the correctness of self-checking
 testbenches. Essentially, it injects faults into a design and verifies that the self-checking testbench
 correctly flags these mutated designs as invalid.
+
+#TODO("talk about the miter and sat proof commands which we use instead")
 
 The purpose of applying equivalence checking to the TaMaRa verification flow is to formally prove (for
 specific circuits, at least) that the tool holds up two of its key guarantees: that it does not change the
