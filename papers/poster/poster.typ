@@ -105,12 +105,18 @@
 ])
 
 #columns(3, [
-    // TODO replace this with either:
-    // - initial ideas
-    // - prior work, existing literature
     #pop.column-box(heading: [Prior literature])[
         #set text(size: 12pt)
-        #lorem(100)
+        In the literature, there are two approaches to automated TMR:
+        - *Design-level approaches* ("thinking in terms of HDL"): Treat the design as HDL _modules_, and
+          introduce TMR by replicating these modules. Operates on HDL source code.
+        - *Netlist-level approaches* ("thinking in terms of circuits"): Treat the design as a _circuit_ or
+          _netlist_, which is internally represented as a graph. TMR is introduced using graph theory
+            algorithms to _cut_ the graph in a particular way and insert voters.
+        Design-level approaches are usually more intelligible and extensible, as they operate on HDL source
+        code directly. However, it's difficult to account for EDA synthesis optimisations that can remove the
+        redundancy. Whilst being less intelligible, netlist-level approaches can support many HDLs, and
+        operate safely after optimisation.
     ]
 
     #colbreak()
