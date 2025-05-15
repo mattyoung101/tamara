@@ -12,22 +12,22 @@
         10
     ],
     "results": [
-        53.333333333333336,
-        20.0,
-        3.3333333333333335,
-        3.3333333333333335,
-        3.3333333333333335,
+        55.00000000000001,
+        5.0,
+        3.0,
+        2.0,
+        0.0,
         0.0,
         0.0,
         0.0,
         0.0,
         0.0
     ],
-    "date": "2025-04-30 00:37:56.731074+10:00",
-    "verilog_file_hash": "7357207e8a423910f2f7ca8d2cf7d68924b291c7dc90fbc93a620b1b1cd1c7e7",
+    "date": "2025-05-15 23:17:24.556484+10:00",
+    "verilog_file_hash": "692f4796fbadb83c27250cddb9fccb6702b45634fc028b58f6d03c4ea6e38dd2",
     "num_faults": 10,
     "verilog_path": "../tests/verilog/not_tmr.sv",
     "top": "not_tmr",
-    "samples": 30,
+    "samples": 100,
     "type_": "unprotected"
 }

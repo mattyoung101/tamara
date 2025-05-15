@@ -3,3 +3,4 @@ build
 *.bkp
 *.autosave
 .directory
+.nvim

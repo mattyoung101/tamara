@@ -1,0 +1,33 @@
+{
+    "faults": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+    ],
+    "results": [
+        100.0,
+        64.0,
+        39.0,
+        20.0,
+        9.0,
+        10.0,
+        3.0,
+        2.0,
+        3.0,
+        1.0
+    ],
+    "date": "2025-05-15 23:10:55.039016+10:00",
+    "verilog_file_hash": "6e80389d5fe67d376d7070a1f1260480fc16e18add21d28ed8205949bb5e0ea3",
+    "num_faults": 10,
+    "verilog_path": "../tests/verilog/not_2bit.sv",
+    "top": "not_2bit",
+    "samples": 100,
+    "type_": "protected"
+}

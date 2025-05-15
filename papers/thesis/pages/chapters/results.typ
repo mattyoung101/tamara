@@ -412,7 +412,7 @@ cell and wire that is part of the voter with the `tamara_voter` RTLIL annotation
 ) <lst:ignorevoter>
 
 @tab:faultinjectprotected presents the results for this protected voter fault-injection study. As the fault
-injection process is stochastic, it uses a sample of 30 runs per fault. The circuits listed in this table
+injection process is stochastic, it uses a sample of 100 runs per fault. The circuits listed in this table
 correspond to the suite of circuits presented in @tab:combinatorial, after they have been processed end-to-end
 correctly by the TaMaRa algorithm.
 

@@ -13,21 +13,21 @@
     ],
     "results": [
         100.0,
-        43.0,
-        34.0,
+        48.0,
+        26.0,
+        15.0,
         15.0,
         14.000000000000002,
-        12.0,
         7.000000000000001,
-        5.0,
-        2.0,
-        2.0
+        4.0,
+        0.0,
+        4.0
     ],
-    "date": "2025-05-15 23:17:16.272411+10:00",
-    "verilog_file_hash": "692f4796fbadb83c27250cddb9fccb6702b45634fc028b58f6d03c4ea6e38dd2",
+    "date": "2025-05-15 23:23:44.108755+10:00",
+    "verilog_file_hash": "05b10a3bb5259adb67055f8a576e3e12d009e463419779a09b7747a2cdc070ff",
     "num_faults": 10,
-    "verilog_path": "../tests/verilog/not_tmr.sv",
-    "top": "not_tmr",
+    "verilog_path": "../tests/verilog/not_slices.sv",
+    "top": "not_swizzle_low",
     "samples": 100,
     "type_": "protected"
 }

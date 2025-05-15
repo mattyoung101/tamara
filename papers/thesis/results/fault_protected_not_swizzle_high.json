@@ -12,22 +12,22 @@
         10
     ],
     "results": [
-        60.0,
+        100.0,
+        42.0,
+        32.0,
+        21.0,
+        15.0,
+        9.0,
         8.0,
-        5.0,
-        2.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0
+        4.0,
+        8.0,
+        3.0
     ],
-    "date": "2025-05-15 23:24:04.631099+10:00",
+    "date": "2025-05-15 23:23:57.962924+10:00",
     "verilog_file_hash": "05b10a3bb5259adb67055f8a576e3e12d009e463419779a09b7747a2cdc070ff",
     "num_faults": 10,
     "verilog_path": "../tests/verilog/not_slices.sv",
     "top": "not_swizzle_high",
     "samples": 100,
-    "type_": "unprotected"
+    "type_": "protected"
 }

@@ -12,9 +12,9 @@
         10
     ],
     "results": [
-        60.0,
-        8.0,
-        5.0,
+        57.99999999999999,
+        16.0,
+        1.0,
         2.0,
         0.0,
         0.0,
@@ -23,11 +23,11 @@
         0.0,
         0.0
     ],
-    "date": "2025-05-15 23:24:04.631099+10:00",
-    "verilog_file_hash": "05b10a3bb5259adb67055f8a576e3e12d009e463419779a09b7747a2cdc070ff",
+    "date": "2025-05-15 23:21:01.677749+10:00",
+    "verilog_file_hash": "475daa0a848196dfbee7596ad736de8b96fb4d3641a30c9756ba59f5b50e9e5d",
     "num_faults": 10,
-    "verilog_path": "../tests/verilog/not_slices.sv",
-    "top": "not_swizzle_high",
+    "verilog_path": "../tests/verilog/mux.sv",
+    "top": "mux_2bit",
     "samples": 100,
     "type_": "unprotected"
 }
