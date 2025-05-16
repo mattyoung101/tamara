@@ -156,33 +156,38 @@
 
     #colbreak()
 
-    // TODO combine graphs into one
+    // TODO combine graphs into one, make a multi-graph
     #pop.column-box(heading: "Results: Reliability")[
         #set text(size: 11pt)
         TaMaRa demonstrates the capability of mitigating simulated SEU faults in a large-scale formally
-        verified fault-injection campaign. When the voter is itself protected from faults (@fig:protected),
-        the algorithm performs well; but in more realistic unprotected scenarios, faults can still occur
-        (@fig:unprotected).
+        verified fault-injection campaign.
+        // When the voter is itself protected from faults (@fig:protected),
+        // the algorithm performs well; but in more realistic unprotected scenarios, faults can still occur
+        // (@fig:unprotected).
 
-        #grid(
-            columns: (auto, auto),
-            [
-                #figure(
-                    image("images/fault_protected_mux_2bit.svg", width: 85%),
-                    caption: [ Protected voter ]
-                ) <fig:protected>
-            ],
-            [
-                #figure(
-                    image("images/fault_unprotected_mux_2bit.svg", width: 85%),
-                    caption: [ Unprotected voter ]
-                ) <fig:unprotected>
-            ]
+        // #grid(
+        //     columns: (auto, auto),
+        //     [
+        //         #figure(
+        //             image("images/fault_protected_mux_2bit.svg", width: 100%),
+        //             caption: [ Protected voter ]
+        //         ) <fig:protected>
+        //     ],
+        //     [
+        //         #figure(
+        //             image("images/fault_unprotected_mux_2bit.svg", width: 100%),
+        //             caption: [ Unprotected voter ]
+        //         ) <fig:unprotected>
+        //     ]
+        // )
+
+        #figure(
+            image("images/multifault.svg", width: 69%)
         )
+
+
     ]
 ])
-
-// CRICOS 00025B • TEQSA PRV12080 
 
 #pop.bottom-box(logo: image("images/uqlogo.png", width: 10%))[
     // #set text(fill: rgb("#502379"))
@@ -204,20 +209,3 @@
         ]
     )
 ]
-
-// #columns(3, [
-//     #pop.bottom-box(heading: "bruh")[
-//         #set text(fill: rgb("#502379"))
-//         School of Electrical Engineering and Computer Science
-//     ]
-//
-//     #colbreak()
-//
-//     #pop.column-box(heading: none)[]
-//
-//     #colbreak()
-//
-//     #pop.column-box(heading: none)[
-//         This will be very very large!
-//     ]
-// ])

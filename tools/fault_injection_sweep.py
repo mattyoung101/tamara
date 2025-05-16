@@ -21,7 +21,8 @@ import json
 from datetime import datetime
 import hashlib
 
-# This script generates the graph of number of faults vs. % success
+# This script generates the graph of number of faults vs. % success.
+# Must be run from build dir.
 # The general method for running this tool is, from the TaMaRa build directory:
 # ../tools/fault_injection_sweep.py --faults 10 --verilog ../tests/verilog/file.sv --top module --samples 30 --type protected --cleanup
 
