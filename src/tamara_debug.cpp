@@ -10,6 +10,7 @@
 #include "kernel/yosys_common.h"
 #include "tamara/logic_graph.hpp"
 #include "tamara/voter_builder.hpp"
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -39,6 +40,7 @@ struct TamaraDebug : public Pass {
         log("- mkMultiVoter\n");
         log("- countAll\n");
         log("- percentageVoter\n");
+        log("- pause\n");
     }
 
     void execute(std::vector<std::string> args, RTLIL::Design *design) override {
@@ -117,6 +119,10 @@ struct TamaraDebug : public Pass {
             // TODO
 
             log("%.2f%%\n", (voter / total) * 100.);
+        } else if (task == "pause") {
+            log("Press ENTER to continue from tamara_debug pause\n");
+            std::string str;
+            std::getline(std::cin, str);
         } else {
             log_warning("Unhandled debug task: '%s'\n", task.c_str());
             help();

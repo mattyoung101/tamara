@@ -1,0 +1,49 @@
+# vi: ft=bash
+##############################################################
+# untriplicated circuit
+read_verilog -sv ../tests/verilog/mux.sv
+prep -top mux_2bit
+show -colors 420 -pause
+
+design -reset
+
+##############################################################
+# triplicated circuit
+script ../tests/scripts/mux_2bit.ys
+plugin -i libtamara.so
+tamara_debug pause
+
+##############################################################
+# formal equivalence checking
+design -reset
+
+# gate (design under test)
+read_verilog -sv ../tests/verilog/mux.sv
+prep -top mux_2bit
+# delete error signal (https://github.com/mattyoung101/tamara/issues/47#issuecomment-2845210247)
+delete a:tamara_error_sink
+rename mux_2bit gate
+# we have to stash this design, because "prep" will remove the other module otherwise when it runs "opt_clean"
+design -stash stash
+
+# gold (reference model)
+read_verilog -sv ../tests/verilog/mux.sv
+prep -top mux_2bit
+# delete error signal
+delete a:tamara_error_sink
+rename mux_2bit gold
+write_rtlil
+
+# merge designs
+# we copy the current design into the stash
+design -copy-to stash
+# and now we load the stash, replacing the current design
+design -load stash
+write_rtlil
+
+# miter and prove
+miter -equiv -make_assert -make_outputs gold gate miter
+flatten miter
+write_rtlil
+select miter
+sat -verify -tempinduct -set-init-undef -set-def-formal -set-def-inputs -maxsteps 15 -set-assumes -prove-asserts
