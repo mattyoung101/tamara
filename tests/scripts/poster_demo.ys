@@ -20,6 +20,7 @@ design -reset
 # gate (design under test)
 read_verilog -sv ../tests/verilog/mux.sv
 prep -top mux_2bit
+tamara_tmr
 # delete error signal (https://github.com/mattyoung101/tamara/issues/47#issuecomment-2845210247)
 delete a:tamara_error_sink
 rename mux_2bit gate
