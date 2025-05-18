@@ -566,11 +566,26 @@ investigate in future research. Regardless, since TaMaRa operates entirely in th
 knowledge or consideration of the final area the voter takes, it makes sense that high voter areas as per
 @tab:voterarea correspond with significantly reduced fault-tolerance in unprotected voter scenarios.
 
-=== Trends in fault injection
+=== Analysis of fault injection results
+Synthesising the data from all of the prior tests, we can reveal some interesting properties of the TaMaRa
+algorithm and the characteristics of its robustness against SEUs.
+
+Firstly, comparing
+unprotected #footnote([In which the voter is allowed to have faults injected into it.])
+vs.
+unmitigated #footnote([In which there is no TaMaRa TMR applied at all.])
+circuits for a variety of circuits shows that the TaMaRa algorithm _is_ effective, compared to a control,
+against mitigating a number of SEUs.
+
 #TODO("combined graphs")
+
+#figure(
+    image("../../diagrams/multi_fault_mux_2bit.svg", width: 80%),
+    caption: [ Caption ]
+)
 
 == RTL fuzzing
 - Unsure how to show this systematically either
 
-== Applying TaMaRa to advanced circuits
-- CPU design if applicable
+// == Applying TaMaRa to advanced circuits
+// - CPU design if applicable
