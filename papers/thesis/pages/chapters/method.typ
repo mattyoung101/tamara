@@ -24,19 +24,21 @@ logic, as has been observed in other approaches @Lee2017 and through conversatio
 @Engelhardt2024. However, some Yosys synthesis scripts do perform additional optimisation _after_ technology
 mapping, which again risks the removal of the TMR logic. Yet, we also cannot operate after technology mapping,
 since TaMaRa voter circuits are described using relatively high level circuit primitives (AND gates, NOT
-gates, etc) instead of vendor-specific FPGA primitives like LUTs.
-#TODO("whatever the solution for this is")
+gates, etc) instead of vendor-specific FPGA primitives like LUTs. The best solution to this likely involves an
+upstream modification to Yosys that allows for certain optimisation passes to be selectively skipped; this is
+further discussed in @chap:futurework.
 
 Whilst TaMaRa aims to be compatible with all existing designs with minimal changes, some preconditions are
 necessary for the algorithm to process the circuit correctly.
 
-Since the algorithm is intended to work with all possible circuits, it cannot predict what the end user wants to do
-with the voter error signal (if anything). As discussed in the literature review, the typical use case for the
-error signal is to perform configuration scrubbing when upsets are detected. This, however, is a highly
-vendor-specific process for FPGAs, and is not at all possible on ASICs.  To solve this problem, TaMaRa does not aim to
-provide configuration scrubbing directly, instead leaving this for the end user. Instead, the end user can
-attach an HDL annotation to indicate an output port on a module that TaMaRa should wire a global voter error
-signal to. In SystemVerilog, this uses the `(* tamara_error_sink *)` annotation, as shown in @lst:errorsink:
+Since the algorithm is intended to work with all possible circuits, it cannot predict what the end user wants
+to do with the voter error signal (if anything). As discussed in the literature review, the typical use case
+for the error signal is to perform configuration scrubbing when upsets are detected. This, however, is a
+highly vendor-specific process for FPGAs, and is not at all possible on ASICs.  To solve this problem, TaMaRa
+does not aim to provide configuration scrubbing directly, instead leaving this for the end user. Instead, the
+end user can attach an HDL annotation to indicate an output port on a module that TaMaRa should wire a global
+voter error signal to. In SystemVerilog, this uses the `(* tamara_error_sink *)` annotation, as shown in
+@lst:errorsink:
 
 #figure(
     ```systemverilog
