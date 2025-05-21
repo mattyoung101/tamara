@@ -6,7 +6,7 @@
 // https://github.com/typst/typst/issues/977#issuecomment-2233710428
 #show figure: set block(breakable: true)
 
-= Results <chap:results>
+= Results and Discussion <chap:results>
 == Testbench suite <sec:testbenchsuite>
 In order to test the TaMaRa algorithm, a number of SystemVerilog testbenches implementing various different
 types of circuits were designed. This section will detail the testbench suite in full. In each of the
