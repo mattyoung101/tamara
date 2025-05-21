@@ -267,7 +267,7 @@ backwards BFS, but rather passed onto the wiring stage for later use.
 
 #TODO("Yosys 'show' result of VoterBuilder OR chain and $reduce_or")
 
-=== Wiring
+=== Wiring <sec:wiring>
 The most complex (and error prone) element of the TaMaRa algorithm is, by far, the wiring logic. As a
 generalised representation of RTL at various stages of synthesis, RTLIL is extremely complex. Handling
 complex, recurrent, multi-bit circuits with elements like bit-selects, slicing and splicing is very
@@ -300,7 +300,7 @@ to the voter output wire, which is currently not handled.
 
 #TODO("decision tree or similar")
 
-=== Wiring fix-up
+=== Wiring fix-up <sec:wiringfixup>
 TaMaRa's wiring logic currently cannot handle the entire circuit in a single pass. Hence, TaMaRa wiring cannot
 simply be done in a single stage. Instead, a multi-stage process was developed that uses a second pass to
 detect and "fix-up" cases of invalid wiring. This is achieved by sub-classing a `tamara::FixWalker` interface,

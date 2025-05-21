@@ -360,7 +360,13 @@ yearly SMT solving competition to encourage the development and analysis of high
 @Weber2019.
 
 Formal equivalence checking uses formal techniques to verify that two circuits are equivalent in
-functionality. #TODO("how does this work and cite; Miter circuits, etc. particularly focus on miter")
+functionality. Typically, circuits are partitioned into the _gate_ circuit, which is the circuit to be
+verified, and the _gold_ circuit, which is the reference model to be proved against. Equivalence is proved by
+constructing a Miter circuit, which is a type of circuit that uses the exclusive-OR (XOR) on the output of the
+gate and gold circuits. If the outputs of these XOR cells can be proved to be proved to be true, then the
+circuits are not equivalent @Biere2013. In Yosys, this is achieved by using the `miter` command to
+automatically construct the equivalence circuit and insert formal assertions, which are then proved or
+disproved using an internal SAT solver via the `sat` command.
 
 == RTL fuzzing <section:rtlfuzz>
 In the software world, "fuzzing" refers to a process of randomly generating inputs designed to induce

@@ -577,12 +577,13 @@ unmitigated #footnote([In which there is no TaMaRa TMR applied at all.])
 circuits for a variety of circuits shows that the TaMaRa algorithm _is_ effective, compared to a control,
 against mitigating a number of SEUs.
 
-#TODO("combined graphs")
-
 #figure(
     image("../../diagrams/multi_fault_mux_2bit.svg", width: 80%),
-    caption: [ Caption ]
+    caption: [ Unmitigated vs. protected voter for the mux\_2bit circuit ]
 )
+
+The fact that 100% of faults are mitigated when only one fault is injected is a positive sign, as it indicates
+the algorithm is working as intended to mitigate _single_ event upsets.
 
 == RTL fuzzing
 - Unsure how to show this systematically either
