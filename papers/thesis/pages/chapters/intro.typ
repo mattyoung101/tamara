@@ -1,6 +1,6 @@
 #import "../../util/macros.typ": *
 
-= Introduction
+= Introduction <chap:intro>
 For safety-critical sectors such as aerospace, defence, and medicine, both Application Specific Integrated
 Circuits (ASICs) and Field Programmable Gate Array (FPGA) gateware must be designed to be fault tolerant to
 prevent catastrophic malfunctions. In the context of digital electronics, _fault tolerant_ means that the

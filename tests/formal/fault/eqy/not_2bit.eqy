@@ -3,7 +3,7 @@
 # Original circuit
 [gold]
 read_verilog -sv ../tests/verilog/not_2bit.sv
-prep -top inverter
+prep -top not_2bit
 rename -top design
 splitcells
 splitnets
@@ -13,7 +13,7 @@ splitnets
 plugin -i libtamara.so
 
 read_verilog -sv -DTAMARA ../tests/verilog/not_2bit.sv
-hierarchy -top inverter
+hierarchy -top not_2bit
 
 prep
 rename -top design

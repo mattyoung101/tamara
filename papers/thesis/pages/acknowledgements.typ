@@ -10,5 +10,5 @@ their interest in this project and its outcomes.
 I would also like to thank my friends. Thank you for listening to me, and for those doing their theses, the
 best of luck in your own theses too.
 
-Last but not least, let me thank my mum Jeanette for her unwavering support throughout this project, and for
-putting in the effort to understand my incomprehensible yapping. It means a lot to me.
+Last but not least, I would especially like to thank my family for their immense support along this journey,
+it is invaluable to me.

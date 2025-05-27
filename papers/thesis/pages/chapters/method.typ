@@ -91,8 +91,13 @@ schematic using Logisim Evolution @Burch2024. The Logisim circuit was then trans
 of C++ macros that build an equivalent circuit in RTLIL. A formal equivalence check was performed between this
 RTLIL design and the original truth table sketched by hand, which was correct.
 
-Given the single-bit inputs _a_, _b_, _c_, and the single-bit outputs _out_ and _err_; the truth table for a
-majority voter can be described as follows (@tab:sotrue):
+The voter consists of three input signals: _a_, _b_ and _c_, which are respectively the 1-bit inputs from each
+of the triplicated elements. The voter then has two output signals: _out_ and _err_. _out_ is the majority
+voted combination of the three inputs, i.e. the inputs with any SEUs removed. The _err_ signal is set to '1'
+if and only if a fault was detected. This could be used for diagnostics, or to perform a configuration reset
+if possible on FPGAs, and reboot on ASICs.
+
+Given these constraints, the truth table for a majority voter can be described as follows (@tab:sotrue):
 
 #figure(
   table(
@@ -243,11 +248,9 @@ multi-bit wires respectively into multiple single-bit instances. Whilst this han
 the circuit, the inputs/outputs to the circuit will still be multi-bit. For example, consider a module with an
 `input logic [3:0] a`; the port `a` will still be 4-bits wide. To work with this, the voter generator is able
 to split apart these multi-bit signals and attach a unique voter for each bit. When these chains are built,
-the voter builder dynamically inserts a Yosys `$reduce_or` cell to OR together all signals from all voters.
-The voter builder is able to detect when this cell is necessary or not, and if it's not necessary, emits a
-`$buf` cell to improve PPA.
-
-#TODO("talk about the err signal in more detail")
+the voter builder dynamically inserts a Yosys `$reduce_or` cell to OR together all the error signals from all
+voters. The voter builder is able to detect when this cell is necessary or not, and if it's not necessary,
+emits a `$buf` cell to improve PPA.
 
 For multi-cone designs, the voter builder is also capable of building a tree structure of OR gates to bubble
 up the individual voter error signals to a global error signal. It is worth noting that this tree-like
@@ -424,35 +427,40 @@ size allowed for visual debugging using Yosys' `show` command. These circuits ar
 @sec:testbenchsuite.
 
 === Formal verification <section:formalverif>
-For TaMaRa specifically, formal verification is abstracted through the use of Yosys' `eqy` tool, and by
-extension its usage of the `sby`(SymbiYosys) tool. `eqy` is used for formal equivalence checking between two
-circuits, and is responsible for partitioning the input circuit to a form suitable for equivalence checking.
-This is then sent on to `sby`, which in turn transforms the circuit into a suitable SMT proof for an SMT
-solver. TaMaRa was going to use the Bitwuzla @Niemetz2023 solver, but due to upstream issues with both Yosys
-and Bitwuzla, settled for using the industry standard Yices @Dutertre2014, which is quite fast. Yosys also
-features a `mutate` command that was originally written to verify the correctness of self-checking
-testbenches. Essentially, it injects faults into a design and verifies that the self-checking testbench
-correctly flags these mutated designs as invalid.
+For TaMaRa specifically, formal verification is abstracted through the use of Yosys' `miter` and `sat`
+commands. Yosys' built-in SAT solver is based on MiniSAT @Sorensson2005, which is a widely-used and powerful
+SAT solver, although is not as powerful as SMT solvers. Nonetheless, it suffices for these small test
+circuits. Yosys also features a `mutate` command that was originally written to verify the correctness of
+self-checking testbenches. Essentially, it statically injects various types of faults, including SEU
+equivalents, into the design's netlist, which is then usually used to prove that the testbench fails when the
+circuit is modified. This is repurposed for a similar use-case in TaMaRa, to instead prove that faults are
+mitigated when the circuit is processed through the algorithm.
 
-#TODO("talk about the miter and sat proof commands which we use instead")
-
-The purpose of applying equivalence checking to the TaMaRa verification flow is to formally prove (for
-specific circuits, at least) that the tool holds up two of its key guarantees: that it does not change the
-underlying behaviour of the circuit during processing, and that it actually protects the circuit from SEUs. We
-could also check this using testbenches, or for simple combinatorial circuits by comparing the truth table
-manually, but SMT-based formal equivalence checking supports all circuit types and is more robust and
-reliable. If the formal equivalence check passes, we can be absolutely certain that the behaviour of the
+Formal equivalence checking is used in the TaMaRa verification flow to formally prove (for specific circuits,
+at least) that the tool holds up two of its key guarantees: that it does not change the underlying behaviour
+of the circuit during processing, and that it actually protects the circuit from SEUs. We could also check
+this using testbenches, or for simple combinatorial circuits by comparing the truth table manually, but
+SAT-based formal equivalence is actually easier to implement, and provides significantly stronger proofs of
+correctness. If the formal equivalence check passes, we can be absolutely certain that the behaviour of the
 circuit has not changed, for all possible inputs; and for sequential circuits, for all possible inputs _and_
-all possible states.
+all possible states the circuit may be in.
+#footnote([Although, it should be noted that there are specific constraints with Yosys' `sat` solver in
+    regards to the number of clock cycles it considers when proving sequential circuits.])
 
 The first guarantee, that the TaMaRa algorithm does not change the behaviour of the circuit, can be verified
-directly by using the formal equivalence checker and SMT solver. However, verifying the second guarantee -
-that TaMaRa actually protects against SEUs - is more challenging. To this, I devised a method that combines
+directly by using the formal equivalence checker and SAT solver. However, verifying the second guarantee -
+that TaMaRa actually protects against SEUs - is more challenging. To do this, I devised a method that combines
 the `mutate` command with the equivalence checker. The _gold_ circuit (the circuit to be verified against) is
 set to be the original design, with no faults and no TaMaRa replicas. The _gate_ circuit (the circuit that is
 being verified) is set to the original circuit, with TaMaRa replicas, and then with a certain number of
-mutations. This methodology operates under the realisation that if the replicated circuit correctly masks
-faults, it should then also have the same behaviour as the non-replicated circuit minus the faults.
+mutations. This methodology operates under the realisation that if the _gate_ correctly masks faults using its
+voter, then should then have the same behaviour as the _gold_ circuit, and thus be equivalent. This is shown
+below in @fig:verification.
+
+#figure(
+    image("../../diagrams/verification.svg", width: 60%),
+    caption: [ Diagram of TaMaRa verification methodology ]
+) <fig:verification>
 
 === RTL fuzzing techniques
 As mentioned in @section:rtlfuzz, RTL fuzzing is an emerging technique for generating large-scale coverage of

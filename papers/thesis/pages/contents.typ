@@ -27,15 +27,15 @@
         target: figure.where(kind: image)
     )
 
-    #v(2em)
-
+    #pagebreak()
+    = List of Tables
     #outline(
         title: none,
         target: figure.where(kind: table)
     )
 
-    #v(2em)
-
+    #pagebreak()
+    = List of Code Listings
     #outline(
         title: none,
         target: figure.where(kind: raw)

@@ -172,7 +172,7 @@ the wiring code can handle multi-bit edge signals.
       ```
     ],
     [
-      _Identical to above_
+      #image("../../diagrams/schematics/not_2bit.svg")
     ],
 
     [
@@ -193,9 +193,29 @@ the wiring code can handle multi-bit edge signals.
     [
         #image("../../diagrams/schematics/mux_2bit.svg")
     ],
+    [
+        mux\_32bit
+    ],
+    [
+        ```systemverilog
+    module mux_32bit(
+        input logic[31:0] a,
+        input logic[31:0] b,
+        input logic sel,
+        output logic[31:0] o
+    );
+        assign o = sel ? a : b;
+    endmodule
+        ```
+    ],
+    [
+        #image("../../diagrams/schematics/mux_32bit.svg")
+    ],
   ),
   caption: [ Table of multi-bit combinatorial circuit designs ]
 ) <tab:combinatorialmulti>
+
+#TODO("add crc const variant3/4/5")
 
 === Sequential circuits
 In the previous sections, the testbenches were all combinatorial circuits, and did not use sequential elements
@@ -379,13 +399,20 @@ endmodule
 
 == Formal verification
 === Equivalence checking
-- Unsure how to systematically show equivalence checking results?
-- Maybe by the numbers?
+To ensure the reliability of the algorithm, an attempt was made to perform formal equivalence checking on all
+of the combinatorial circuits. As of writing, there are 20 equivalence checks performed in total.
 
-=== Fault injection
-- Description of fault injection setup, some circuit diagrams, and proof that it passes the formal
-  verification
-- Establish a baseline to prove that fault injection on an unprotected circuit has 0 percent mitigated faults
+The follow circuits passed the equivalence check:
+
+`not_2bit, not_32bit, not_tmr, voter, crc_min, crc_const_variant3, crc_const_variant4, crc_const_variant5,`
+`mux_1bit, mux_2bit, bug7, not_swizzle_low, not_swizzle_high`
+
+The following circuits failed the equivalence check:
+
+`crc2, crc4, crc6, crc7, crc8, crc16, not_slice`
+
+The reasons for these failures are covered later in the thesis, but in short are known faults in the current
+implementation of the TaMaRa algorithm. For more info, see @tab:bugs.
 
 === Fault injection studies: Protected voter
 I propose two main classes of fault injection studies. In the first class of tests, known as "Protected voter
@@ -457,6 +484,13 @@ correctly by the TaMaRa algorithm.
     ],
 
     [
+        mux_32bit
+    ],
+    [
+        #image("../../diagrams/fault_protected_mux_32bit.svg", width: 80%)
+    ],
+
+    [
         not_swizzle_low
     ],
     [
@@ -522,6 +556,13 @@ samples per fault).
     ],
 
     [
+        mux_32bit
+    ],
+    [
+        #image("../../diagrams/fault_unprotected_mux_32bit.svg", width: 80%)
+    ],
+
+    [
         not_swizzle_low
     ],
     [
@@ -542,6 +583,8 @@ In many of these examples, the results are significantly worse than with the pro
 the voter takes up the majority of the gate-area of the circuit in a number of these cases, meaning the
 likelihood of the fault applying to the voter and hence invalidating it is much higher. In @tab:voterarea, I
 calculate the percentage area that the voter accounts for.
+
+#TODO("complete this table")
 
 #figure(
   table(
@@ -566,9 +609,16 @@ investigate in future research. Regardless, since TaMaRa operates entirely in th
 knowledge or consideration of the final area the voter takes, it makes sense that high voter areas as per
 @tab:voterarea correspond with significantly reduced fault-tolerance in unprotected voter scenarios.
 
-=== Analysis of fault injection results
+=== Analysis of fault injection results <sec:analysis>
 Synthesising the data from all of the prior tests, we can reveal some interesting properties of the TaMaRa
 algorithm and the characteristics of its robustness against SEUs.
+
+#figure(
+    image("../../diagrams/multi_fault_mux_2bit.svg", width: 70%),
+    caption: [ Unmitigated vs. protected voter for the mux\_2bit circuit ]
+) <fig:unmitvsprotected>
+
+#TODO("more examples here, in a 2x2 table")
 
 Firstly, comparing
 unprotected #footnote([In which the voter is allowed to have faults injected into it.])
@@ -576,17 +626,59 @@ vs.
 unmitigated #footnote([In which there is no TaMaRa TMR applied at all.])
 circuits for a variety of circuits shows that the TaMaRa algorithm _is_ effective, compared to a control,
 against mitigating a number of SEUs.
+The fact that 100% of faults are mitigated when only one fault is injected is a positive sign, as it indicates
+the algorithm is working as intended to mitigate _single_ event upsets. Also observe the inverse logarithmic
+shaped curve as the number of faults increases, showing an exponential decay in the effectiveness of the
+algorithm until it eventually is no longer effective at mitigating more than 8 upsets.
 
 #figure(
-    image("../../diagrams/multi_fault_mux_2bit.svg", width: 80%),
-    caption: [ Unmitigated vs. protected voter for the mux\_2bit circuit ]
-)
+    image("../../diagrams/all_comb_prot.svg", width: 85%),
+    caption: [ Comparison of all results for protected voter combinatorial circuits ]
+) <fig:allprotectedcomb>
 
-The fact that 100% of faults are mitigated when only one fault is injected is a positive sign, as it indicates
-the algorithm is working as intended to mitigate _single_ event upsets.
+@fig:allprotectedcomb shows the combined results of all combinatorial circuits under protected voter fault
+injection tests. Generally, all circuits follow roughly the same inverse logarithmic curve, and are within a
+few percentage points of each other. All tested circuits are able to mitigate 100% of injected faults, which
+is a very positive sign for the protected voter. With 2 injected faults, the effectiveness ranges between
+roughly 40% and 75%, with `not_swizzle_low` performing the worst, and `mux_2bit` and `not_2bit` performing the
+best. Interestingly, the only outliers here are the two 32-bit circuits: `not_32bit` and `not_2bit`, which do
+not have an inverse logarithmic curve, rather an almost linear curve that's significantly better than all of
+the other circuits. This would appear to confirm my earlier hypothesis that more complex circuits, and
+in particular circuits where the voter does _not_ consist of the majority of logic elements, perform better
+under fault injection.
+
+To investigate further, I performed a sweep of fault-injection tests with a 2-bit, 4-bit, 8-bit, 16-bit,
+24-bit and 32-bit multiplexer respectively, which is shown in Figure XX.
+
+#TODO("")
+
+#figure(
+    image("../../diagrams/all_comb_unprot.svg", width: 80%),
+    caption: [ Comparison of all results for unprotected voter combinatorial circuits ]
+) <fig:allunprotectedcomb>
+
+@fig:allunprotectedcomb shows the combined results of all combinatorial circuits under unprotected voter fault
+injection tests. In this case, rather than being an inverse logarithmic curve, all tests have a very sharp
+fall-off in the percentage of mitigated faults, even between one and two faults. Note that, even in the case
+of one fault, only between 50% and 60% of faults were mitigated, and this declines sharply to between roughly
+5% and 15% at two faults. Although this is an unfortunate result, recall from @tab:voterarea that the voter
+takes up the vast majority of the circuit area in these tests, meaning it's much more likely to be the target
+of faults, so this result does make sense on this test suite. Nonetheless, there's clear room for
+methodological improvement here. Also interesting to note is that, unlike in @fig:allprotectedcomb with the
+protected voters, these results are all largely the same across all circuits.
+
+#figure(
+    image("../../diagrams/all_comb_unmit.svg", width: 70%),
+    caption: [ Comparison of all results for unmitigated combinatorial circuits ]
+) <fig:allunmitigatedcomb>
+
+To compare against a baseline, @fig:allunmitigatedcomb shows the results of fault injection on all
+combinatorial circuits with no mitigation (i.e. no TMR) whatsoever. These largely result, as expected, in 0%
+mitigation rate across the board. However, there's an interesting spike up to 10% mitigated for the `not_tmr`
+circuit at exactly two faults. My hypothesis here is that two faults being injected into the circuit can, on
+occasion, cancel each other out.
 
 == RTL fuzzing
+#TODO("")
 - Unsure how to show this systematically either
 
-// == Applying TaMaRa to advanced circuits
-// - CPU design if applicable

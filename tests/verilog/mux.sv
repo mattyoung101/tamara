@@ -15,3 +15,12 @@ module mux_2bit(
 );
     assign o = sel ? a : b;
 endmodule
+
+module mux_32bit(
+    input logic[31:0] a,
+    input logic[31:0] b,
+    input logic sel,
+    output logic[31:0] o
+);
+    assign o = sel ? a : b;
+endmodule

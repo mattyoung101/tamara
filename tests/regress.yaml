@@ -20,6 +20,7 @@ eqy:
   - not_slice
   - mux_1bit
   - mux_2bit
+  - mux_32bit
   - bug7
   - not_swizzle_low
   - not_swizzle_high
@@ -60,6 +61,7 @@ scripts:
   - divider
   - mux_1bit
   - mux_2bit
+  - mux_32bit
   - cones
   - cones_2bit
   - cones_min

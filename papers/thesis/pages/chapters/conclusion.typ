@@ -1,7 +1,7 @@
 #import "../../util/macros.typ": *
 
 = Conclusion
-== Future work <chap:futurework>
+== Issues with the current implementation <chap:futurework>
 Throughout the duration of this thesis, there have been a number of improvements and areas for future research
 identified.
 
@@ -14,12 +14,13 @@ lack of robustness of the wiring stage (@sec:wiring and @sec:wiringfixup). As an
 circuits at various levels of the design process, RTLIL is extremely complex, and hence splicing an RTLIL
 netlist to insert majority voters in all of these cases is very challenging. This is particularly the case
 for both multi-cone circuits, circuits with complex bit manipulation, and especially when both are combined,
-as can often happen in many industry designs. #TODO("talk about this being extractReplicaWire's fault?")
-#TODO("and also sort of _going against the grain_ of how Yosys internals are meant to work")
+as can often happen in many industry designs.
+// we could talk here about extractReplicaWire causing a lot of these problems but it's probably a bit too low
+// level
 
 One other area for improvement is the fact that TaMaRa currently does not handle memories. In its current
 implementation, the tool adds a `(* tamara_ignore *)` annotation to all memory cells, and warns the user that
-memories are not handled. Memory cells do not behave like other cells, and it makes replicating them a
+memories are not handled. Memory cells do not behave like other cells in Yosys, and it makes replicating them a
 challenge, from both a design and verification perspective. On FPGAs, memory cells would likely require special handling
 to be able to replicate them while respecting the FPGA's SRAM limitations. This could be similar, although
 less of an issue, on ASICs as well. Likewise, verification of circuits with memory cells in them is a
@@ -82,7 +83,9 @@ structure and approach. A good example of this is that I implemented a union typ
 out, this is identical to the Yosys `RTLIL::SigSpec` type definition. Unfortunately, while Yosys has good
 documentation for its end-user commands, it does not have very good internal documentation at all, which makes
 it easy to miss concepts like this. Nevertheless, I _should_ have spent more time reading the Yosys codebase
-much more carefully, particularly existing passes that perform similar operations to TaMaRa.
+much more carefully, particularly existing passes that perform similar operations to TaMaRa. My belief is that
+a large amount of the headaches caused working with Yosys were my lack of understanding how RTLIL is designed,
+and "working against the grain" as it were with the tool.
 
 Likewise, there are some limitations in the verification methodology that need to be addressed. Whilst I do
 believe that the verification proofs are strong for the circuits we were able to prove, there are a number of
@@ -113,6 +116,7 @@ remove redundant logic, would respect `opt.share.disable = true` as a scratchpad
 from running. This approach was not implemented in this thesis, as it would require discussion with Yosys
 maintainers and a pull request to be merged, but could perhaps be useful future work.
 
+== Future work
 During the course of this thesis, I was also able to uncover some upstream Yosys bugs
 #footnote([https://github.com/YosysHQ/yosys/issues/4599])
 #footnote([https://github.com/YosysHQ/yosys/issues/4909]) using the Verismith fuzzer tool. This does raise the
@@ -124,17 +128,49 @@ up a script that does this, and have found what I believe to be a few issues (i.
 with the `split_cells` pass, which I plan to report in the future. The main issue with this is being able to
 triage results into a minimised and useful form to report to maintainers, which is quite a non-trivial task.
 
-In addition to all the above improvements, there are also some new research directions I have identified to
-explore. The fact that, in many of these test cases, the voter circuit occupies a significantly larger area
-compared to the main circuit. This raises the possibility of an area-driven, or even a placement-driven
-approach to TMR. In addition to performing TMR at the synthesis level, we could also take a placement-driven
-approach to radiation hardening that places ASIC/FPGA cells in such a way as to mitigate multi-bit upsets, and
-potentially single-event upsets, between replicas of the TMR. In essence, this would involve placing the
-ASIC/FPGA to maximise frequency while minimising the probability of a particle striking both replicas in a
-single TMR block. Likewise, although I have performed formal equivalence-based fault injection studies in this
-thesis, if the TaMaRa algorithm was powerful enough to handle industry-standard circuits such as CPUs, it
-would be very interesting to fabricate a chip or design an FPGA using the TaMaRa algorithm and subject it to
-real radiation. Similarly, it would be interesting to compare the performance of non-TMR techniques such as
-Error Correcting Codes (ECCs) in real-world radiation scenarios.
+One other verification technique that would be interesting to explore is that of _bitstream fault-injection._
+This was planned earlier in development with a tool known as the `ecp5_shotgun`, which was going to be used to
+inject faults into the FPGA bitstream on a Lattice ECP5 FPGA, and test its behaviour in the real world. For
+FPGAs in particular, one of the biggest problems with their usage in space is that their configuration SRAM
+("CRAM") takes up significantly more area than the actual LUTs themselves, thus making it more susceptible to
+SEUs. When a fault occurs, it has the effect of actually _changing_ the circuit entirely, which could be
+significantly harder to correct. This is an area that would benefit from further research.
+
+Finally, in addition to all the above improvements, there are also some new research directions I have
+identified to explore. Interestingly, in many of these test cases, the voter circuit occupies a significantly
+larger area compared to the main circuit. This raises the possibility of an area-driven, or even a
+placement-driven approach to TMR. To elaborate on that concept, in addition to performing TMR at the synthesis
+level, we would modify th EDA placer to attempt to place ASIC/FPGA cells in such a way as to mitigate
+multi-bit upsets, and potentially single-event upsets, between replicas of the TMR. In essence, this would
+involve placing the ASIC/FPGA to maximise frequency while minimising the probability of a particle striking
+both replicas in a single TMR block. Likewise, although I have performed formal equivalence-based fault
+injection studies in this thesis, if the TaMaRa algorithm was powerful enough to handle industry-standard
+circuits such as CPUs, it would be very interesting to fabricate a chip or design an FPGA using the TaMaRa
+algorithm and subject it to real radiation. Similarly, it would be interesting to compare the performance of
+non-TMR techniques such as Error Correcting Codes (ECCs) in real-world radiation scenarios. Potentially,
+Hamming or Bose–Chaudhuri–Hocquenghem (BCH) codes could provide similar or greater SEU-mitigation performance
+at the cost of significantly less area, particularly in microprocessor designs. This could also be combined
+with techniques such as rolling back and re-issuing instructions when faults occur, or issuing each
+instruction three times and comparing the result. Finally, although not as advanced as the prior ideas, it
+would be interesting to better understand _why_ particular circuits perform better or worse when injected
+under TMR, as this could answer questions raised in @sec:analysis.
+
+All in all, I think there are a number of interesting avenues to pursue in radiation-hardening research for
+integrated circuits, and I do intend to pursue these through a PhD.
 
 == Summary
+In this thesis, I have presented _TaMaRa_: an automated Triple Modular Redundancy EDA flow for Yosys. In
+@chap:intro, I introduced the background and the concept of the TaMaRa algorithm. In @chap:lit, I performed an
+extensive literature review of automated-TMR over many years of academic literature, and divided the
+literature into two main approaches: design-level and netlist-level. In @chap:method, I described the TaMaRa
+algorithm in detail, and explained how it uses a backwards-BFS logic-cone based approach to find and replicate
+TMR elements without changing circuit behaviour. I also introduced the extensive verification methodology I
+used. In @chap:results, I presented a number of test circuits, as well as comprehensive formally-verified
+fault-injection studies. Finally, in the prior section of this chapter, I presented a detailed analysis of
+future work and improvements for the TaMaRa algorithm. While it may be early days for TaMaRa algorithm, my
+hope is that this algorithm and future research that I perform in this space will be beneficial to many.
+
+Thank you for reading.
+
+#align(right)[#sym.qed]
+
