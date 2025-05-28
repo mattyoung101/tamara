@@ -1,0 +1,33 @@
+{
+    "faults": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+    ],
+    "results": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+    ],
+    "date": "2025-05-28 21:37:56.540052+10:00",
+    "verilog_file_hash": "c22971afcdca9b431eb2d8f53742ca026c2ee5c510682c327e3fd6b969d34a60",
+    "num_faults": 10,
+    "verilog_path": "../tests/verilog/mux.sv",
+    "top": "mux_4bit",
+    "samples": 100,
+    "type_": "unmitigated"
+}

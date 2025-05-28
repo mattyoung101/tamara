@@ -45,22 +45,22 @@ In total, @tab:bugs shows a list of all bugs I am aware of in the algorithm:
     the two cones, and breaking the circuit.],
     [Severe. Multi-cone circuits would be very common in any typical industry design.],
 
-    [Fuzzer cases can cause TaMaRa to crash],
-    [Certain fuzzer-generated code can incorrectly convince TaMaRa that regular wiring is required (when there
-    is only one attached SigChunk), when in
-    fact special wiring is required. This causes an assert failure.],
-    [Minor. Should not be common in real designs, but a bug nonetheless.],
+    [Multiple voters in the same cone cause multiple drivers on output],
+    [A combination of failures in the voter insertion code and the wiring code can cause illegal multi-driver
+  situations on the output signal of an RTL module. This is likely caused by a poor implementation of voter
+    cut point selection.],
+    [Severe. This, along with the first bug, means that multi-cone circuits cannot be handled.],
 
     [MultiDriverFixer can crash on some designs],
     [The wiring code in MultiDriverFixer is not robust enough to handle re-wiring certain circuits, such as
     the picorv32 CPU. This causes an assert failure.],
     [Moderate. We would like to process picorv32 if possible.],
 
-    [Multiple voters in the same cone cause multiple drivers on output],
-    [A combination of failures in the voter insertion code and the wiring code can cause illegal multi-driver
-  situations on the output signal of an RTL module. This is likely caused by a poor implementation of voter
-    cut point selection.],
-    [Severe. This, along with the first bug, means that multi-cone circuits cannot be handled.]
+    [Fuzzer cases can cause TaMaRa to crash],
+    [Certain fuzzer-generated code can incorrectly convince TaMaRa that regular wiring is required (when there
+    is only one attached SigChunk), when in
+    fact special wiring is required. This causes an assert failure.],
+    [Minor. Should not be common in real designs, but a bug nonetheless.],
   ),
   caption: [ List of known TaMaRa bugs ]
 ) <tab:bugs>
@@ -151,9 +151,7 @@ non-TMR techniques such as Error Correcting Codes (ECCs) in real-world radiation
 Hamming or Bose–Chaudhuri–Hocquenghem (BCH) codes could provide similar or greater SEU-mitigation performance
 at the cost of significantly less area, particularly in microprocessor designs. This could also be combined
 with techniques such as rolling back and re-issuing instructions when faults occur, or issuing each
-instruction three times and comparing the result. Finally, although not as advanced as the prior ideas, it
-would be interesting to better understand _why_ particular circuits perform better or worse when injected
-under TMR, as this could answer questions raised in @sec:analysis.
+instruction three times and comparing the result.
 
 All in all, I think there are a number of interesting avenues to pursue in radiation-hardening research for
 integrated circuits, and I do intend to pursue these through a PhD.

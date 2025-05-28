@@ -33,6 +33,7 @@ def circuit(name: str, is_prot: bool, is_unprot: bool, is_unmit: bool, out: Opti
     plt.ylabel("Mitigated faults (%)")
     plt.title(f"Multi-fault injection study on {name}")
     plt.grid()
+    plt.ylim(0, 100)
 
     # Force integer ticks on x-axis
     ax = plt.gca()
@@ -67,8 +68,9 @@ def circuits(contents: str, mode: str, out: Optional[str]):
     plt.figure(figsize=(8, 6), dpi=80)
     plt.xlabel("Number of faults")
     plt.ylabel("Mitigated faults (%)")
-    plt.title(f"Multi-fault injection study for {len(individual)} circuits")
+    plt.title(f"Multi-fault injection study for {len(individual)} circuits with {mode} voters")
     plt.grid()
+    plt.ylim(0, 100)
 
     # Force integer ticks on x-axis
     ax = plt.gca()

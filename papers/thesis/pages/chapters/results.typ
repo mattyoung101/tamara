@@ -460,7 +460,9 @@ The following circuits failed the equivalence check:
 The reasons for these failures are covered later in the thesis, but in short are known faults in the current
 implementation of the TaMaRa algorithm. For more info, see @tab:bugs.
 
-=== Fault injection studies: Protected voter
+== Fault injection
+#TODO("reword this explanation, cover what type of faults are injected or do that in methodology")
+
 I propose two main classes of fault injection studies. In the first class of tests, known as "Protected voter
 tests", the voter circuit itself is ignored and not subject to faults. Whilst this is unrepresentative of
 real-world faults, it enables us to explore the validity of the voter circuit on its own. Particularly, it
@@ -484,6 +486,7 @@ cell and wire that is part of the voter with the `tamara_voter` RTLIL annotation
   caption: [ Yosys script to deselect TaMaRa voter wires/cells ]
 ) <lst:ignorevoter>
 
+=== Protected voter
 @tab:faultinjectprotected presents the results for this protected voter fault-injection study. As the fault
 injection process is stochastic, it uses a sample of 100 runs per fault. The circuits listed in this table
 correspond to the suite of circuits presented in @tab:combinatorial, after they have been processed end-to-end
@@ -571,7 +574,30 @@ correctly by the TaMaRa algorithm.
   caption: [ Protected voter fault injection study results ]
 ) <tab:faultinjectprotected>
 
-=== Fault injection studies: Unprotected voter
+@fig:allprotectedcomb shows the combined results of all combinatorial circuits under protected voter fault
+injection tests.
+
+#figure(
+    image("../../diagrams/all_comb_prot.svg", width: 80%),
+    caption: [ Comparison of all results for protected voter combinatorial circuits ]
+) <fig:allprotectedcomb>
+
+Generally, all circuits follow roughly the same inverse logarithmic curve, and are within a
+few percentage points of each other. All tested circuits are able to mitigate 100% of injected faults, which
+is a very positive sign for the protected voter. With 2 injected faults, the effectiveness ranges between
+roughly 40% and 75%, with `not_swizzle_low` performing the worst, and `mux_2bit` and `not_2bit` performing the
+best. Interestingly, the only outliers here are the two 32-bit circuits: `not_32bit` and `not_2bit`, which do
+not have an inverse logarithmic curve, rather an almost linear curve that's significantly better than all of
+the other circuits.
+To investigate further, I performed a sweep of fault-injection tests with a 1-bit, 2-bit, 4-bit, 8-bit, 16-bit,
+24-bit and 32-bit multiplexer respectively, which is below shown in @fig:muxbitsweep.
+
+#figure(
+    image("../../diagrams/mux_bit_sweep_prot.svg", width: 80%),
+    caption: [ Sweep of fault-injection tests on differing-width multiplexers, protected voters ]
+) <fig:muxbitsweep>
+
+=== Unprotected voter
 While the protected voter study in the prior section is useful for verifying the correctness of the voter
 circuit itself, it is not representative of real-world fault scenarios. In the unprotected voter studies, we
 subject the entire netlist to faults, including the voter circuit.
@@ -662,10 +688,51 @@ samples per fault).
   caption: [ Unprotected voter fault injection study results ]
 ) <tab:faultinjectunprotected>
 
-In many of these examples, the results are significantly worse than with the protected voter. This is because
-the voter takes up the majority of the gate-area of the circuit in a number of these cases, meaning the
-likelihood of the fault applying to the voter and hence invalidating it is much higher. In @tab:voterarea, I
-calculate the percentage area that the voter accounts for.
+@fig:allunprotectedcomb shows the combined results of all combinatorial circuits under unprotected voter fault
+injection tests.
+
+#figure(
+    image("../../diagrams/all_comb_unprot.svg", width: 80%),
+    caption: [ Comparison of all results for unprotected voter combinatorial circuits ]
+) <fig:allunprotectedcomb>
+
+In this case, rather than being an inverse logarithmic curve, all tests have a very sharp
+fall-off in the percentage of mitigated faults, even between one and two faults. Note that, even in the case
+of one fault, only between 50% and 60% of faults were mitigated, and this declines sharply to between roughly
+5% and 15% at two faults. Although this is an unfortunate result, recall from @tab:voterarea that the voter
+takes up the vast majority of the circuit area in these tests, meaning it's much more likely to be the target
+of faults, so this result does make sense on this test suite. Nonetheless, there's clear room for
+methodological improvement here. 
+
+Also interesting to note is that, unlike in @fig:allprotectedcomb with the protected voters, these results are
+all largely the same across all circuits. We do not see see any differences between 32-bit and 1-bit circuits
+in their effectiveness at mitigating faults. To investigate this further, I performed the same multiplexer
+sweep as before, but using unprotected voters, which is shown below in @fig:muxbitsweepunprot.
+
+#figure(
+    image("../../diagrams/mux_bit_sweep_unprot.svg", width: 70%),
+    caption: [ Sweep of fault-injection tests on differing-width multiplexers, unprotected voters ]
+) <fig:muxbitsweepunprot>
+
+=== Unmitigated circuits
+To compare against a baseline, @fig:allunmitigatedcomb shows the results of fault injection on all
+combinatorial circuits with no mitigation (i.e. no TMR) whatsoever.
+
+#figure(
+    image("../../diagrams/all_comb_unmit.svg", width: 70%),
+    caption: [ Comparison of all results for unmitigated combinatorial circuits ]
+) <fig:allunmitigatedcomb>
+
+These largely result, as expected, in 0% mitigation rate across the board. However, there's an interesting
+spike up to 10% mitigated for the `not_tmr` circuit at exactly two faults. My hypothesis here is that two
+faults being injected into the circuit can, on occasion, cancel each other out.
+
+=== Analysis <sec:analysis>
+In many of the unprotected voter tests, the results are significantly worse than with the protected voter.
+This is because the voter takes up the majority of the gate-area of the circuit in a number of these cases,
+meaning the likelihood of the fault applying to the voter and hence invalidating it is much higher. In
+@tab:voterarea, I calculate the percentage area that the voter accounts for. The real effectiveness of the
+algorithm in representative real-world tests is by comparing unprotected voter tests vs. unmitigated voter.
 
 #TODO("complete this table for a few more representative circuits")
 
@@ -692,90 +759,39 @@ investigate in future research. Regardless, since TaMaRa operates entirely in th
 knowledge or consideration of the final area the voter takes, it makes sense that high voter areas as per
 @tab:voterarea correspond with significantly reduced fault-tolerance in unprotected voter scenarios.
 
-=== Analysis of fault injection results <sec:analysis>
-Synthesising the data from all of the prior tests, we can reveal some interesting properties of the TaMaRa
-algorithm and the characteristics of its robustness against SEUs.
+Although the protected voter tests are useful for proving the fundamental correctness of the algorithm, they
+are not representative of real-world fault-injection scenarios. In the real world, radiation can (and will)
+strike voter circuits. A sampling of unprotected vs. unmitigated circuit results are shown in @tab:resultgrid.
 
 #figure(
-    image("../../diagrams/multi_fault_mux_2bit.svg", width: 70%),
-    caption: [ Unmitigated vs. protected voter for the mux\_2bit circuit ]
-) <fig:unmitvsprotected>
+  table(
+    columns: 2,
+    align: horizon,
+    stroke: 0.5pt,
+    [
+      #image("../../diagrams/multi_fault_mux_2bit.svg")
+    ],
+    [
+      #image("../../diagrams/multi_fault_not_2bit.svg")
+    ],
+    [
+      #image("../../diagrams/multi_fault_not_swizzle_low.svg")
+    ],
+    [
+      #image("../../diagrams/multi_fault_crc_const_variant3.svg")
+    ]
+  ),
+  caption: [ Sample of unprotected vs. unmitigated circuit results ]
+) <tab:resultgrid>
 
-#TODO("more examples here, in a 2x2 table")
+#TODO("bar graph of percentage difference with one fault across all circuits?")
 
-Firstly, comparing
-unprotected #footnote([In which the voter is allowed to have faults injected into it.])
-vs.
-unmitigated #footnote([In which there is no TaMaRa TMR applied at all.])
-circuits for a variety of circuits shows that the TaMaRa algorithm _is_ effective, compared to a control,
-against mitigating a number of SEUs.
-The fact that 100% of faults are mitigated when only one fault is injected is a positive sign, as it indicates
-the algorithm is working as intended to mitigate _single_ event upsets. Also observe the inverse logarithmic
-shaped curve as the number of faults increases, showing an exponential decay in the effectiveness of the
-algorithm until it eventually is no longer effective at mitigating more than 8 upsets.
+Comparing unprotected vs. unmitigated circuits for a variety of circuits shows that the TaMaRa algorithm _is_
+effective, compared to a control, against mitigating a number of SEUs. The fact that 100% of faults are
+mitigated when only one fault is injected is a positive sign, as it indicates the algorithm is working as
+intended to mitigate _single_ event upsets. Also observe the inverse logarithmic shaped curve as the number of
+faults increases, showing an exponential decay in the effectiveness of the algorithm until it eventually is no
+longer effective at mitigating more than 8 upsets.
 
-@fig:allprotectedcomb shows the combined results of all combinatorial circuits under protected voter fault
-injection tests.
-
-#figure(
-    image("../../diagrams/all_comb_prot.svg", width: 85%),
-    caption: [ Comparison of all results for protected voter combinatorial circuits ]
-) <fig:allprotectedcomb>
-
-Generally, all circuits follow roughly the same inverse logarithmic curve, and are within a
-few percentage points of each other. All tested circuits are able to mitigate 100% of injected faults, which
-is a very positive sign for the protected voter. With 2 injected faults, the effectiveness ranges between
-roughly 40% and 75%, with `not_swizzle_low` performing the worst, and `mux_2bit` and `not_2bit` performing the
-best. Interestingly, the only outliers here are the two 32-bit circuits: `not_32bit` and `not_2bit`, which do
-not have an inverse logarithmic curve, rather an almost linear curve that's significantly better than all of
-the other circuits. This would appear to confirm my earlier hypothesis that more complex circuits, and
-in particular circuits where the voter does _not_ consist of the majority of logic elements, perform better
-under fault injection.
-
-To investigate further, I performed a sweep of fault-injection tests with a 1-bit, 2-bit, 4-bit, 8-bit, 16-bit,
-24-bit and 32-bit multiplexer respectively, which is below shown in @fig:muxbitsweep.
-
-#figure(
-    image("../../diagrams/mux_bit_sweep.svg", width: 87%),
-    caption: [ Sweep of fault-injection tests on differing-width multiplexers ]
-) <fig:muxbitsweep>
-
-@fig:muxbitsweep confirms my earlier hypothesis: circuits _do_ perform better when they have higher
-bit-widths, and thus are more complicated, and in turn have more area to inject faults into that is _not_ the
-voter. This would lend credence to the idea that the circuits I have been testing earlier are, in fact, too
-_simple_. Assuming the TaMaRa algorithm could process them, we should be testing with more complex
-circuits, in which case we should see better results.
-
-@fig:allunprotectedcomb shows the combined results of all combinatorial circuits under unprotected voter fault
-injection tests.
-
-#figure(
-    image("../../diagrams/all_comb_unprot.svg", width: 70%),
-    caption: [ Comparison of all results for unprotected voter combinatorial circuits ]
-) <fig:allunprotectedcomb>
-
-In this case, rather than being an inverse logarithmic curve, all tests have a very sharp
-fall-off in the percentage of mitigated faults, even between one and two faults. Note that, even in the case
-of one fault, only between 50% and 60% of faults were mitigated, and this declines sharply to between roughly
-5% and 15% at two faults. Although this is an unfortunate result, recall from @tab:voterarea that the voter
-takes up the vast majority of the circuit area in these tests, meaning it's much more likely to be the target
-of faults, so this result does make sense on this test suite. Nonetheless, there's clear room for
-methodological improvement here. Also interesting to note is that, unlike in @fig:allprotectedcomb with the
-protected voters, these results are all largely the same across all circuits.
-
-To compare against a baseline, @fig:allunmitigatedcomb shows the results of fault injection on all
-combinatorial circuits with no mitigation (i.e. no TMR) whatsoever.
-
-#figure(
-    image("../../diagrams/all_comb_unmit.svg", width: 70%),
-    caption: [ Comparison of all results for unmitigated combinatorial circuits ]
-) <fig:allunmitigatedcomb>
-
-These largely result, as expected, in 0% mitigation rate across the board. However, there's an interesting
-spike up to 10% mitigated for the `not_tmr` circuit at exactly two faults. My hypothesis here is that two
-faults being injected into the circuit can, on occasion, cancel each other out.
-
-== RTL fuzzing
-#TODO("")
-- Unsure how to show this systematically either
-
+#TODO("a big takeaway is that voters need protection on simple circuits and it depends how complicated the
+  circuit is")
