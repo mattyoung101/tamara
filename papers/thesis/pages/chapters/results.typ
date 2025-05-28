@@ -211,11 +211,57 @@ the wiring code can handle multi-bit edge signals.
     [
         #image("../../diagrams/schematics/mux_32bit.svg")
     ],
+
+    [
+        crc\_const\_variant3
+    ],
+    [
+        ```systemverilog
+    module crc_const_variant3(
+        input logic[1:0] in,
+        output logic[1:0] out
+    );
+        wire zero_wire = 1'b0;
+        assign out = {in[0] ^ in[1], zero_wire};
+    endmodule
+        ```
+    ],
+    [
+        #image("../../diagrams/schematics/crc_const_variant3.svg")
+    ],
+
+    [
+        crc\_const\_variant4
+    ],
+    [
+        ```systemverilog
+    module crc_const_variant4(input logic[1:0] in, output logic[1:0] out);
+        // (1'b1 - 1'b1) evaluates to 0
+        assign out = {in[0] ^ in[1], (1'b1 - 1'b1)};
+    endmodule
+        ```
+    ],
+    [
+        #image("../../diagrams/schematics/crc_const_variant4.svg")
+    ],
+
+    [
+        crc\_const\_variant5
+    ],
+    [
+        ```systemverilog
+    module crc_const_variant5(input logic [1:0] in, output logic [1:0] out);
+        // (in[1] & ~in[1]) always equals 0 regardless of in[1]
+        assign out = {in[0] ^ in[1], (in[1] & ~in[1])};
+    endmodule
+        ```
+    ],
+    [
+        #image("../../diagrams/schematics/crc_const_variant5.svg")
+    ],
   ),
   caption: [ Table of multi-bit combinatorial circuit designs ]
 ) <tab:combinatorialmulti>
-
-#TODO("add crc const variant3/4/5")
 
 === Sequential circuits
 In the previous sections, the testbenches were all combinatorial circuits, and did not use sequential elements
@@ -363,7 +409,7 @@ endmodule
 ) <tab:multiconecircuits>
 
 === Feedback circuits
-#TODO("")
+#TODO("write description")
 
 #figure(
   table(
@@ -456,52 +502,70 @@ correctly by the TaMaRa algorithm.
         not\_tmr
     ],
     [
-        #image("../../diagrams/fault_protected_not_tmr.svg", width: 80%)
+        #image("../../diagrams/fault_protected_not_tmr.svg", width: 60%)
     ],
 
     [not\_2bit],
     [
-      #image("../../diagrams/fault_protected_not_2bit.svg", width: 80%)
+      #image("../../diagrams/fault_protected_not_2bit.svg", width: 60%)
     ],
 
     [not\_32bit],
     [
-      #image("../../diagrams/fault_protected_not_32bit.svg", width: 80%)
+      #image("../../diagrams/fault_protected_not_32bit.svg", width: 60%)
     ],
 
     [
         mux_1bit
     ],
     [
-        #image("../../diagrams/fault_protected_mux_1bit.svg", width: 80%)
+        #image("../../diagrams/fault_protected_mux_1bit.svg", width: 60%)
     ],
 
     [
         mux_2bit
     ],
     [
-        #image("../../diagrams/fault_protected_mux_2bit.svg", width: 80%)
+        #image("../../diagrams/fault_protected_mux_2bit.svg", width: 60%)
     ],
 
     [
         mux_32bit
     ],
     [
-        #image("../../diagrams/fault_protected_mux_32bit.svg", width: 80%)
+        #image("../../diagrams/fault_protected_mux_32bit.svg", width: 60%)
     ],
 
     [
         not_swizzle_low
     ],
     [
-        #image("../../diagrams/fault_protected_not_swizzle_low.svg", width: 80%)
+        #image("../../diagrams/fault_protected_not_swizzle_low.svg", width: 60%)
     ],
 
     [
         not_swizzle_high
     ],
     [
-        #image("../../diagrams/fault_protected_not_swizzle_high.svg", width: 80%)
+        #image("../../diagrams/fault_protected_not_swizzle_high.svg", width: 60%)
+    ],
+    [
+        crc_const_variant3
+    ],
+    [
+        #image("../../diagrams/fault_protected_crc_const_variant3.svg", width: 60%)
+    ],
+    [
+        crc_const_variant4
+    ],
+    [
+        #image("../../diagrams/fault_protected_crc_const_variant4.svg", width: 60%)
+    ],
+    [
+        crc_const_variant5
+    ],
+    [
+        #image("../../diagrams/fault_protected_crc_const_variant5.svg", width: 60%)
     ],
   ),
   caption: [ Protected voter fault injection study results ]
@@ -528,52 +592,71 @@ samples per fault).
         not\_tmr
     ],
     [
-        #image("../../diagrams/fault_unprotected_not_tmr.svg", width: 80%)
+        #image("../../diagrams/fault_unprotected_not_tmr.svg", width: 60%)
     ],
 
     [not\_2bit],
     [
-      #image("../../diagrams/fault_unprotected_not_2bit.svg", width: 80%)
+      #image("../../diagrams/fault_unprotected_not_2bit.svg", width: 60%)
     ],
 
     [not\_32bit],
     [
-      #image("../../diagrams/fault_unprotected_not_32bit.svg", width: 80%)
+      #image("../../diagrams/fault_unprotected_not_32bit.svg", width: 60%)
     ],
 
     [
         mux_1bit
     ],
     [
-        #image("../../diagrams/fault_unprotected_mux_1bit.svg", width: 80%)
+        #image("../../diagrams/fault_unprotected_mux_1bit.svg", width: 60%)
     ],
 
     [
         mux_2bit
     ],
     [
-        #image("../../diagrams/fault_unprotected_mux_2bit.svg", width: 80%)
+        #image("../../diagrams/fault_unprotected_mux_2bit.svg", width: 60%)
     ],
 
     [
         mux_32bit
     ],
     [
-        #image("../../diagrams/fault_unprotected_mux_32bit.svg", width: 80%)
+        #image("../../diagrams/fault_unprotected_mux_32bit.svg", width: 60%)
     ],
 
     [
         not_swizzle_low
     ],
     [
-        #image("../../diagrams/fault_unprotected_not_swizzle_low.svg", width: 80%)
+        #image("../../diagrams/fault_unprotected_not_swizzle_low.svg", width: 60%)
     ],
 
     [
         not_swizzle_high
     ],
     [
-        #image("../../diagrams/fault_unprotected_not_swizzle_high.svg", width: 80%)
+        #image("../../diagrams/fault_unprotected_not_swizzle_high.svg", width: 60%)
+    ],
+
+    [
+        crc_const_variant3
+    ],
+    [
+        #image("../../diagrams/fault_unprotected_crc_const_variant3.svg", width: 60%)
+    ],
+    [
+        crc_const_variant4
+    ],
+    [
+        #image("../../diagrams/fault_unprotected_crc_const_variant4.svg", width: 60%)
+    ],
+    [
+        crc_const_variant5
+    ],
+    [
+        #image("../../diagrams/fault_unprotected_crc_const_variant5.svg", width: 60%)
     ],
   ),
   caption: [ Unprotected voter fault injection study results ]
@@ -584,7 +667,7 @@ the voter takes up the majority of the gate-area of the circuit in a number of t
 likelihood of the fault applying to the voter and hence invalidating it is much higher. In @tab:voterarea, I
 calculate the percentage area that the voter accounts for.
 
-#TODO("complete this table")
+#TODO("complete this table for a few more representative circuits")
 
 #figure(
   table(
@@ -631,13 +714,15 @@ the algorithm is working as intended to mitigate _single_ event upsets. Also obs
 shaped curve as the number of faults increases, showing an exponential decay in the effectiveness of the
 algorithm until it eventually is no longer effective at mitigating more than 8 upsets.
 
+@fig:allprotectedcomb shows the combined results of all combinatorial circuits under protected voter fault
+injection tests.
+
 #figure(
     image("../../diagrams/all_comb_prot.svg", width: 85%),
     caption: [ Comparison of all results for protected voter combinatorial circuits ]
 ) <fig:allprotectedcomb>
 
-@fig:allprotectedcomb shows the combined results of all combinatorial circuits under protected voter fault
-injection tests. Generally, all circuits follow roughly the same inverse logarithmic curve, and are within a
+Generally, all circuits follow roughly the same inverse logarithmic curve, and are within a
 few percentage points of each other. All tested circuits are able to mitigate 100% of injected faults, which
 is a very positive sign for the protected voter. With 2 injected faults, the effectiveness ranges between
 roughly 40% and 75%, with `not_swizzle_low` performing the worst, and `mux_2bit` and `not_2bit` performing the
@@ -647,18 +732,29 @@ the other circuits. This would appear to confirm my earlier hypothesis that more
 in particular circuits where the voter does _not_ consist of the majority of logic elements, perform better
 under fault injection.
 
-To investigate further, I performed a sweep of fault-injection tests with a 2-bit, 4-bit, 8-bit, 16-bit,
-24-bit and 32-bit multiplexer respectively, which is shown in Figure XX.
-
-#TODO("")
+To investigate further, I performed a sweep of fault-injection tests with a 1-bit, 2-bit, 4-bit, 8-bit, 16-bit,
+24-bit and 32-bit multiplexer respectively, which is below shown in @fig:muxbitsweep.
 
 #figure(
-    image("../../diagrams/all_comb_unprot.svg", width: 80%),
+    image("../../diagrams/mux_bit_sweep.svg", width: 87%),
+    caption: [ Sweep of fault-injection tests on differing-width multiplexers ]
+) <fig:muxbitsweep>
+
+@fig:muxbitsweep confirms my earlier hypothesis: circuits _do_ perform better when they have higher
+bit-widths, and thus are more complicated, and in turn have more area to inject faults into that is _not_ the
+voter. This would lend credence to the idea that the circuits I have been testing earlier are, in fact, too
+_simple_. Assuming the TaMaRa algorithm could process them, we should be testing with more complex
+circuits, in which case we should see better results.
+
+@fig:allunprotectedcomb shows the combined results of all combinatorial circuits under unprotected voter fault
+injection tests.
+
+#figure(
+    image("../../diagrams/all_comb_unprot.svg", width: 70%),
     caption: [ Comparison of all results for unprotected voter combinatorial circuits ]
 ) <fig:allunprotectedcomb>
 
-@fig:allunprotectedcomb shows the combined results of all combinatorial circuits under unprotected voter fault
-injection tests. In this case, rather than being an inverse logarithmic curve, all tests have a very sharp
+In this case, rather than being an inverse logarithmic curve, all tests have a very sharp
 fall-off in the percentage of mitigated faults, even between one and two faults. Note that, even in the case
 of one fault, only between 50% and 60% of faults were mitigated, and this declines sharply to between roughly
 5% and 15% at two faults. Although this is an unfortunate result, recall from @tab:voterarea that the voter
@@ -667,16 +763,17 @@ of faults, so this result does make sense on this test suite. Nonetheless, there
 methodological improvement here. Also interesting to note is that, unlike in @fig:allprotectedcomb with the
 protected voters, these results are all largely the same across all circuits.
 
+To compare against a baseline, @fig:allunmitigatedcomb shows the results of fault injection on all
+combinatorial circuits with no mitigation (i.e. no TMR) whatsoever.
+
 #figure(
     image("../../diagrams/all_comb_unmit.svg", width: 70%),
     caption: [ Comparison of all results for unmitigated combinatorial circuits ]
 ) <fig:allunmitigatedcomb>
 
-To compare against a baseline, @fig:allunmitigatedcomb shows the results of fault injection on all
-combinatorial circuits with no mitigation (i.e. no TMR) whatsoever. These largely result, as expected, in 0%
-mitigation rate across the board. However, there's an interesting spike up to 10% mitigated for the `not_tmr`
-circuit at exactly two faults. My hypothesis here is that two faults being injected into the circuit can, on
-occasion, cancel each other out.
+These largely result, as expected, in 0% mitigation rate across the board. However, there's an interesting
+spike up to 10% mitigated for the `not_tmr` circuit at exactly two faults. My hypothesis here is that two
+faults being injected into the circuit can, on occasion, cancel each other out.
 
 == RTL fuzzing
 #TODO("")

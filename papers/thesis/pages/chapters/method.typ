@@ -268,7 +268,8 @@ following criteria:
 The voter cut point is set once and only once per node. Once it is set, it's not immediately used by the
 backwards BFS, but rather passed onto the wiring stage for later use.
 
-#TODO("Yosys 'show' result of VoterBuilder OR chain and $reduce_or")
+// NOTE: Originally I said here we should have a show result of the OR tree chain, but I think that's broken
+// rn
 
 === Wiring <sec:wiring>
 The most complex (and error prone) element of the TaMaRa algorithm is, by far, the wiring logic. As a
@@ -301,7 +302,8 @@ original `SigSpec` and the rest of the circuit. This is a very large (and poor) 
 the user if our assumptions do not hold; for example, if there are _multiple_ `SigSpec`s originally attached
 to the voter output wire, which is currently not handled.
 
-#TODO("decision tree or similar")
+// NOTE: Originally I said we should have a decision tree here, but I don't think it's necessary as it'd only
+// have two branches anyway
 
 === Wiring fix-up <sec:wiringfixup>
 TaMaRa's wiring logic currently cannot handle the entire circuit in a single pass. Hence, TaMaRa wiring cannot

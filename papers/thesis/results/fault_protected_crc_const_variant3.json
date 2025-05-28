@@ -1,0 +1,33 @@
+{
+    "faults": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+    ],
+    "results": [
+        100.0,
+        26.0,
+        24.0,
+        13.0,
+        8.0,
+        8.0,
+        5.0,
+        7.000000000000001,
+        6.0,
+        1.0
+    ],
+    "date": "2025-05-28 00:54:00.893714+10:00",
+    "verilog_file_hash": "25b9b42c0335c17bf0675f5dc1f3b5a04505b73f5fe37904dced7ac13c264450",
+    "num_faults": 10,
+    "verilog_path": "../tests/verilog/crc_min.sv",
+    "top": "crc_const_variant3",
+    "samples": 100,
+    "type_": "protected"
+}

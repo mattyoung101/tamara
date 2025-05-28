@@ -1,0 +1,21 @@
+digraph "crc_const_variant4" {
+label="crc_const_variant4";
+rankdir="LR";
+remincross=true;
+n1 [ shape=octagon, label="in", color="black", fontcolor="black"];
+n2 [ shape=octagon, label="out", color="black", fontcolor="black"];
+c6 [ shape=record, label="{{<p3> A|<p4> B}|$3\n$xor|{<p5> Y}}",  ];
+x0 [ shape=record, style=rounded, label="<s0> 0:0 - 0:0 ", colorscheme="dark28", color="1", fontcolor="1" ];
+x0:e -> c6:p3:w [arrowhead=odiamond, arrowtail=odiamond, dir=both, colorscheme="dark28", color="4", fontcolor="4", label=""];
+x1 [ shape=record, style=rounded, label="<s0> 1:1 - 0:0 ", colorscheme="dark28", color="4", fontcolor="4" ];
+x1:e -> c6:p4:w [arrowhead=odiamond, arrowtail=odiamond, dir=both, colorscheme="dark28", color="3", fontcolor="3", label=""];
+x2 [ shape=record, style=rounded, label="<s0> 0:0 - 1:1 ", colorscheme="dark28", color="3", fontcolor="3" ];
+c6:p5:e -> x2:w [arrowhead=odiamond, arrowtail=odiamond, dir=both, colorscheme="dark28", color="3", fontcolor="3", label=""];
+v3 [ label="1'0" ];
+x4 [ shape=record, style=rounded, label="<s0> 0:0 - 0:0 ", colorscheme="dark28", color="3", fontcolor="3" ];
+n1:e -> x0:s0:w [colorscheme="dark28", color="7", fontcolor="7", label=""];
+n1:e -> x1:s0:w [colorscheme="dark28", color="7", fontcolor="7", label=""];
+x2:s0:e -> n2:w [colorscheme="dark28", color="2", fontcolor="2", label=""];
+x4:s0:e -> n2:w [colorscheme="dark28", color="2", fontcolor="2", label=""];
+v3:e -> x4:w [colorscheme="dark28", color="6", fontcolor="6", label=""];
+}
