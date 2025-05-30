@@ -582,15 +582,15 @@ injection tests.
     caption: [ Comparison of all results for protected voter combinatorial circuits ]
 ) <fig:allprotectedcomb>
 
-Generally, all circuits follow roughly the same inverse logarithmic curve, and are within a
-few percentage points of each other. All tested circuits are able to mitigate 100% of injected faults, which
-is a very positive sign for the protected voter. With 2 injected faults, the effectiveness ranges between
-roughly 40% and 75%, with `not_swizzle_low` performing the worst, and `mux_2bit` and `not_2bit` performing the
-best. Interestingly, the only outliers here are the two 32-bit circuits: `not_32bit` and `not_2bit`, which do
-not have an inverse logarithmic curve, rather an almost linear curve that's significantly better than all of
-the other circuits.
-To investigate further, I performed a sweep of fault-injection tests with a 1-bit, 2-bit, 4-bit, 8-bit, 16-bit,
-24-bit and 32-bit multiplexer respectively, which is below shown in @fig:muxbitsweep.
+Generally, all circuits follow roughly the same inverse logarithmic curve, and are within a few percentage
+points of each other. All tested circuits are able to mitigate 100% of injected faults when 1 fault is
+injected, which is a very positive sign for the protected voter. With 2 injected faults, the effectiveness
+ranges between roughly 40% and 75%, with `not_swizzle_low` performing the worst, and `mux_2bit` and `not_2bit`
+performing the best. Interestingly, the only outliers here are the two 32-bit circuits: `not_32bit` and
+`not_2bit`, which do not have an inverse logarithmic curve, rather an almost linear curve that's significantly
+better than all of the other circuits. To investigate further, I performed a sweep of fault-injection tests
+with a 1-bit, 2-bit, 4-bit, 8-bit, 16-bit, 24-bit and 32-bit multiplexer respectively, which is below shown in
+@fig:muxbitsweep.
 
 #figure(
     image("../../diagrams/mux_bit_sweep_prot.svg", width: 80%),
@@ -604,7 +604,7 @@ subject the entire netlist to faults, including the voter circuit.
 
 The Yosys script used to run these tests was the same as @lst:ignorevoter, except that the statements to
 select only voters were removed. Results for this set of tests are shown in @tab:faultinjectunprotected. The
-process remains stochastic, and the same parameters as in the protected voter experiments were used (10
+process remains stochastic, and the same parameters as in the protected voter experiments were used (100
 samples per fault).
 
 #figure(
@@ -696,13 +696,13 @@ injection tests.
     caption: [ Comparison of all results for unprotected voter combinatorial circuits ]
 ) <fig:allunprotectedcomb>
 
-In this case, rather than being an inverse logarithmic curve, all tests have a very sharp
-fall-off in the percentage of mitigated faults, even between one and two faults. Note that, even in the case
-of one fault, only between 50% and 60% of faults were mitigated, and this declines sharply to between roughly
-5% and 15% at two faults. Although this is an unfortunate result, recall from @tab:voterarea that the voter
-takes up the vast majority of the circuit area in these tests, meaning it's much more likely to be the target
-of faults, so this result does make sense on this test suite. Nonetheless, there's clear room for
-methodological improvement here. 
+In this case, rather than being an inverse logarithmic curve, all tests have a very sharp fall-off in the
+percentage of mitigated faults, even between one and two faults. Note that, even in the case of one fault,
+only between 50% and 60% of faults were mitigated, and this declines sharply to between roughly 5% and 15% at
+two faults. Although this is an unfortunate result, as will be covered in @sec:analysis, the voter takes up
+the vast majority of the circuit area in these tests, meaning it's much more likely to be the target of
+faults, so this result does make sense on this test suite. Nonetheless, there's clear room for methodological
+improvement here.
 
 Also interesting to note is that, unlike in @fig:allprotectedcomb with the protected voters, these results are
 all largely the same across all circuits. We do not see see any differences between 32-bit and 1-bit circuits
@@ -714,6 +714,8 @@ sweep as before, but using unprotected voters, which is shown below in @fig:muxb
     caption: [ Sweep of fault-injection tests on differing-width multiplexers, unprotected voters ]
 ) <fig:muxbitsweepunprot>
 
+#TODO("explain why this occurs?")
+
 === Unmitigated circuits
 To compare against a baseline, @fig:allunmitigatedcomb shows the results of fault injection on all
 combinatorial circuits with no mitigation (i.e. no TMR) whatsoever.
@@ -723,9 +725,9 @@ combinatorial circuits with no mitigation (i.e. no TMR) whatsoever.
     caption: [ Comparison of all results for unmitigated combinatorial circuits ]
 ) <fig:allunmitigatedcomb>
 
-These largely result, as expected, in 0% mitigation rate across the board. However, there's an interesting
-spike up to 10% mitigated for the `not_tmr` circuit at exactly two faults. My hypothesis here is that two
-faults being injected into the circuit can, on occasion, cancel each other out.
+As expected, these largely result in 0% mitigation rate across the board. However, there's an interesting
+spike up to 10% mitigated for some circuits at exactly two faults. My hypothesis here is that two faults being
+injected into the circuit can, on occasion, cancel each other out.
 
 === Analysis <sec:analysis>
 In many of the unprotected voter tests, the results are significantly worse than with the protected voter.
@@ -789,9 +791,10 @@ strike voter circuits. A sampling of unprotected vs. unmitigated circuit results
 Comparing unprotected vs. unmitigated circuits for a variety of circuits shows that the TaMaRa algorithm _is_
 effective, compared to a control, against mitigating a number of SEUs. The fact that 100% of faults are
 mitigated when only one fault is injected is a positive sign, as it indicates the algorithm is working as
-intended to mitigate _single_ event upsets. Also observe the inverse logarithmic shaped curve as the number of
-faults increases, showing an exponential decay in the effectiveness of the algorithm until it eventually is no
-longer effective at mitigating more than 8 upsets.
+intended to mitigate _single_ event upsets. As mentioned earlier, there is inverse logarithmic shaped curve as
+the number of faults increases, showing an exponential decay in the effectiveness of the algorithm until it
+eventually is no longer effective at mitigating more than 8 upsets. This was hypothesised to happen in the
+early stages of drafting the algorithm, so it's a positive sign to see it in reality.
 
-#TODO("a big takeaway is that voters need protection on simple circuits and it depends how complicated the
-  circuit is")
+#TODO[a big takeaway is that voters need protection on simple circuits and it depends how complicated the
+  circuit is]
