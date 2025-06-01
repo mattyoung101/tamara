@@ -162,7 +162,7 @@ performed a direct, manual translation as shown in @lst:macro:
 
     // and so on, and so on...
     ```,
-    caption: [ Partial listing of C++ macros to generate voter ]
+    caption: [ Partial listing of C++ macros to generate a voter ]
 ) <lst:macro>
 
 When applied in Yosys, a schematic similar to the Logisim circuit is generated, as shown in @fig:yosysvoter:

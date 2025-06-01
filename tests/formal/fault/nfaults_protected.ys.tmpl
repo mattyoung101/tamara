@@ -7,6 +7,7 @@ plugin -i libtamara.so
 read_verilog -sv {script}
 prep -top {top}
 tamara_tmr
+{tamara_again_if_multi_tmr}
 # delete error signal (https://github.com/mattyoung101/tamara/issues/47#issuecomment-2845210247)
 delete a:tamara_error_sink
 rename {top} gate

@@ -43,6 +43,8 @@ TYPST_TEMPLATE = """
 
 DEBUG = False
 
+MULTI_TMR = False
+
 
 def sha256sum(filename):
     with open(filename, 'rb', buffering=0) as f:
@@ -96,7 +98,8 @@ def sample(verilog_path: str, top: str, num_faults: int, type_: str, executor: s
                     script=verilog_path,
                     top=top,
                     seed=random.randint(0, 100000000),
-                    mutate_script=mutate_script.name
+                    mutate_script=mutate_script.name,
+                    tamara_again_if_multi_tmr="tamara_tmr" if MULTI_TMR else ""
                 ).encode("utf-8")
             )
             f.flush()
@@ -160,6 +163,10 @@ def main(faults: int, verilog_path: str, top: str, samples: int, type_: str, no_
     if no_write:
         return
 
+    # now that we've processed it, append "multi" if we did a multi-tmr study
+    if MULTI_TMR:
+        top += "_multi"
+
     # plot results
     plt.figure(figsize=(8, 6), dpi=80)
     plt.plot(range(1, faults + 1), all_results, marker='o')  # Add dots with 'o' marker
@@ -218,8 +225,10 @@ if __name__ == "__main__":
         action="store_true"
     )
     parser.add_argument("--executor", help="Use Yosys SAT or eqy? (ys/eqy)", type=str, default="ys")
+    parser.add_argument("--multi", help="Perform TMR twice?", action="store_true")
     args = parser.parse_args()
     DEBUG = args.debug
+    MULTI_TMR = args.multi
 
     main(args.faults, args.verilog, args.top, args.samples, args.type, args.nowrite, args.executor)
 

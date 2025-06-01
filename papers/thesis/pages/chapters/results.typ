@@ -409,7 +409,11 @@ endmodule
 ) <tab:multiconecircuits>
 
 === Feedback circuits
-#TODO("write description")
+Feedback circuits are arguably the most complicated challenge for any algorithm that performs automated TMR
+insertion. These designs consist of sequential circuits with logic loops that form a logical path from the
+output of the circuit to the input. Without proper handling, these circuits could easily break the logic cone
+identification system used in TaMaRa and other TMR-insertion algorithms. A simple feedback circuit design is
+shown in @tab:feedbackcircuits.
 
 #figure(
   table(
@@ -716,12 +720,50 @@ sweep as before, but using unprotected voters, which is shown below in @fig:muxb
 
 #TODO("explain why this occurs?")
 
+=== Multi-TMR
+As we have seen in the prior sections, a serious issue with TMR setups is that the voters themselves can be
+subject to SEUs. As long as the voter occupies area on the circuit die, it will always be a target of SEUs.
+Nevertheless, it is possible (in theory) to reduce the probability that a bit strikes and disables a voter, by
+triplicating the voter itself. This is commonly done in highly safety-critical scenarios such as spaceflight
+computing, as it increases area cost immensely but does help to protect the circuit.
+
+As a general purpose algorithm, TaMaRa does support this - quite simply in fact - by running the `tamara_tmr`
+command twice in a row. This will triplicate the circuit, and then triplicate it once more. To demonstrate
+this, @fig:mux1bittmr shows the `mux_1bit` circuit with one round of triplication, and @fig:mux1bitmultitmr
+shows the result of triplicating it twice. Observe the very large area increase, as each voter is voted on
+itself by another voter.
+
+#figure(
+    image("../../diagrams/mux_1bit_tmr.svg", width: 70%),
+    caption: [ Application of TaMaRa TMR once to the mux\_1bit circuit ]
+) <fig:mux1bittmr>
+
+#figure(
+    image("../../diagrams/mux_1bit_tmr_multi.svg", width: 100%),
+    caption: [ Application of TaMaRa TMR twice to the mux\_1bit circuit ]
+) <fig:mux1bitmultitmr>
+
+Next, to determine if this actually has any effectiveness on the reliability of the circuit, the previous
+fault-injection tests were run on the `mux_1bit` circuit. X compares the reliability of the multi-TMR
+circuit to a regular TMR circuit.
+
+#figure(
+    image("../../diagrams/multi_tmr_mux_1bit_unprot.svg", width: 70%),
+    caption: [ Multi-TMR vs. regular TMR for mux_1bit, unprotected voter ]
+) <fig:muxltiunprot>
+
+Whilst there is some notable improvement, it is definitely not significant enough to sacrifice the
+considerable increase in area caused by triplicated voters. The exact reason _why_ triplicating the voters
+doesn't improve reliability is probably an artefact of the test situation. As in many other tests, the test
+circuits are too simple (in this case, a single 1-bit multiplexer), and the voter ends up taking significantly
+more area than the circuit itself. This is covered further below in @sec:analysis.
+
 === Unmitigated circuits
 To compare against a baseline, @fig:allunmitigatedcomb shows the results of fault injection on all
 combinatorial circuits with no mitigation (i.e. no TMR) whatsoever.
 
 #figure(
-    image("../../diagrams/all_comb_unmit.svg", width: 70%),
+    image("../../diagrams/all_comb_unmit.svg", width: 75%),
     caption: [ Comparison of all results for unmitigated combinatorial circuits ]
 ) <fig:allunmitigatedcomb>
 
@@ -733,11 +775,13 @@ injected into the circuit can, on occasion, cancel each other out.
 In many of the unprotected voter tests, the results are significantly worse than with the protected voter.
 This is because the voter takes up the majority of the gate-area of the circuit in a number of these cases,
 meaning the likelihood of the fault applying to the voter and hence invalidating it is much higher. In
-@tab:voterarea, I calculate the percentage area that the voter accounts for. The real effectiveness of the
-algorithm in representative real-world tests is by comparing unprotected voter tests vs. unmitigated voter.
+@tab:voterarea, I calculate the percentage area that the voter accounts for by summing the wires and cells
+reported by the Yosys `stat` command before and after voter insertion. The real effectiveness of the algorithm
+in representative real-world tests is by comparing unprotected voter tests vs. unmitigated voter.
 
 #TODO("complete this table for a few more representative circuits")
 
+// these stats are wires + cells **WHEN ONLY THE VOTER IS SELECTED** so we need to figure out how to do that
 #figure(
   table(
     columns: 2,
@@ -750,6 +794,18 @@ algorithm in representative real-world tests is by comparing unprotected voter t
 
     [not\_32bit],
     [ 99.3% ], // total: 483 + 420; voter: 480 + 417
+
+    [not\_tmr],
+    [ ], // total:
+
+    [mux\_1bit],
+    [], // total:
+
+    [not\_dff\_tmr],
+    [], // total:
+
+    [not_swizzle_low],
+    [], // total:
   ),
   caption: [ Voter area for different circuits ]
 ) <tab:voterarea>
@@ -789,12 +845,13 @@ strike voter circuits. A sampling of unprotected vs. unmitigated circuit results
 #TODO("bar graph of percentage difference with one fault across all circuits?")
 
 Comparing unprotected vs. unmitigated circuits for a variety of circuits shows that the TaMaRa algorithm _is_
-effective, compared to a control, against mitigating a number of SEUs. The fact that 100% of faults are
-mitigated when only one fault is injected is a positive sign, as it indicates the algorithm is working as
-intended to mitigate _single_ event upsets. As mentioned earlier, there is inverse logarithmic shaped curve as
-the number of faults increases, showing an exponential decay in the effectiveness of the algorithm until it
-eventually is no longer effective at mitigating more than 8 upsets. This was hypothesised to happen in the
-early stages of drafting the algorithm, so it's a positive sign to see it in reality.
-
-#TODO[a big takeaway is that voters need protection on simple circuits and it depends how complicated the
-  circuit is]
+effective, compared to a control, against mitigating between one and three SEUs. As mentioned earlier, there
+is inverse logarithmic shaped curve as the number of faults increases, showing an exponential decay in the
+effectiveness of the algorithm until it eventually is no longer effective at mitigating more than 8 upsets.
+This was hypothesised to happen in the early stages of drafting the algorithm, so it's a positive sign to see
+it in reality. One of the biggest takeaways from this data is that single-voter TMR is not enough to mitigate
+_all_ SEUs, and is certainly not enough to mitigate multi-bit upsets (MBUs). For space-fairing applications,
+SEUs landing in the voter circuitry remains a serious issue, especially for smaller circuits. Based on the
+results available, it does appear that smaller circuits (such as the ones tested in this chapter) suffer more
+adversely from SEUs. It is likely that this issue becomes less serious on more complex circuits such as CPUs,
+but the TaMaRa algorithm would need improvements in order to handle these more complicated circuits.
