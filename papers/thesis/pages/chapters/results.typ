@@ -519,23 +519,6 @@ Due to the stochastic nature of this process, multiple samples of each fault are
 rate is calculated. In this case, I perform 100 samples for each number (i.e. 100x 1 fault, 100x 2 faults,
 100x 3 faults, etc).
 
-// Ignoring the voter circuit was accomplished through the Yosys script in @lst:ignorevoter. The TaMaRa algorithm annotates each
-// cell and wire that is part of the voter with the `tamara_voter` RTLIL annotation.
-//
-// #figure(
-//   ```bash
-//   # select only input signals
-//   select % a:tamara_voter %d
-//   # apply a random mutation (fault injection)
-//   mutate -list {faults} -seed {seed} -o /tmp/tamara_fault_injection
-//   # deselect, go back to top module
-//   select -clear
-//   # execute the fault injection command
-//   script /tmp/tamara_fault_injection
-//   ```,
-//   caption: [ Yosys script to deselect TaMaRa voter wires/cells ]
-// ) <lst:ignorevoter>
-
 === Protected voter
 @tab:faultinjectprotected presents the results for this protected voter fault-injection study. As the fault
 injection process is stochastic, it uses a sample of 100 runs per fault. The circuits listed in this table
@@ -817,7 +800,28 @@ spike up to 10% mitigated for some circuits at exactly two faults. My hypothesis
 injected into the circuit can, on occasion, cancel each other out.
 
 === Error signal verification
-#TODO[]
+As covered in the methodology chapter, TaMaRa adds voters with an "error" signal that is intended to be set
+high whenever an SEU is detected at any point in the entire circuit. This is an important signal to ensure is
+correct, as it could be used to reset the device when faults occur, which is critical to ensuring SEUs don't
+propagate and "pile up" on physical devices. Yet, as this error signal itself is subject to SEUs, it is
+possible that it could be incorrect if it is struck by an SEU.
+
+With a small modification to the testing script used in the prior sections, it is possible to investigate this
+using formal methods. Rather than proving a miter circuit, we can ask the SAT solver to prove whether or not
+the error signal is set to '1', given that we know we are injecting faults into the circuit.
+
+@fig:errunprotnottmr shows the result of this experiment on the `not_tmr` circuit with unprotected voters.
+
+#figure(
+  image("../../diagrams/fault_err_unprotected_not_tmr.svg", width: 80%),
+  caption: [ Testing for error signal validity on `not_tmr` circuit ]
+) <fig:errunprotnottmr>
+
+There are a few notable things with this result. #TODO[]
+
+- unpredictable curve
+- only 55%
+- it gets better as more faults are increased
 
 === Analysis <sec:analysis>
 In many of the unprotected voter tests, the results are significantly worse than with the protected voter.

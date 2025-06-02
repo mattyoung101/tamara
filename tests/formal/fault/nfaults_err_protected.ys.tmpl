@@ -1,0 +1,24 @@
+# vi: ft=bash
+# This uses Yosys' miter circuit functionality and built-in SAT solver, plus some design trickery to prove
+# equivalence
+plugin -i libtamara.so
+
+# gate (design under test)
+read_verilog -sv {script}
+prep -top {top}
+tamara_tmr
+{tamara_again_if_multi_tmr}
+rename {top} gate
+
+# fault injection
+# select only input signals
+select % a:tamara_voter %d
+# apply a random mutation (fault injection)
+mutate -list {faults} -seed {seed} -o {mutate_script}
+# deselect, go back to top module
+select -clear
+# execute the fault injection command
+script {mutate_script}
+write_rtlil
+
+sat -verify -tempinduct -set-init-undef -set-def-formal -set-def-inputs -maxsteps 15 -set-assumes -prove err 1

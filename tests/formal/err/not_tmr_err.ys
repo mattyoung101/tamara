@@ -1,0 +1,24 @@
+# vi: ft=bash
+
+# Use Yosys built-in SAT solver to prove voter is set to '1' when fault injected
+plugin -i libtamara.so
+
+# gate (design under test)
+read_verilog -DTAMARA -sv ../tests/verilog/not_tmr.sv
+prep -top not_tmr
+tamara_tmr
+rename not_tmr gate
+
+# fault injection
+# select only input signals
+# select % a:tamara_voter %d
+# apply a random mutation (fault injection)
+mutate -list 1 -seed 69420 -o /tmp/mutate92e8a9e0-26a0-11f0-a0bd-a3ca25efbb2e
+# deselect, go back to top module
+# select -clear
+# execute the fault injection command
+script /tmp/mutate92e8a9e0-26a0-11f0-a0bd-a3ca25efbb2e
+
+sat -verify -tempinduct -set-init-undef -set-def-formal -set-def-inputs -maxsteps 15 -set-assumes \
+    -prove \err 1 -show-public -dump_vcd model.vcd
+

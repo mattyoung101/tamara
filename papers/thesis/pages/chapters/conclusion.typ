@@ -98,9 +98,6 @@ we unfortunately cannot process more complex circuits due to the fundamental alg
 above. This puts us in a difficult situation where, for this thesis, I was unfortunately able to prove
 sequential circuits at all. I can say that from a detailed visual analysis, certain sequential circuits appear
 correct, but without the SAT proofs (or an equivalently rigorous testbench), we cannot say this for sure.
-Additionally, on the formal verification side of things, it would be very useful - and relatively easy - to
-formally prove that the `err` signal is set high when a fault is injected, and low when there is no fault.
-This could be achieved by adding a set of RTL `$assert` statements into the test designs.
 
 #figure(
   image("../../diagrams/fault_unmitigated_not_dff_tmr.svg", width: 65%),
@@ -157,6 +154,9 @@ Hamming or Bose–Chaudhuri–Hocquenghem (BCH) codes could provide similar or g
 at the cost of significantly less area, particularly in microprocessor designs. This could also be combined
 with techniques such as rolling back and re-issuing instructions when faults occur, or issuing each
 instruction three times and comparing the result.
+
+#TODO[talk about PPA here: long combinatorial path from voters, area increase. in future we could do
+  PPA-driven TMR]
 
 All in all, I think there are a number of interesting avenues to pursue in radiation-hardening research for
 integrated circuits, and I do intend to pursue these through a PhD.

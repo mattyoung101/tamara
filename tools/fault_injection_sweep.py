@@ -171,8 +171,12 @@ def main(faults: int, verilog_path: str, top: str, samples: int, type_: str, no_
     plt.figure(figsize=(8, 6), dpi=80)
     plt.plot(range(1, faults + 1), all_results, marker='o')  # Add dots with 'o' marker
     plt.xlabel("Number of faults")
-    plt.ylabel("Mitigated faults (%)")
-    plt.title(f"Fault injection study on '{top}', {type_} voter")
+    if "err" in type_:
+        plt.ylabel("Correctly set error signals (%)")
+        plt.title(f"Error signal study on '{top}', {type_.replace('err_', '')} voter")
+    else:
+        plt.ylabel("Mitigated faults (%)")
+        plt.title(f"Fault injection study on '{top}', {type_} voter")
     plt.grid()
 
     # Force integer ticks on x-axis
@@ -213,7 +217,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--samples", help="Number of simulations to run", type=int, required=True
     )
-    parser.add_argument("--type", help="'protected', 'unprotected', or 'unmitigated'", type=str, required=True)
+    parser.add_argument("--type", help="'protected', 'unprotected', 'unmitigated', 'err_protected', or "
+                        "'err_unprotected'", type=str, required=True)
     parser.add_argument(
         "--debug",
         help="Prints failure reason in run_eqy",

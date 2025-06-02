@@ -1,0 +1,33 @@
+{
+    "faults": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+    ],
+    "results": [
+        37.0,
+        53.0,
+        49.0,
+        60.0,
+        60.0,
+        62.0,
+        70.0,
+        73.0,
+        69.0,
+        68.0
+    ],
+    "date": "2025-06-03 03:35:28.093351+10:00",
+    "verilog_file_hash": "692f4796fbadb83c27250cddb9fccb6702b45634fc028b58f6d03c4ea6e38dd2",
+    "num_faults": 10,
+    "verilog_path": "../tests/verilog/not_tmr.sv",
+    "top": "not_tmr",
+    "samples": 100,
+    "type_": "err_protected"
+}
