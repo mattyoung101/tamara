@@ -493,38 +493,54 @@ The reasons for these failures are covered later in the thesis, but in short are
 implementation of the TaMaRa algorithm. For more info, see @tab:bugs.
 
 == Fault injection
-#TODO("reword this explanation, cover what type of faults are injected or do that in methodology")
-
-I propose two main classes of fault injection studies. In the first class of tests, known as "Protected voter
-tests", the voter circuit itself is ignored and not subject to faults. Whilst this is unrepresentative of
-real-world faults, it enables us to explore the validity of the voter circuit on its own. Particularly, it
+I propose three main classes of fault injection studies. In the first class of tests, known as "Protected
+voter tests", the voter circuit itself is ignored and not subject to faults. Whilst this is unrepresentative
+of real-world faults, it enables us to explore the validity of the voter circuit on its own. Particularly, it
 enables us to formally verify that the voter is able to protect a given circuit against a wide variety of
-faults, and to understand how many faults this is before the test fails.
+faults, and to understand how many faults this is before the test fails. In the second class of tests, known
+as "Unprotected voter tests", we inject faults into the entire circuit, including potentially into the voter.
+In the third and final class of tests, known as "Unmitigated tests", we do not apply any TMR at all, which is
+useful as a baseline control to compare against.
 
-Ignoring the voter circuit was accomplished through the Yosys script in @lst:ignorevoter. The TaMaRa algorithm annotates each
-cell and wire that is part of the voter with the `tamara_voter` RTLIL annotation.
+@fig:mutation demonstrates the effects of fault injection, showing the circuit `not_tmr` with a single fault injected
+after TMR. The fault is highlighted in red.
 
 #figure(
-  ```bash
-  # select only input signals
-  select % a:tamara_voter %d
-  # apply a random mutation (fault injection)
-  mutate -list {faults} -seed {seed} -o /tmp/tamara_fault_injection
-  # deselect, go back to top module
-  select -clear
-  # execute the fault injection command
-  script /tmp/tamara_fault_injection
-  ```,
-  caption: [ Yosys script to deselect TaMaRa voter wires/cells ]
-) <lst:ignorevoter>
+  image("../../diagrams/mutation.svg", width: 100%),
+  caption: [ Result of applying a mutation (SEU) to the `not_tmr` circuit ]
+) <fig:mutation>
+
+In this case, the `mutate` command has randomly chosen to insert an additional inverter after the triplicated
+`$not` gate in the original circuit, but before the voter. This is a formal simulation of an SEU that could
+then be corrected by the voter circuit. The `mutate` command has many different faults it can inject to
+simulate SEUs, including "stuck-at-0" or "stuck-at-1" situations, in addition to inverters.
+
+Due to the stochastic nature of this process, multiple samples of each fault are taken and the mean mitigation
+rate is calculated. In this case, I perform 100 samples for each number (i.e. 100x 1 fault, 100x 2 faults,
+100x 3 faults, etc).
+
+// Ignoring the voter circuit was accomplished through the Yosys script in @lst:ignorevoter. The TaMaRa algorithm annotates each
+// cell and wire that is part of the voter with the `tamara_voter` RTLIL annotation.
+//
+// #figure(
+//   ```bash
+//   # select only input signals
+//   select % a:tamara_voter %d
+//   # apply a random mutation (fault injection)
+//   mutate -list {faults} -seed {seed} -o /tmp/tamara_fault_injection
+//   # deselect, go back to top module
+//   select -clear
+//   # execute the fault injection command
+//   script /tmp/tamara_fault_injection
+//   ```,
+//   caption: [ Yosys script to deselect TaMaRa voter wires/cells ]
+// ) <lst:ignorevoter>
 
 === Protected voter
 @tab:faultinjectprotected presents the results for this protected voter fault-injection study. As the fault
 injection process is stochastic, it uses a sample of 100 runs per fault. The circuits listed in this table
 correspond to the suite of circuits presented in @tab:combinatorial, after they have been processed end-to-end
 correctly by the TaMaRa algorithm.
-
-#pagebreak()
 
 #figure(
   table(
@@ -634,10 +650,11 @@ While the protected voter study in the prior section is useful for verifying the
 circuit itself, it is not representative of real-world fault scenarios. In the unprotected voter studies, we
 subject the entire netlist to faults, including the voter circuit.
 
-The Yosys script used to run these tests was the same as @lst:ignorevoter, except that the statements to
-select only voters were removed. Results for this set of tests are shown in @tab:faultinjectunprotected. The
-process remains stochastic, and the same parameters as in the protected voter experiments were used (100
-samples per fault).
+The Yosys script used to run these tests was the same, except that the statements to select only voters were
+removed. Results for this set of tests are shown in @tab:faultinjectunprotected. The process remains
+stochastic, and the same parameters as in the protected voter experiments were used (100 samples per fault).
+
+#pagebreak()
 
 #figure(
   table(
