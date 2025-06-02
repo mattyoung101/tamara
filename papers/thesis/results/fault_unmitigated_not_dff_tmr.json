@@ -1,0 +1,33 @@
+{
+    "faults": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+    ],
+    "results": [
+        39.0,
+        27.0,
+        51.0,
+        51.0,
+        60.0,
+        65.0,
+        73.0,
+        80.0,
+        87.0,
+        85.0
+    ],
+    "date": "2025-06-02 17:54:19.056462+10:00",
+    "verilog_file_hash": "39860680eeb297aeb5675012f590898b50f408205621fc5d0bb26efd59688d57",
+    "num_faults": 10,
+    "verilog_path": "../tests/verilog/not_dff_tmr.sv",
+    "top": "not_dff_tmr",
+    "samples": 100,
+    "type_": "unmitigated"
+}

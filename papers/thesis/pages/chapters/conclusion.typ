@@ -90,7 +90,7 @@ and "working against the grain" as it were with the tool.
 Likewise, there are some limitations in the verification methodology that need to be addressed. Whilst I do
 believe that the verification proofs are strong for the circuits we were able to prove, there are a number of
 circuits that I was unable to prove, mainly those that use sequential logic. The main issue is an unexpected
-result when injecting numerous faults into the circuit. As shown in Figure #TODO("figure"), after a certain number of
+result when injecting numerous faults into the circuit. As shown in @fig:notdfftmr, after a certain number of
 faults, even an unmitigated circuit (without any TMR at all!) is apparently able to mitigate 100% of the
 injected faults. This is a result that should not be possible, and is likely a methodological error caused by
 the sheer number of faults being introduced into a small circuit cancelling each other out. Likewise, however,
@@ -101,6 +101,11 @@ correct, but without the SAT proofs (or an equivalently rigorous testbench), we 
 Additionally, on the formal verification side of things, it would be very useful - and relatively easy - to
 formally prove that the `err` signal is set high when a fault is injected, and low when there is no fault.
 This could be achieved by adding a set of RTL `$assert` statements into the test designs.
+
+#figure(
+  image("../../diagrams/fault_unmitigated_not_dff_tmr.svg", width: 65%),
+  caption: [  Erroneous test results from the `not_dff_tmr` circuit ]
+) <fig:notdfftmr>
 
 One other issue identified in the methodology (@chap:method) was an issue regarding the potential for the TMR
 logic to be optimised as Yosys. As we covered in the literature review, one major problem in all prior TMR

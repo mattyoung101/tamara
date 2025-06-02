@@ -447,6 +447,34 @@ endmodule
   caption: [ Table of feedback circuits ]
 ) <tab:feedbackcircuits>
 
+== Processed circuits
+In this section, we demonstrate the result of TaMaRa algorithm on the netlist of a simple, but representative
+circuit. @fig:not2bitpretmr shows the schematic for the `not_2bit` circuit, a 2-bit multiplexer, before TMR.
+
+#figure(
+    image("../../diagrams/schematics/not_2bit.svg", width: 50%),
+    caption: [ Schematic for the `not_2bit` circuit before TMR ]
+) <fig:not2bitpretmr>
+
+@fig:not2bitposttmr shows the schematic for the `not_2bit` circuit after TMR.
+
+#figure(
+    image("../../diagrams/schematics/not_2bit_tmr.svg", width: 100%),
+    caption: [ Schematic for the `not_2bit` circuit after TMR ]
+) <fig:not2bitposttmr>
+
+There are several important things to note in this schematic. Firstly, and most obviously, not the large
+increase in area
+#footnote[Or at least, what _would_ become ASIC/FPGA area, as we are operating on a netlist.] -
+TMR is a very high-area technique that more than triples the area utilisation. Observe that the `$not` cell
+has been correctly triplicated, fanned out from the input `a` wire. Following that, the pink, green, and
+purple cells show the unpacking of this 2-bit bus into multiple 1-bit voters, which are then stitched back
+together again on the right-hand side. You will see that part of these signals go directly to the output `o` -
+which is now the corrected and voted upon output. Some signals continue on to a `$reduce_or` cell, which
+performs a bitwise-OR upon all error signals, and routes this to the output `err` signal. Importantly, observe
+in @fig:not2bitpretmr that in the original circuit, this `err` signal was completely unconnected - TaMaRa has
+both generated the error signal logic, and connected it up successfully.
+
 == Formal verification
 === Equivalence checking
 To ensure the reliability of the algorithm, an attempt was made to perform formal equivalence checking on all
@@ -770,6 +798,9 @@ combinatorial circuits with no mitigation (i.e. no TMR) whatsoever.
 As expected, these largely result in 0% mitigation rate across the board. However, there's an interesting
 spike up to 10% mitigated for some circuits at exactly two faults. My hypothesis here is that two faults being
 injected into the circuit can, on occasion, cancel each other out.
+
+=== Error signal verification
+#TODO[]
 
 === Analysis <sec:analysis>
 In many of the unprotected voter tests, the results are significantly worse than with the protected voter.
