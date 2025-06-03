@@ -1,0 +1,33 @@
+{
+    "faults": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+    ],
+    "results": [
+        21.0,
+        32.0,
+        39.0,
+        35.0,
+        33.0,
+        41.0,
+        41.0,
+        47.0,
+        51.0,
+        40.0
+    ],
+    "date": "2025-06-03 22:34:20.957150+10:00",
+    "verilog_file_hash": "770f590641bbeff98511091baa6d6ec3f0f3128c3e5720f9aa7a4c6711eacea6",
+    "num_faults": 10,
+    "verilog_path": "../tests/verilog/not_32bit.sv",
+    "top": "not_32bit",
+    "samples": 100,
+    "type_": "err_unprotected"
+}

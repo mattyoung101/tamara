@@ -145,18 +145,25 @@ placement-driven approach to TMR. To elaborate on that concept, in addition to p
 level, we would modify th EDA placer to attempt to place ASIC/FPGA cells in such a way as to mitigate
 multi-bit upsets, and potentially single-event upsets, between replicas of the TMR. In essence, this would
 involve placing the ASIC/FPGA to maximise frequency while minimising the probability of a particle striking
-both replicas in a single TMR block. Likewise, although I have performed formal equivalence-based fault
-injection studies in this thesis, if the TaMaRa algorithm was powerful enough to handle industry-standard
-circuits such as CPUs, it would be very interesting to fabricate a chip or design an FPGA using the TaMaRa
-algorithm and subject it to real radiation. Similarly, it would be interesting to compare the performance of
-non-TMR techniques such as Error Correcting Codes (ECCs) in real-world radiation scenarios. Potentially,
-Hamming or Bose–Chaudhuri–Hocquenghem (BCH) codes could provide similar or greater SEU-mitigation performance
-at the cost of significantly less area, particularly in microprocessor designs. This could also be combined
-with techniques such as rolling back and re-issuing instructions when faults occur, or issuing each
-instruction three times and comparing the result.
+both replicas in a single TMR block. Potentially, this could also be used to address some of the performance
+issues introduced by TMR. Likewise, although I have performed formal equivalence-based fault injection studies
+in this thesis, if the TaMaRa algorithm was powerful enough to handle industry-standard circuits such as CPUs,
+it would be very interesting to fabricate a chip or design an FPGA using the TaMaRa algorithm and subject it
+to real radiation. Similarly, it would be interesting to compare the performance of non-TMR techniques such as
+Error Correcting Codes (ECCs) in real-world radiation scenarios. Potentially, Hamming or
+Bose–Chaudhuri–Hocquenghem (BCH) codes could provide similar or greater SEU-mitigation performance at the cost
+of significantly less area, particularly in microprocessor designs. This could also be combined with
+techniques such as rolling back and re-issuing instructions when faults occur, or issuing each instruction
+three times and comparing the result.
 
-#TODO[talk about PPA here: long combinatorial path from voters, area increase. in future we could do
-  PPA-driven TMR]
+Performance wise, in the current algorithm, there is a very long combinatorial path introduced by the error
+signal propagating all the way through a module that is likely to significantly worsen PPA on real designs.
+Whilst we cannot fully avoid the area costs introduced by TMR, using the placement-driven approach above, we
+might be able to create some sort of PPA-driven TMR approach that helps to lessen the slow-down caused by this
+very long combinatorial path. Alternatively, it may be possible to pipeline the error signal to a configurable
+degree. On the software side itself, there are numerous cases where lookups in the TaMaRa algorithm have time
+complexity $O(n^2)$ or even $O(n^3)$, which could relatively easily be fixed by restructuring the way the hash
+table is referenced.
 
 All in all, I think there are a number of interesting avenues to pursue in radiation-hardening research for
 integrated circuits, and I do intend to pursue these through a PhD.

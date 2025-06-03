@@ -19,7 +19,7 @@ acronyms:
   - FD-SOI: Fully Depleted Silicon-on-Insulator
   - COTS: Commercial Off The Shelf
   - PLL: Phase Locked Loop
-  - FF: D-Flip-Flop
+  - FF: Flip-Flop
   - DFF: D-Flip-Flop
   - P&R / PnR: Place and Route
   - RTLIL: RTL Intermediate Language
@@ -28,3 +28,4 @@ acronyms:
   - CI: Continuous Integration
   - SRAM: Static Random Access Memory
   - BFS: Breadth-First Search
+  - YAML: Yet Another Markup Language

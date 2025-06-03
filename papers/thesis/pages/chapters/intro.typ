@@ -9,8 +9,8 @@ Upset (SEU) occurs when ionising radiation strikes a transistor on a digital cir
 from a 1 to a 0, or vice versa. This type of upset is most common in space, where the Earth's magnetosphere is
 not present to dissipate the ionising particles @OBryan2021. On an unprotected system, an unlucky SEU may
 corrupt the system's state to such a severe degree that it may cause destruction or loss of life -
-particularly important given the safety-critical nature of most space-fairing systems (satellites, crew
-capsules, missiles, etc). Thus, fault tolerant computing is widely studied and applied for space-based
+particularly important given the safety-critical nature of most space-faring systems (satellites, crew
+capsules, missiles, etc). Thus, fault tolerant computing is widely studied and applied to space-based
 computing systems.
 
 One common fault-tolerant design technique is Triple Modular Redundancy (TMR), which mitigates SEUs by
@@ -66,7 +66,7 @@ that can be dynamically loaded at runtime.
 This thesis will focus on the design and implementation of _TaMaRa_, an automated Triple Modular Redundancy
 EDA flow for Yosys. In @chap:lit, I present a comprehensive literature review of prior TMR algorithms by
 classifying them into dichotomy of either netlist-level or design-level approaches. I evaluate the strengths
-and weakness of each approach, and determine how it will shape the TaMaRa algorithm. In @chap:method, I
+and weaknesses of each approach, and determine how it will shape the TaMaRa algorithm. In @chap:method, I
 introduce the TaMaRa algorithm, and demonstrate how it was implemented as a Yosys plugin. Finally, in
 @chap:results, I show the results of the TaMaRa algorithm for a number of real-world circuits and measure its
 ability to mitigate SEUs.

@@ -92,10 +92,10 @@ of C++ macros that build an equivalent circuit in RTLIL. A formal equivalence ch
 RTLIL design and the original truth table sketched by hand, which was correct.
 
 The voter consists of three input signals: _a_, _b_ and _c_, which are respectively the 1-bit inputs from each
-of the triplicated elements. The voter then has two output signals: _out_ and _err_. _out_ is the majority
-voted combination of the three inputs, i.e. the inputs with any SEUs removed. The _err_ signal is set to '1'
-if and only if a fault was detected. This could be used for diagnostics, or to perform a configuration reset
-if possible on FPGAs, and reboot on ASICs.
+of the triplicated elements. The voter then has two output signals: _out_ and _err_. The _out_ signal is
+result of the majority voter, so it should be equivalent to the input signal minus any SEUs.  The _err_ signal
+is set to '1' if and only if a fault was detected. This could be used for diagnostics, or to perform a
+configuration reset if possible on FPGAs, and reboot on ASICs.
 
 Given these constraints, the truth table for a majority voter can be described as follows (@tab:sotrue):
 
@@ -194,12 +194,12 @@ procedure are presented later in @section:formalverif.
 
 === RTLIL netlist analysis
 In Yosys, although RTLIL is used to model the netlist, the connections between cells and wires are not
-immediately available for use in TaMaRa. Instead, we first perform a topological analysis of all the cells and
-wires in the netlist. We consider output and input ports for cells, and also uniquely consider wires as well.
+immediately available for use in TaMaRa. Instead, I first perform a topological analysis of all the cells and
+wires in the netlist. I consider output and input ports for cells, and also uniquely consider wires as well.
 The aim is to construct a `tamara::RTLILWireConnections` object, which is a mapping between the name of a wire
 or cell (which is guaranteed to be unique in an RTLIL design), and the set of wires or cells it may be
 connected to on a backwards traversal. The last element is important, because this data structure also acts as
-an efficient cache to use when searching the circuit on a backwards-BFS. During this step, we also construct
+an efficient cache to use when searching the circuit on a backwards-BFS. During this step, I also construct
 other similar data structures that are used to lookup `RTLIL::SigSpec` objects, which are unique in RTLIL and
 can be used to represent RTL concepts like constants and wires. An example of this construction is shown in
 @fig:rtlilset.
@@ -214,7 +214,7 @@ The key step of the TaMaRa algorithm is mapping out and tracking the combinatori
 located in between sequential logic primitives in a given design. This enables us to correctly replicate the
 design, without introducing sequential delays that would invalidate the circuit's design. In order to achieve
 this, I perform a breadth-first search (BFS) search, operating backwards _from_ the output of the circuit
-_towards_ the input of the circuit. The reason we operate backwards is under the assumption that the _outputs_
+_towards_ the input of the circuit. A backwards search is used under the assumption that the _outputs_
 of a circuit naturally depend on both the combinatorial and sequential path through the circuit; so, by
 working from outputs backwards to inputs, we naturally cover only the essential circuit elements and guarantee
 we won't miss anything. This is the same approach used by Beltrame @Beltrame2015.
@@ -313,7 +313,7 @@ which is in turn processed by a `tamara::FixWalkerManager`. This utility walks t
 visitor pattern @Gamma1994, and invokes methods on the `tamara::FixWalker` accordingly.
 
 At present, the main problem to fix up is situations in which cells can have multiple drivers. This occurs
-when replicating wires connecting the cells. A second pass is necessary in order to correctly connect the
+when replicating the wires connecting the cells. A second pass is necessary in order to correctly connect the
 replicated wires to the replicated cells. This special case is detected by a `tamara::FixWalker` instance that
 specifically looks for cells:
 - Which are driven by 3 wires; and
@@ -347,7 +347,7 @@ required.
 
 During the search, if the input node of a logic cone is connected to other cells, and those cells have not yet
 been explored as part of a previous search, then the input node is added to a queue of successor nodes. These
-successor nodes are searched using exact same process, essentially taking the algorithm back to @sec:search,
+successor nodes are searched using the exact same process, essentially taking the algorithm back to @sec:search,
 and repeating until no more successor nodes remain (i.e. the input of the circuit is reached). This is further
 illustrated in @fig:searchcontinuation.
 
@@ -363,7 +363,7 @@ not produce infinite searching loops.
 In summary, the algorithm can be briefly described as follows:
 
 1. Analyse the RTLIL netlist to generate `tamara::RTLILWireConnections` mapping; which is a mapping between an
-    RTLIL Cell or Wire and the other Cells or Wires it may be connected to.
+    RTLIL Cell or Wire and the other Cells or Wires it may be connected to
 2. For each output port in the top module:
     1. Perform a backwards breadth-first search through the RTLIL netlist to form a logic cone
     2. Replicate all combinatorial RTLIL primitives inside the logic cone
@@ -387,15 +387,16 @@ explaining this in detail. The algorithm also performs self-checking using `asse
 process to catch internal errors that may occur.
 
 The friendly error reporting is designed as a "first line of defence" for the most common user errors, and the
-addition of asserts plays an important role in debugging end user crashes. Ideally, TaMaRa will rather crash
+addition of `assert`s plays an important role in debugging end user crashes. Ideally, TaMaRa will rather crash
 then generate an impossible design. All of this combines together to hopefully make a tool that users can be
 confident deploying in rad-hardened, safety critical scenarios.
 
 == Verification <section:verification>
 Due to its potential for use in safety critical sectors like aerospace and defence, comprehensive verification
-and testing of the TaMaRa flow is extremely important in this thesis. We want to verify to a very high level
-of accuracy that TaMaRa both works by preventing SEUs to an acceptable standard, and also does not change the
-underlying behaviour of the circuits it processes.
+and testing of the TaMaRa flow is extremely important in this thesis.
+// We want to verify to a very high level
+// of accuracy that TaMaRa both works by preventing SEUs to an acceptable standard, and also does not change the
+// underlying behaviour of the circuits it processes.
 
 TaMaRa is a highly complex project that, during the course of this one year thesis, developed into a
 substantial and complicated codebase. Not only is the TaMaRa algorithm itself complex, but it is also
@@ -412,7 +413,7 @@ development process, as it allowed major refactors to be performed without the w
 tests.
 
 === Manual verification
-The design and use of RTL testbenches has, and continues to be important when designing FPGA and ASIC
+The design and use of RTL testbenches continues to be important when designing FPGA and ASIC
 projects. Likewise, RTL testbenches are very important when designing EDA tools. Compared to FPGA/ASIC design,
 when working on EDA tools, having a representative sample of a large number of projects is the most important
 aspect. For TaMaRa, I sourced a number of representative small open-source Verilog projects with acceptable
@@ -465,13 +466,14 @@ below in @fig:verification.
 ) <fig:verification>
 
 === RTL fuzzing techniques
-As mentioned in @section:rtlfuzz, RTL fuzzing is an emerging technique for generating large-scale coverage of
-Verilog design files for EDA tools. Hence, part of the TaMaRa verification flow involves using Verismith
-@Herklotz2020  to generate small random Verilog designs, and running TaMaRa end-to-end on these designs.
-Initially, we will be looking for crashes, assert failures and memory errors using AddressSanitizer, but later
-we will also use Yosys' eqy tool to prove that the designs stay the same before and after TaMaRa runs. Using
-the GNU Parallel tool, this work can be trivially distributed across multiple cores. Running TaMaRa with the
-Verismith fuzzer on 8192 small designs takes around 5 minutes on an AMD Ryzen 9 5950X workstation.
+As mentioned in @section:rtlfuzz, RTL fuzzing is an emerging technique for
+generating large-scale coverage of Verilog design files for EDA tools. Hence, part of the TaMaRa verification
+flow involves using Verismith @Herklotz2020  to generate small random Verilog designs, and running TaMaRa
+end-to-end on these designs. Initially, I was looking for crashes, assert failures and memory errors using
+AddressSanitizer, but later also used Yosys' eqy tool to prove that the designs stay the same before and after
+TaMaRa processing. Using the GNU Parallel tool, this work can be trivially distributed across multiple cores.
+Running TaMaRa with the Verismith fuzzer on 8192 small designs takes around 5 minutes on an AMD Ryzen 9 5950X
+workstation.
 
 To simplify the above, a shell script was developed to run this process end-to-end, and automatically clean up
 tests that did not fail; leaving only failed tests left over. With automatic timestamped directories, this is

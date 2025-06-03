@@ -475,6 +475,22 @@ performs a bitwise-OR upon all error signals, and routes this to the output `err
 in @fig:not2bitpretmr that in the original circuit, this `err` signal was completely unconnected - TaMaRa has
 both generated the error signal logic, and connected it up successfully.
 
+Although, as will be covered later in this section, there is some trouble formally verifying circuits that use
+DFFs, it is still possible to process them successfully with the TaMaRa algorithm. @fig:notdfftmr_schematic
+shows the schematic of a simple circuit using a DFF and a NOT gate, before TMR, and
+@fig:notdfftmr_schematic_after shows the same circuit after TMR processing. In this example, note the
+triplication of _both_ the DFF and the NOT gate, and the successful connection between the two.
+
+#figure(
+    image("../../diagrams/schematics/not_dff_tmr.svg", width: 70%),
+    caption: [ Schematic for the `not_dff_tmr` circuit before TMR ]
+) <fig:notdfftmr_schematic>
+
+#figure(
+    image("../../diagrams/not_dff_tmr.svg", width: 100%),
+    caption: [ Schematic for the `not_dff_tmr` circuit after TMR ]
+) <fig:notdfftmr_schematic_after>
+
 == Formal verification
 === Equivalence checking
 To ensure the reliability of the algorithm, an attempt was made to perform formal equivalence checking on all
@@ -746,7 +762,7 @@ sweep as before, but using unprotected voters, which is shown below in @fig:muxb
     caption: [ Sweep of fault-injection tests on differing-width multiplexers, unprotected voters ]
 ) <fig:muxbitsweepunprot>
 
-#TODO("explain why this occurs?")
+// not exactly sure why this occurs? if i knew i'd write about it :/
 
 === Multi-TMR
 As we have seen in the prior sections, a serious issue with TMR setups is that the voters themselves can be
@@ -817,11 +833,16 @@ the error signal is set to '1', given that we know we are injecting faults into 
   caption: [ Testing for error signal validity on `not_tmr` circuit ]
 ) <fig:errunprotnottmr>
 
-There are a few notable things with this result. #TODO[]
-
-- unpredictable curve
-- only 55%
-- it gets better as more faults are increased
+There are a few notable things with this result. Firstly, unlike the other results in this chapter, there's
+not an obvious trend here. The percentage of correctly set error signals does not obviously linearly,
+logarithmically or exponentially increase, and there's either some noise or bizarre behaviour when between 5
+and 7 faults are injected. Also interesting to note is that, at best, only around 55% of the time is the error
+signal set correctly, and this is with 8 faults. More realistically, in the case of a single fault, the error
+signal is set correctly only 30% of the time. However, as more faults are injected, the correctness of the
+error signal improves. This does seem to make some statistical sense, as the increased number of faults
+injected into the circuit seems more likely to trip the combinatorial path that sets the error signal to '1'.
+Comparatively, injecting a fault in just the right place to cause the error signal to be stuck at '0' would be
+statistically less likely.
 
 === Analysis <sec:analysis>
 In many of the unprotected voter tests, the results are significantly worse than with the protected voter.
@@ -831,9 +852,8 @@ meaning the likelihood of the fault applying to the voter and hence invalidating
 reported by the Yosys `stat` command before and after voter insertion. The real effectiveness of the algorithm
 in representative real-world tests is by comparing unprotected voter tests vs. unmitigated voter.
 
-#TODO("complete this table for a few more representative circuits")
-
 // these stats are wires + cells **WHEN ONLY THE VOTER IS SELECTED** so we need to figure out how to do that
+// select only voter: select a:tamara_voter
 #figure(
   table(
     columns: 2,
@@ -848,18 +868,18 @@ in representative real-world tests is by comparing unprotected voter tests vs. u
     [ 99.3% ], // total: 483 + 420; voter: 480 + 417
 
     [not\_tmr],
-    [ ], // total:
+    [ 90.9% ], // total: 17 + 16; voter: 17 + 13
 
     [mux\_1bit],
-    [], // total:
+    [ 63.2% ], // total: 8 + 11; voter: 7 + 5
 
     [not\_dff\_tmr],
-    [], // total:
+    [ 64.3% ], // total: 23 + 19; voter: 13 + 14
 
-    [not_swizzle_low],
-    [], // total:
+    // [not_swizzle_low],
+    // [], // total:
   ),
-  caption: [ Voter area for different circuits ]
+  caption: [ Voter area for different representative circuits ]
 ) <tab:voterarea>
 
 This raises an interesting question for further research. There is an implication here that the area a voter
@@ -894,7 +914,8 @@ strike voter circuits. A sampling of unprotected vs. unmitigated circuit results
   caption: [ Sample of unprotected vs. unmitigated circuit results ]
 ) <tab:resultgrid>
 
-#TODO("bar graph of percentage difference with one fault across all circuits?")
+// bar graph of percentage difference with one fault across all circuits?
+// I had considered this and started on it (generate_bar_graph.py) but I think it'll just be ugly
 
 Comparing unprotected vs. unmitigated circuits for a variety of circuits shows that the TaMaRa algorithm _is_
 effective, compared to a control, against mitigating between one and three SEUs. As mentioned earlier, there
@@ -902,7 +923,7 @@ is inverse logarithmic shaped curve as the number of faults increases, showing a
 effectiveness of the algorithm until it eventually is no longer effective at mitigating more than 8 upsets.
 This was hypothesised to happen in the early stages of drafting the algorithm, so it's a positive sign to see
 it in reality. One of the biggest takeaways from this data is that single-voter TMR is not enough to mitigate
-_all_ SEUs, and is certainly not enough to mitigate multi-bit upsets (MBUs). For space-fairing applications,
+_all_ SEUs, and is certainly not enough to mitigate multi-bit upsets (MBUs). For space-faring applications,
 SEUs landing in the voter circuitry remains a serious issue, especially for smaller circuits. Based on the
 results available, it does appear that smaller circuits (such as the ones tested in this chapter) suffer more
 adversely from SEUs. It is likely that this issue becomes less serious on more complex circuits such as CPUs,

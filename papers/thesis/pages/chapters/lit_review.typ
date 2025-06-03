@@ -363,7 +363,7 @@ Formal equivalence checking uses formal techniques to verify that two circuits a
 functionality. Typically, circuits are partitioned into the _gate_ circuit, which is the circuit to be
 verified, and the _gold_ circuit, which is the reference model to be proved against. Equivalence is proved by
 constructing a Miter circuit, which is a type of circuit that uses the exclusive-OR (XOR) on the output of the
-gate and gold circuits. If the outputs of these XOR cells can be proved to be proved to be true, then the
+gate and gold circuits. If the outputs of these XOR cells can be proven to be true, then the
 circuits are not equivalent @Biere2013. In Yosys, this is achieved by using the `miter` command to
 automatically construct the equivalence circuit and insert formal assertions, which are then proved or
 disproved using an internal SAT solver via the `sat` command.
@@ -386,10 +386,10 @@ mutates test cases on a byte-by-byte basis @Fioraldi2020, grammar fuzzers should
 higher coverage of a target program much more efficiently.
 
 Although these techniques are typically used for software projects, they can also be useful for hardware,
-particularly for EDA tools; given that Verilog is more or less just another programming language. RTL fuzzing
-is an emerging technique that can be useful to generate large-scale coverage of Verilog design files for EDA
-tools. Herklotz @Herklotz2020 describes "Verismith", a tool capable of generating random and correct Verilog
-RTL. This is useful for TaMaRa verification, because it allows us to investigate _en masse_ whether the tool
-changes the behaviour of the underlying circuit. It also allows us to quickly find, reproduce, minimise and
-fix challenging designs, which should hopefully lead to a more reliable algorithm with better coverage of
+given that Verilog is more or less just another programming language. RTL fuzzing is an emerging technique
+that can be used to generate large-scale coverage of Verilog design files for EDA tools. Herklotz
+@Herklotz2020 describes "Verismith", a tool capable of generating random and correct Verilog RTL. This is
+useful for TaMaRa verification, because it allows us to investigate _en masse_ whether the tool changes the
+behaviour of the underlying circuit. It also allows us to quickly find, reproduce, minimise and fix
+challenging designs, which should hopefully lead to a more reliable algorithm with better coverage of
 industry-standard designs.
