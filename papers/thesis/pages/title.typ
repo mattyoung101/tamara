@@ -21,7 +21,7 @@
 ])
 
 #align(center, text(16pt)[
-    #box(width: 75%)[School of #config.faculty, University of Queensland.]
+    #box(width: 75%)[School of #config.faculty, The University of Queensland.]
 ])
 
 #v(128pt)

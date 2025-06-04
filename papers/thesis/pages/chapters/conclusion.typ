@@ -142,7 +142,7 @@ Finally, in addition to all the above improvements, there are also some new rese
 identified to explore. Interestingly, in many of these test cases, the voter circuit occupies a significantly
 larger area compared to the main circuit. This raises the possibility of an area-driven, or even a
 placement-driven approach to TMR. To elaborate on that concept, in addition to performing TMR at the synthesis
-level, we would modify th EDA placer to attempt to place ASIC/FPGA cells in such a way as to mitigate
+level, we would modify the EDA placer to attempt to place ASIC/FPGA cells in such a way as to mitigate
 multi-bit upsets, and potentially single-event upsets, between replicas of the TMR. In essence, this would
 involve placing the ASIC/FPGA to maximise frequency while minimising the probability of a particle striking
 both replicas in a single TMR block. Potentially, this could also be used to address some of the performance

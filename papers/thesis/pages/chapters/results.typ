@@ -128,7 +128,7 @@ algorithm, as their small size allowed for visual debugging using the Yosys `sho
 ) <tab:combinatorial>
 
 === Multi-bit combinatorial circuits
-Once the single-bit combinatorial circuits were confirmed to be working, the next set of tests involves
+Once the single-bit combinatorial circuits were confirmed to be working, the next set of tests involved
 multi-bit combinatorial circuits, as shown in @tab:combinatorialmulti. This is useful to ensure that the voter
 builder, as described in @sec:voterinsertion, correctly inserts a voter for each bit in the bus; and also that
 the wiring code can handle multi-bit edge signals.
@@ -311,7 +311,7 @@ must be careful to connect the clock signal correctly to the TMR replicas. These
 Whilst sequential circuits more accurately represent complex industry designs than combinatorial circuits,
 they are still not adequate test-cases for even the simplest industry designs. These designs typically connect
 together multiple sequential circuits in a pipeline. These circuits challenge TaMaRa's multi-cone
-capabilities, and additionally it's multi-voter insertion methodology. In the most complex case, it is
+capabilities, and additionally its multi-voter insertion methodology. In the most complex case, it is
 possible to have multi-cone, multi-voter, multi-bit circuits. These multi-cone designs are shown in
 @tab:multiconecircuits.
 
@@ -463,7 +463,7 @@ circuit. @fig:not2bitpretmr shows the schematic for the `not_2bit` circuit, a 2-
     caption: [ Schematic for the `not_2bit` circuit after TMR ]
 ) <fig:not2bitposttmr>
 
-There are several important things to note in this schematic. Firstly, and most obviously, not the large
+There are several important things to note in this schematic. Firstly, and most obviously, note the large
 increase in area
 #footnote[Or at least, what _would_ become ASIC/FPGA area, as we are operating on a netlist.] -
 TMR is a very high-area technique that more than triples the area utilisation. Observe that the `$not` cell
@@ -630,13 +630,13 @@ injection tests.
 ) <fig:allprotectedcomb>
 
 Generally, all circuits follow roughly the same inverse logarithmic curve, and are within a few percentage
-points of each other. All tested circuits are able to mitigate 100% of injected faults when 1 fault is
-injected, which is a very positive sign for the protected voter. With 2 injected faults, the effectiveness
+points of each other. All tested circuits are able to mitigate 100% of injected faults when one fault is
+injected, which is a very positive sign for the protected voter. With two injected faults, the effectiveness
 ranges between roughly 40% and 75%, with `not_swizzle_low` performing the worst, and `mux_2bit` and `not_2bit`
 performing the best. Interestingly, the only outliers here are the two 32-bit circuits: `not_32bit` and
 `not_2bit`, which do not have an inverse logarithmic curve, rather an almost linear curve that's significantly
 better than all of the other circuits. To investigate further, I performed a sweep of fault-injection tests
-with a 1-bit, 2-bit, 4-bit, 8-bit, 16-bit, 24-bit and 32-bit multiplexer respectively, which is below shown in
+with a 1-bit, 2-bit, 4-bit, 8-bit, 16-bit, 24-bit and 32-bit multiplexer respectively, which is shown in
 @fig:muxbitsweep.
 
 #figure(
@@ -788,7 +788,7 @@ itself by another voter.
 ) <fig:mux1bitmultitmr>
 
 Next, to determine if this actually has any effectiveness on the reliability of the circuit, the previous
-fault-injection tests were run on the `mux_1bit` circuit. X compares the reliability of the multi-TMR
+fault-injection tests were run on the `mux_1bit` circuit. @fig:muxltiunprot compares the reliability of the multi-TMR
 circuit to a regular TMR circuit.
 
 #figure(
@@ -800,7 +800,7 @@ Whilst there is some notable improvement, it is definitely not significant enoug
 considerable increase in area caused by triplicated voters. The exact reason _why_ triplicating the voters
 doesn't improve reliability is probably an artefact of the test situation. As in many other tests, the test
 circuits are too simple (in this case, a single 1-bit multiplexer), and the voter ends up taking significantly
-more area than the circuit itself. This is covered further below in @sec:analysis.
+more area than the circuit itself. This is covered in @sec:analysis.
 
 === Unmitigated circuits
 To compare against a baseline, @fig:allunmitigatedcomb shows the results of fault injection on all
@@ -835,14 +835,14 @@ the error signal is set to '1', given that we know we are injecting faults into 
 
 There are a few notable things with this result. Firstly, unlike the other results in this chapter, there's
 not an obvious trend here. The percentage of correctly set error signals does not obviously linearly,
-logarithmically or exponentially increase, and there's either some noise or bizarre behaviour when between 5
-and 7 faults are injected. Also interesting to note is that, at best, only around 55% of the time is the error
-signal set correctly, and this is with 8 faults. More realistically, in the case of a single fault, the error
-signal is set correctly only 30% of the time. However, as more faults are injected, the correctness of the
-error signal improves. This does seem to make some statistical sense, as the increased number of faults
-injected into the circuit seems more likely to trip the combinatorial path that sets the error signal to '1'.
-Comparatively, injecting a fault in just the right place to cause the error signal to be stuck at '0' would be
-statistically less likely.
+logarithmically or exponentially increase, and there's either some noise or bizarre behaviour when between
+five and seven faults are injected. Also interesting to note is that, at best, only around 55% of the time is
+the error signal set correctly, and this is with eight faults. More realistically, in the case of a single
+fault, the error signal is set correctly only 30% of the time. However, as more faults are injected, the
+correctness of the error signal improves. This does seem to make some statistical sense, as the increased
+number of faults injected into the circuit seems more likely to trip the combinatorial path that sets the
+error signal to '1'. Comparatively, injecting a fault in just the right place to cause the error signal to be
+stuck at '0' would be statistically less likely.
 
 === Analysis <sec:analysis>
 In many of the unprotected voter tests, the results are significantly worse than with the protected voter.
@@ -920,11 +920,11 @@ strike voter circuits. A sampling of unprotected vs. unmitigated circuit results
 Comparing unprotected vs. unmitigated circuits for a variety of circuits shows that the TaMaRa algorithm _is_
 effective, compared to a control, against mitigating between one and three SEUs. As mentioned earlier, there
 is inverse logarithmic shaped curve as the number of faults increases, showing an exponential decay in the
-effectiveness of the algorithm until it eventually is no longer effective at mitigating more than 8 upsets.
+effectiveness of the algorithm until it eventually is no longer effective at mitigating more than eight upsets.
 This was hypothesised to happen in the early stages of drafting the algorithm, so it's a positive sign to see
 it in reality. One of the biggest takeaways from this data is that single-voter TMR is not enough to mitigate
 _all_ SEUs, and is certainly not enough to mitigate multi-bit upsets (MBUs). For space-faring applications,
-SEUs landing in the voter circuitry remains a serious issue, especially for smaller circuits. Based on the
+SEUs landing in the voter circuitry remain a serious issue, especially for smaller circuits. Based on the
 results available, it does appear that smaller circuits (such as the ones tested in this chapter) suffer more
 adversely from SEUs. It is likely that this issue becomes less serious on more complex circuits such as CPUs,
 but the TaMaRa algorithm would need improvements in order to handle these more complicated circuits.
