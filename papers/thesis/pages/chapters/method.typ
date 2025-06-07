@@ -84,6 +84,38 @@ introduce some significant problems that will be elaborated on later.
 TaMaRa consists of multiple C++ classes (@fig:classdiagram). Broadly speaking, these classes combine together
 to form the following algorithm. This is also shown in @fig:algodiagram.
 
+In general, the TaMaRa code is designed to be robust to any and all user inputs, and easy to debug when the
+algorithm does not work as expected. This is achieved by a combination of detailed, friendly error reporting
+and copious `assert` statements available in debug builds. For example, if a user specifies an error port
+marked `(* tamara_error_sink *)` that is multi-bit, which is not supported, TaMaRa will print an error
+explaining this in detail. The algorithm also performs self-checking using `assert` statements throughout the
+process to catch internal errors that may occur.
+
+The friendly error reporting is designed as a "first line of defence" for the most common user errors, and the
+addition of `assert`s plays an important role in debugging end user crashes. Ideally, TaMaRa will rather crash
+then generate an impossible design. All of this combines together to hopefully make a tool that users can be
+confident deploying in rad-hardened, safety critical scenarios.
+
+=== Overview
+From a high-level perspective, the TaMaRa algorithm can be summarised as follows:
+
+1. Analyse the RTLIL netlist to generate `tamara::RTLILWireConnections` mapping; which is a mapping between an
+    RTLIL Cell or Wire and the other Cells or Wires it may be connected to
+2. For each output port in the top module:
+    1. Perform a backwards breadth-first search through the RTLIL netlist to form a logic cone
+    2. Replicate all combinational RTLIL primitives inside the logic cone
+    3. Generate and insert the necessary voter(s) for each bit
+    4. Wire up the newly formed netlist, including connected the voters
+3. Perform any necessary fixes to the wiring, if required
+4. With the initial search complete, compute any follow on/successor logic cones from the initial terminals
+5. Repeat step 2 but for each successor logic cone
+6. Continue until no more successors remain
+
+#figure(
+    image("../../diagrams/algorithm.svg", width: 85%),
+    caption: [ Logic flow of the TaMaRa TMR algorithm ]
+) <fig:algodiagram>
+
 === Voter design
 Voters are one of the most important parts of a TMR circuit, and so I believed it was extremely important to
 design them and verify them with a high degree of assurance. In the very beginning, the voter circuit was
@@ -220,10 +252,10 @@ of a circuit naturally depend on both the combinational and sequential path thro
 working from outputs backwards to inputs, we naturally cover only the essential circuit elements and guarantee
 we won't miss anything. This is the same approach used by Beltrame @Beltrame2015.
 
-On the backwards BFS, when we reach a flip-flop or an IO node (i.e. an input to the circuit), we wrap up the
-search #footnote([This is not quite the same as terminating the search immediately; it's important that we
-    consider remaining items in the BFS queue before instantly terminating the search.]) and declare the
-current collected RTLIL primitives as part of a single _logic cone_.
+On the backwards BFS, when we reach a flip-flop or an IO node (i.e. an input to the circuit), we start
+finalising the search #footnote([This is not quite the same as terminating the search immediately; it's
+  important that we consider remaining items in the BFS queue before instantly terminating the search.]) and
+declare the current collected RTLIL primitives as part of a single _logic cone_.
 
 TaMaRa's definition of a logic cone is shown in @fig:logiccone. The first combinational logic cone is shown in
 blue, the second in green; both of these would be discovered separately by the backwards BFS.
@@ -251,7 +283,9 @@ the circuit, the inputs/outputs to the circuit will still be multi-bit. For exam
 to split apart these multi-bit signals and attach a unique voter for each bit. When these chains are built,
 the voter builder dynamically inserts a Yosys `$reduce_or` cell to OR together all the error signals from all
 voters. The voter builder is able to detect when this cell is necessary or not, and if it's not necessary,
-emits a `$buf` cell to improve PPA.
+emits a `$buf` cell to improve PPA. When this abstract netlist is transformed into FPGA/ASIC-specific cells, a
+`$reduce_or` will turn into a significant amount of combinational logic, whereas a `$buf` cell is often a
+single standard cell on ASICs.
 
 For multi-cone designs, the voter builder is also capable of building a tree structure of OR gates to bubble
 up the individual voter error signals to a global error signal. It is worth noting that this tree-like
@@ -259,7 +293,7 @@ structure will significantly increase the combinational critical path delay of t
 better replaced with more optimal structures in future work.
 
 On any given logic cone, we define the "voter cut point" to be the location in the logic cone netlist where we
-should splice the circuit and insert the majority voter. Currently, TaMaRa determines the voter cut point
+should splice the circuit and insert the majority voter. TaMaRa determines the voter cut point
 during the backwards BFS. It is set to be the first node encountered on the backwards BFS that fulfills the
 following criteria:
 - It is not the very first node in the entire backwards BFS (i.e. this would be the output cell); and
@@ -267,7 +301,8 @@ following criteria:
 - It is not an `ElementWireNode`
 
 The voter cut point is set once and only once per node. Once it is set, it's not immediately used by the
-backwards BFS, but rather passed onto the wiring stage for later use.
+backwards BFS, but rather passed onto the wiring stage for later use. To handle some trickier designs, this
+logic could likely be improved to use more advanced methods to consider where to place the cut point.
 
 // NOTE: Originally I said here we should have a show result of the OR tree chain, but I think that's broken
 // rn
@@ -359,38 +394,6 @@ not produce infinite searching loops.
     image("../../diagrams/search_continuation.svg", width: 85%),
     caption: [ Demonstration of search continuation for two circuits ]
 ) <fig:searchcontinuation>
-
-=== Summary
-In summary, the algorithm can be briefly described as follows:
-
-1. Analyse the RTLIL netlist to generate `tamara::RTLILWireConnections` mapping; which is a mapping between an
-    RTLIL Cell or Wire and the other Cells or Wires it may be connected to
-2. For each output port in the top module:
-    1. Perform a backwards breadth-first search through the RTLIL netlist to form a logic cone
-    2. Replicate all combinational RTLIL primitives inside the logic cone
-    3. Generate and insert the necessary voter(s) for each bit
-    4. Wire up the newly formed netlist, including connected the voters
-3. Perform any necessary fixes to the wiring, if required
-4. With the initial search complete, compute any follow on/successor logic cones from the initial terminals
-5. Repeat step 2 but for each successor logic cone
-6. Continue until no more successors remain
-
-#figure(
-    image("../../diagrams/algorithm.svg", width: 85%),
-    caption: [ Logic flow of the TaMaRa TMR algorithm ]
-) <fig:algodiagram>
-
-In general, the TaMaRa code is designed to be robust to any and all user inputs, and easy to debug when the
-algorithm does not work as expected. This is achieved by a combination of detailed, friendly error reporting
-and copious `assert` statements available in debug builds. For example, if a user specifies an error port
-marked `(* tamara_error_sink *)` that is multi-bit, which is not supported, TaMaRa will print an error
-explaining this in detail. The algorithm also performs self-checking using `assert` statements throughout the
-process to catch internal errors that may occur.
-
-The friendly error reporting is designed as a "first line of defence" for the most common user errors, and the
-addition of `assert`s plays an important role in debugging end user crashes. Ideally, TaMaRa will rather crash
-then generate an impossible design. All of this combines together to hopefully make a tool that users can be
-confident deploying in rad-hardened, safety critical scenarios.
 
 == Verification <section:verification>
 Due to its potential for use in safety critical sectors like aerospace and defence, comprehensive verification

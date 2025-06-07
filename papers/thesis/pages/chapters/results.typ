@@ -11,15 +11,7 @@
 In order to test the TaMaRa algorithm, a number of SystemVerilog testbenches implementing various different
 types of circuits were designed. This section will detail the testbench suite in full. In each of the
 selections below, the attached table shows the circuit name, the SystemVerilog RTL describing the circuit, and
-its schematic after running the following Yosys script:
-
-```bash
-read_verilog -sv $name
-prep
-splitcells
-splitnets
-show -colors 420 -format svg -prefix $output
-```
+its schematic after running a standard Yosys synthesis script.
 
 This list approaches circuits in their order of complexity: first starting with simple, single-bit
 combinational circuits, and then progressing up to advanced, multi-bit, multi-cone, recurrent, sequential
@@ -266,11 +258,8 @@ the wiring code can handle multi-bit edge signals.
 === Sequential circuits
 In the previous sections, the testbenches were all combinational circuits, and did not use sequential elements
 such as D-flip-flops. Combinational circuits are easy to design and especially easy to verify, but are not at
-all representative of the majority of complex SystemVerilog designs. Both Yosys' formal verification tools,
-and the underlying Yices @Dutertre2014 SMT solver support sequential circuits, and they form a valuable part
-of the testbench suite. Additionally, sequential circuits involve a clock signal, where the TaMaRa algorithm
-must be careful to connect the clock signal correctly to the TMR replicas. These testbenches are shown in
-@tab:sequentialcircuits.
+all representative of the majority of complex SystemVerilog designs. Hence, a number of sequential testbenches
+are shown in @tab:sequentialcircuits.
 
 #figure(
   table(
@@ -308,12 +297,9 @@ must be careful to connect the clock signal correctly to the TMR replicas. These
 ) <tab:sequentialcircuits>
 
 === Multi-cone circuits
-Whilst sequential circuits more accurately represent complex industry designs than combinational circuits,
-they are still not adequate test-cases for even the simplest industry designs. These designs typically connect
-together multiple sequential circuits in a pipeline. These circuits challenge TaMaRa's multi-cone
-capabilities, and additionally its multi-voter insertion methodology. In the most complex case, it is
-possible to have multi-cone, multi-voter, multi-bit circuits. These multi-cone designs are shown in
-@tab:multiconecircuits.
+Multi-cone circuits are indicative of the most complex, and realistic, industry designs. They consist of
+multiple combinatorial sections connected by a sequential element, such as a DFF. These multi-cone designs are
+shown in @tab:multiconecircuits.
 
 #figure(
   table(
@@ -631,18 +617,25 @@ injection tests.
 
 Generally, all circuits follow roughly the same inverse logarithmic curve, and are within a few percentage
 points of each other. All tested circuits are able to mitigate 100% of injected faults when one fault is
-injected, which is a very positive sign for the protected voter. With two injected faults, the effectiveness
-ranges between roughly 40% and 75%, with `not_swizzle_low` performing the worst, and `mux_2bit` and `not_2bit`
-performing the best. Interestingly, the only outliers here are the two 32-bit circuits: `not_32bit` and
-`not_2bit`, which do not have an inverse logarithmic curve, rather an almost linear curve that's significantly
-better than all of the other circuits. To investigate further, I performed a sweep of fault-injection tests
-with a 1-bit, 2-bit, 4-bit, 8-bit, 16-bit, 24-bit and 32-bit multiplexer respectively, which is shown in
-@fig:muxbitsweep.
+injected, which proves the voter is functioning as designed in isolation. With two injected faults, the
+effectiveness ranges between roughly 40% and 75%, with `not_swizzle_low` performing the worst, and `mux_2bit`
+and `not_2bit` performing the best. Interestingly, the only outliers here are the two 32-bit circuits:
+`not_32bit` and `not_2bit`, which do not have an inverse logarithmic curve, rather an almost linear curve
+that's significantly better than all of the other circuits. To investigate further, I performed a sweep of
+fault-injection tests with a 1-bit, 2-bit, 4-bit, 8-bit, 16-bit, 24-bit and 32-bit multiplexer respectively,
+which is shown in @fig:muxbitsweep.
 
 #figure(
     image("../../diagrams/mux_bit_sweep_prot.svg", width: 80%),
     caption: [ Sweep of fault-injection tests on differing-width multiplexers, protected voters ]
 ) <fig:muxbitsweep>
+
+This result shows that wider circuits are more resilient with protected voters. Lower bit-count circuits
+follow the standard inverse-logarithmic decay as seen in the majority of circuits in @fig:allprotectedcomb,
+but higher bit-count circuits are more linear (particularly observe `mux_32bit`). The exact reasoning why this
+is the case is not immediately clear, but very likely this is due to the fact that the `splitnets` command
+used in the synthesis script extracts multi-bit buses into individual cells, creating more area on the netlist
+for faults to be injected into, rather than accumulating in a single spot.
 
 === Unprotected voter
 While the protected voter study in the prior section is useful for verifying the correctness of the voter
@@ -749,8 +742,8 @@ percentage of mitigated faults, even between one and two faults. Note that, even
 only between 50% and 60% of faults were mitigated, and this declines sharply to between roughly 5% and 15% at
 two faults. Although this is an unfortunate result, as will be covered in @sec:analysis, the voter takes up
 the vast majority of the circuit area in these tests, meaning it's much more likely to be the target of
-faults, so this result does make sense on this test suite. Nonetheless, there's clear room for methodological
-improvement here.
+faults, so this result does make sense on this test suite. Nonetheless, there's clear room for improvement in
+the algorithm here.
 
 Also interesting to note is that, unlike in @fig:allprotectedcomb with the protected voters, these results are
 all largely the same across all circuits. We do not see see any differences between 32-bit and 1-bit circuits
@@ -845,7 +838,7 @@ error signal to '1'. Comparatively, injecting a fault in just the right place to
 stuck at '0' would be statistically less likely.
 
 === Analysis <sec:analysis>
-In many of the unprotected voter tests, the results are significantly worse than with the protected voter.
+In all of the unprotected voter tests, the results are significantly worse than with the protected voter.
 This is because the voter takes up the majority of the gate-area of the circuit in a number of these cases,
 meaning the likelihood of the fault applying to the voter and hence invalidating it is much higher. In
 @tab:voterarea, I calculate the percentage area that the voter accounts for by summing the wires and cells
