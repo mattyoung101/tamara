@@ -178,6 +178,7 @@ def main(faults: int, verilog_path: str, top: str, samples: int, type_: str, no_
         plt.ylabel("Mitigated faults (%)")
         plt.title(f"Fault injection study on '{top}', {type_} voter")
     plt.grid()
+    plt.ylim(0, 100)
 
     # Force integer ticks on x-axis
     ax = plt.gca()

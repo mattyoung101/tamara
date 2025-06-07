@@ -12,9 +12,9 @@
         10
     ],
     "results": [
-        51.0,
-        6.0,
-        2.0,
+        59.0,
+        11.0,
+        1.0,
         0.0,
         0.0,
         0.0,
@@ -23,8 +23,8 @@
         0.0,
         0.0
     ],
-    "date": "2025-05-15 23:20:16.123157+10:00",
-    "verilog_file_hash": "475daa0a848196dfbee7596ad736de8b96fb4d3641a30c9756ba59f5b50e9e5d",
+    "date": "2025-06-07 16:22:44.264283+10:00",
+    "verilog_file_hash": "c22971afcdca9b431eb2d8f53742ca026c2ee5c510682c327e3fd6b969d34a60",
     "num_faults": 10,
     "verilog_path": "../tests/verilog/mux.sv",
     "top": "mux_1bit",
