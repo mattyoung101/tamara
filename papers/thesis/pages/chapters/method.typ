@@ -123,7 +123,7 @@ Given these constraints, the truth table for a majority voter can be described a
 ) <tab:sotrue>
 
 Using techniques such as Karnaugh mapping @Karnaugh1953, this truth table can be optimally mapped to a
-combinatorial circuit. In this case, Logisim Evolution @Burch2024 was used, which produced the following
+combinational circuit. In this case, Logisim Evolution @Burch2024 was used, which produced the following
 result as shown in @fig:logisim. This circuit consists of 3 NOT gates, 6 AND gates, and 4 OR gates. These are
 all two-input gates.
 
@@ -211,12 +211,12 @@ can be used to represent RTL concepts like constants and wires. An example of th
 ) <fig:rtlilset>
 
 === Backwards breadth-first search <sec:search>
-The key step of the TaMaRa algorithm is mapping out and tracking the combinatorial logic primitives that are
+The key step of the TaMaRa algorithm is mapping out and tracking the combinational logic primitives that are
 located in between sequential logic primitives in a given design. This enables us to correctly replicate the
 design, without introducing sequential delays that would invalidate the circuit's design. In order to achieve
 this, I perform a breadth-first search (BFS) search, operating backwards _from_ the output of the circuit
 _towards_ the input of the circuit. A backwards search is used under the assumption that the _outputs_
-of a circuit naturally depend on both the combinatorial and sequential path through the circuit; so, by
+of a circuit naturally depend on both the combinational and sequential path through the circuit; so, by
 working from outputs backwards to inputs, we naturally cover only the essential circuit elements and guarantee
 we won't miss anything. This is the same approach used by Beltrame @Beltrame2015.
 
@@ -225,7 +225,7 @@ search #footnote([This is not quite the same as terminating the search immediate
     consider remaining items in the BFS queue before instantly terminating the search.]) and declare the
 current collected RTLIL primitives as part of a single _logic cone_.
 
-TaMaRa's definition of a logic cone is shown in @fig:logiccone. The first combinatorial logic cone is shown in
+TaMaRa's definition of a logic cone is shown in @fig:logiccone. The first combinational logic cone is shown in
 blue, the second in green; both of these would be discovered separately by the backwards BFS.
 
 #figure(
@@ -233,14 +233,14 @@ blue, the second in green; both of these would be discovered separately by the b
     caption: [ Description of TaMaRa's definition of logic cones ]
 ) <fig:logiccone>
 
-=== Combinatorial replication
+=== Combinational replication
 Once we have formed a logic cone, we are able to replicate all of the components inside it. This is a
 relatively trivial operation and is simply a matter of using the Yosys API to instantiate two replicas for
 each original node. These replicas are also marked with special TaMaRa annotations to indicate that they are
 replicas, and what logic cone they belong to.
 
 === Voter insertion <sec:voterinsertion>
-With the combinatorial primitives in the circuit replicated, the next step is to generate and insert majority
+With the combinational primitives in the circuit replicated, the next step is to generate and insert majority
 voters to vote on the redundant logic, and thereby actually implement TMR.
 
 TaMaRa voters are always single-bit. Handling multi-bit signals is a two-stage process. Firstly, before TaMaRa
@@ -255,7 +255,7 @@ emits a `$buf` cell to improve PPA.
 
 For multi-cone designs, the voter builder is also capable of building a tree structure of OR gates to bubble
 up the individual voter error signals to a global error signal. It is worth noting that this tree-like
-structure will significantly increase the combinatorial critical path delay of the circuit, and it would be
+structure will significantly increase the combinational critical path delay of the circuit, and it would be
 better replaced with more optimal structures in future work.
 
 On any given logic cone, we define the "voter cut point" to be the location in the logic cone netlist where we
@@ -367,7 +367,7 @@ In summary, the algorithm can be briefly described as follows:
     RTLIL Cell or Wire and the other Cells or Wires it may be connected to
 2. For each output port in the top module:
     1. Perform a backwards breadth-first search through the RTLIL netlist to form a logic cone
-    2. Replicate all combinatorial RTLIL primitives inside the logic cone
+    2. Replicate all combinational RTLIL primitives inside the logic cone
     3. Generate and insert the necessary voter(s) for each bit
     4. Wire up the newly formed netlist, including connected the voters
 3. Perform any necessary fixes to the wiring, if required
@@ -420,9 +420,9 @@ when working on EDA tools, having a representative sample of a large number of p
 aspect. For TaMaRa, I sourced a number of representative small open-source Verilog projects with acceptable
 licences for inclusion in the `test` directory. These designs include:
 - Various cyclic redundancy check (CRC) calculators of varying bit-depths
-    - Tests TaMaRa's handling of combinatorial circuits
+    - Tests TaMaRa's handling of combinational circuits
 - Small RISC-V CPUs: picorv32, femtorv32, minimax, Browndeer Technologies' rv8
-    - CPUs are highly representative of large Verilog projects, and include complex combinatorial and
+    - CPUs are highly representative of large Verilog projects, and include complex combinational and
         sequential circuits
 
 In addition, I also wrote a number of much smaller testbenches to target specific bugs or specific features in
@@ -443,7 +443,7 @@ mitigated when the circuit is processed through the algorithm.
 Formal equivalence checking is used in the TaMaRa verification flow to formally prove (for specific circuits,
 at least) that the tool holds up two of its key guarantees: that it does not change the underlying behaviour
 of the circuit during processing, and that it actually protects the circuit from SEUs. We could also check
-this using testbenches, or for simple combinatorial circuits by comparing the truth table manually, but
+this using testbenches, or for simple combinational circuits by comparing the truth table manually, but
 SAT-based formal equivalence is actually easier to implement, and provides significantly stronger proofs of
 correctness. If the formal equivalence check passes, we can be absolutely certain that the behaviour of the
 circuit has not changed, for all possible inputs; and for sequential circuits, for all possible inputs _and_

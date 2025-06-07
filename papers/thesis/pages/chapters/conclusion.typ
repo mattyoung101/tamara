@@ -9,7 +9,7 @@ Firstly, in future work, it would be very important to address a number of limit
 algorithm. At this point, the algorithm is unfortunately unable to handle a number of critical circuits,
 particularly circuits types that are commonly used in industry designs. This includes many (but not all)
 circuits which use sequential elements such as DFFs, multi-cone circuits, recurrent circuits, and a small
-number of combinatorial circuits with very complex bit swizzling. The critical flaw that causes this is the
+number of combinational circuits with very complex bit swizzling. The critical flaw that causes this is the
 lack of robustness of the wiring stage (@sec:wiring and @sec:wiringfixup). As an abstraction over any and all
 circuits at various levels of the design process, RTLIL is extremely complex, and hence splicing an RTLIL
 netlist to insert majority voters in all of these cases is very challenging. This is particularly the case
@@ -156,11 +156,11 @@ of significantly less area, particularly in microprocessor designs. This could a
 techniques such as rolling back and re-issuing instructions when faults occur, or issuing each instruction
 three times and comparing the result.
 
-Performance wise, in the current algorithm, there is a very long combinatorial path introduced by the error
+Performance wise, in the current algorithm, there is a very long combinational path introduced by the error
 signal propagating all the way through a module that is likely to significantly worsen PPA on real designs.
 Whilst we cannot fully avoid the area costs introduced by TMR, using the placement-driven approach above, we
 might be able to create some sort of PPA-driven TMR approach that helps to lessen the slow-down caused by this
-very long combinatorial path. Alternatively, it may be possible to pipeline the error signal to a configurable
+very long combinational path. Alternatively, it may be possible to pipeline the error signal to a configurable
 degree. On the software side itself, there are numerous cases where lookups in the TaMaRa algorithm have time
 complexity $O(n^2)$ or even $O(n^3)$, which could relatively easily be fixed by restructuring the way the hash
 table is referenced.

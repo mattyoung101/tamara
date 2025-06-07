@@ -11,7 +11,7 @@ fundamentally categorised into the following dichotomy:
 
 - *Design-level approaches* ("thinking in terms of HDL"): These approaches treat the design as _modules_, and
     introduce TMR by replicating these modules. A module could be anything from an entire CPU, to a
-    register file, to even a single combinatorial circuit or AND gate. Once the modules are replicated, voters are
+    register file, to even a single combinational circuit or AND gate. Once the modules are replicated, voters are
     inserted.
 - *Netlist-level approaches* ("thinking in terms of circuits"): These approaches treat the design as a
     _circuit_ or _netlist_, which is internally represented as a graph. TMR is introduced using graph theory
@@ -154,7 +154,7 @@ Using a similar approach, Benites and Kastensmidt @Benites2018, and Benites' the
 automated TMR approach implemented as a Tcl script for use in Cadence tools. They distinguish between "coarse
 grained TMR" (which they call "CGTMR"), applied at the RTL module level, and "fine grained TMR" (which they
 call "FGTMR"), applied at the sub-module (i.e. net) level. Building on that, they develop an approach that
-replicates both combinatorial and sequential circuits, which they call "fine grain distributed TMR" or
+replicates both combinational and sequential circuits, which they call "fine grain distributed TMR" or
 "FGDTMR". They split their TMR pipeline into three stages: implementation ("TMRi"), optimisation ("TMRo"), and
 verification ("TMRv"). The implementation stage works by creating a new design to house the TMR design (which
 I'll call the "container design"), and instantiating copies of the original circuit in the container design.
@@ -166,7 +166,7 @@ simulation (where SEUs are intentionally injected into the simulation), and form
 equivalence checking. Equivalence checking involves the use of Boolean satisfiability solvers ("SAT solvers")
 to mathematically prove one circuit is equivalent to another. Benites' key verification contribution is
 identifying a more optimal way to use equivalence checking to verify fine-grained TMR. He identified that each
-combinatorial logic path will be composed of a path identical to the original logic, plus one or more voters.
+combinational logic path will be composed of a path identical to the original logic, plus one or more voters.
 This way, he only has to prove that each "logic cone" as he describes it is equivalent to the original
 circuit. Later on, he also uses a more broad-phase equivalence checking system to prove that the circuits
 pre and post-TMR have the same behaviours.
@@ -193,7 +193,7 @@ approaches in that it also aims to correct faults introduced into the circuit by
 masking their existence). Xilinx also aims to
 address single-event transients ("SETs"), where ionising radiation causes voltage spikes on the FPGA routing
 fabric. TMRTool follows a similar approach to the other netlist-level algorithms described above, with some
-small improvements and Xilinx-specific features. The flow first triplicates all inputs, combinatorial logic
+small improvements and Xilinx-specific features. The flow first triplicates all inputs, combinational logic
 and routing. Then, it inserts voters downstream in the circuit, particularly on finite state machine (FSM)
 feedback paths. One important difference is that, at this point in the flow, Xilinx also decides to triplicate
 the voters themselves. This means there is no single point of failure (which improves redundancy), although it

@@ -22,13 +22,13 @@ show -colors 420 -format svg -prefix $output
 ```
 
 This list approaches circuits in their order of complexity: first starting with simple, single-bit
-combinatorial circuits, and then progressing up to advanced, multi-bit, multi-cone, recurrent, sequential
+combinational circuits, and then progressing up to advanced, multi-bit, multi-cone, recurrent, sequential
 circuits. This was also the order in which the TaMaRa algorithm was verified: starting with small, simple
 circuits, and progressing to complex ones, verifying incrementally along the way.
 
-=== Combinatorial circuits
-The simplest type of digital circuit is a single-bit, purely combinatorial one. @tab:combinatorial lists these
-single-bit combinatorial circuits. These were critical for initial, early implementation of the TaMaRa
+=== Combinational circuits
+The simplest type of digital circuit is a single-bit, purely combinational one. @tab:combinational lists these
+single-bit combinational circuits. These were critical for initial, early implementation of the TaMaRa
 algorithm, as their small size allowed for visual debugging using the Yosys `show` tool.
 
 #figure(
@@ -124,12 +124,12 @@ algorithm, as their small size allowed for visual debugging using the Yosys `sho
         #image("../../diagrams/schematics/mux_1bit.svg")
     ],
   ),
-  caption: [ Table of single-bit combinatorial circuit designs ]
-) <tab:combinatorial>
+  caption: [ Table of single-bit combinational circuit designs ]
+) <tab:combinational>
 
-=== Multi-bit combinatorial circuits
-Once the single-bit combinatorial circuits were confirmed to be working, the next set of tests involved
-multi-bit combinatorial circuits, as shown in @tab:combinatorialmulti. This is useful to ensure that the voter
+=== Multi-bit combinational circuits
+Once the single-bit combinational circuits were confirmed to be working, the next set of tests involved
+multi-bit combinational circuits, as shown in @tab:combinationalmulti. This is useful to ensure that the voter
 builder, as described in @sec:voterinsertion, correctly inserts a voter for each bit in the bus; and also that
 the wiring code can handle multi-bit edge signals.
 
@@ -260,12 +260,12 @@ the wiring code can handle multi-bit edge signals.
         #image("../../diagrams/schematics/crc_const_variant5.svg")
     ],
   ),
-  caption: [ Table of multi-bit combinatorial circuit designs ]
-) <tab:combinatorialmulti>
+  caption: [ Table of multi-bit combinational circuit designs ]
+) <tab:combinationalmulti>
 
 === Sequential circuits
-In the previous sections, the testbenches were all combinatorial circuits, and did not use sequential elements
-such as D-flip-flops. Combinatorial circuits are easy to design and especially easy to verify, but are not at
+In the previous sections, the testbenches were all combinational circuits, and did not use sequential elements
+such as D-flip-flops. Combinational circuits are easy to design and especially easy to verify, but are not at
 all representative of the majority of complex SystemVerilog designs. Both Yosys' formal verification tools,
 and the underlying Yices @Dutertre2014 SMT solver support sequential circuits, and they form a valuable part
 of the testbench suite. Additionally, sequential circuits involve a clock signal, where the TaMaRa algorithm
@@ -308,7 +308,7 @@ must be careful to connect the clock signal correctly to the TMR replicas. These
 ) <tab:sequentialcircuits>
 
 === Multi-cone circuits
-Whilst sequential circuits more accurately represent complex industry designs than combinatorial circuits,
+Whilst sequential circuits more accurately represent complex industry designs than combinational circuits,
 they are still not adequate test-cases for even the simplest industry designs. These designs typically connect
 together multiple sequential circuits in a pipeline. These circuits challenge TaMaRa's multi-cone
 capabilities, and additionally its multi-voter insertion methodology. In the most complex case, it is
@@ -494,7 +494,7 @@ triplication of _both_ the DFF and the NOT gate, and the successful connection b
 == Formal verification
 === Equivalence checking
 To ensure the reliability of the algorithm, an attempt was made to perform formal equivalence checking on all
-of the combinatorial circuits. As of writing, there are 20 equivalence checks performed in total.
+of the combinational circuits. As of writing, there are 20 equivalence checks performed in total.
 
 The follow circuits passed the equivalence check:
 
@@ -538,7 +538,7 @@ rate is calculated. In this case, I perform 100 samples for each number (i.e. 10
 === Protected voter
 @tab:faultinjectprotected presents the results for this protected voter fault-injection study. As the fault
 injection process is stochastic, it uses a sample of 100 runs per fault. The circuits listed in this table
-correspond to the suite of circuits presented in @tab:combinatorial, after they have been processed end-to-end
+correspond to the suite of circuits presented in @tab:combinational, after they have been processed end-to-end
 correctly by the TaMaRa algorithm.
 
 #figure(
@@ -621,12 +621,12 @@ correctly by the TaMaRa algorithm.
   caption: [ Protected voter fault injection study results ]
 ) <tab:faultinjectprotected>
 
-@fig:allprotectedcomb shows the combined results of all combinatorial circuits under protected voter fault
+@fig:allprotectedcomb shows the combined results of all combinational circuits under protected voter fault
 injection tests.
 
 #figure(
     image("../../diagrams/all_comb_prot.svg", width: 80%),
-    caption: [ Comparison of all results for protected voter combinatorial circuits ]
+    caption: [ Comparison of all results for protected voter combinational circuits ]
 ) <fig:allprotectedcomb>
 
 Generally, all circuits follow roughly the same inverse logarithmic curve, and are within a few percentage
@@ -736,12 +736,12 @@ stochastic, and the same parameters as in the protected voter experiments were u
   caption: [ Unprotected voter fault injection study results ]
 ) <tab:faultinjectunprotected>
 
-@fig:allunprotectedcomb shows the combined results of all combinatorial circuits under unprotected voter fault
+@fig:allunprotectedcomb shows the combined results of all combinational circuits under unprotected voter fault
 injection tests.
 
 #figure(
     image("../../diagrams/all_comb_unprot.svg", width: 80%),
-    caption: [ Comparison of all results for unprotected voter combinatorial circuits ]
+    caption: [ Comparison of all results for unprotected voter combinational circuits ]
 ) <fig:allunprotectedcomb>
 
 In this case, rather than being an inverse logarithmic curve, all tests have a very sharp fall-off in the
@@ -804,11 +804,11 @@ more area than the circuit itself. This is covered in @sec:analysis.
 
 === Unmitigated circuits
 To compare against a baseline, @fig:allunmitigatedcomb shows the results of fault injection on all
-combinatorial circuits with no mitigation (i.e. no TMR) whatsoever.
+combinational circuits with no mitigation (i.e. no TMR) whatsoever.
 
 #figure(
     image("../../diagrams/all_comb_unmit.svg", width: 75%),
-    caption: [ Comparison of all results for unmitigated combinatorial circuits ]
+    caption: [ Comparison of all results for unmitigated combinational circuits ]
 ) <fig:allunmitigatedcomb>
 
 As expected, these largely result in 0% mitigation rate across the board. However, there's an interesting
@@ -840,7 +840,7 @@ five and seven faults are injected. Also interesting to note is that, at best, o
 the error signal set correctly, and this is with eight faults. More realistically, in the case of a single
 fault, the error signal is set correctly only 30% of the time. However, as more faults are injected, the
 correctness of the error signal improves. This does seem to make some statistical sense, as the increased
-number of faults injected into the circuit seems more likely to trip the combinatorial path that sets the
+number of faults injected into the circuit seems more likely to trip the combinational path that sets the
 error signal to '1'. Comparatively, injecting a fault in just the right place to cause the error signal to be
 stuck at '0' would be statistically less likely.
 
