@@ -19,14 +19,15 @@ _netlist-level_ approach, as the algorithms are designed by treating the design 
 HDL).
 
 I propose a modification to the synthesis flow that inserts TaMaRa before technology mapping. This means that
-the circuit can be processed at a low level, with less concerns about optimisation removing the redundant TMR
+the circuit can be processed at a low level, with fewer concerns about optimisation removing the redundant TMR
 logic, as has been observed in other approaches @Lee2017 and through conversation with the Yosys developers
 @Engelhardt2024. However, some Yosys synthesis scripts do perform additional optimisation _after_ technology
 mapping, which again risks the removal of the TMR logic. Yet, we also cannot operate after technology mapping,
 since TaMaRa voter circuits are described using relatively high level circuit primitives (AND gates, NOT
-gates, etc) instead of vendor-specific FPGA primitives like LUTs. The best solution to this likely involves an
+gates, etc) instead of vendor-specific FPGA primitives like LUTs. The best solution to this involves an
 upstream modification to Yosys that allows for certain optimisation passes to be selectively skipped; this is
-further discussed in @chap:futurework.
+further discussed in @chap:futurework. Whilst this would effectively resolve the problem, it would require
+collaboration with the upstream Yosys maintainers.
 
 Whilst TaMaRa aims to be compatible with all existing designs with minimal changes, some preconditions are
 necessary for the algorithm to process the circuit correctly.
