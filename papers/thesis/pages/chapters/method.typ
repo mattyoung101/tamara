@@ -1,6 +1,12 @@
 #import "../../util/macros.typ": *
 
 = Methodology <chap:method>
+In this chapter, I detail the methodology of the TaMaRa algorithm. I first explain the concept of the
+algorithm at a high-level, indicating from which papers in the literature review the idea is derived. I then
+describe the operation of the TaMaRa algorithm, explaining each step the algorithm applies to a
+given netlist. Finally, I describe the methodology used to verify TaMaRa, including the use of manual
+verification, formal verification, and RTL fuzzing techniques.
+
 == Concept
 In the previous @chap:lit, I presented a comprehensive literature review of existing automated TMR approaches.
 One of the main limitations that these algorithms have is that none are specifically integrated into the Yosys
@@ -227,7 +233,12 @@ procedure are presented later in @section:formalverif.
 
 === RTLIL netlist analysis
 In Yosys, although RTLIL is used to model the netlist, the connections between cells and wires are not
-immediately available for use in TaMaRa. Instead, I first perform a topological analysis of all the cells and
+immediately available for use in TaMaRa. This is due to the way the Yosys authors have developed the internal
+RTLIL C++ class structure, which is not stored as a graph, and does not keep records of connections between
+cells and wires
+#footnote[Arguably, this indicates there is a real necessity for a refactor of the way Yosys' RTLIL is
+  implemented in C++, as a netlist is very clearly a directed graph.].
+Instead, I first perform a topological analysis of all the cells and
 wires in the netlist. I consider output and input ports for cells, and also uniquely consider wires as well.
 The aim is to construct a `tamara::RTLILWireConnections` object, which is a mapping between the name of a wire
 or cell (which is guaranteed to be unique in an RTLIL design), and the set of wires or cells it may be
@@ -245,7 +256,7 @@ can be used to represent RTL concepts like constants and wires. An example of th
 === Backwards breadth-first search <sec:search>
 The key step of the TaMaRa algorithm is mapping out and tracking the combinational logic primitives that are
 located in between sequential logic primitives in a given design. This enables us to correctly replicate the
-design, without introducing sequential delays that would invalidate the circuit's design. In order to achieve
+design, without introducing sequential delays that would invalidate the circuit's design. To achieve
 this, I perform a breadth-first search (BFS) search, operating backwards _from_ the output of the circuit
 _towards_ the input of the circuit. A backwards search is used under the assumption that the _outputs_
 of a circuit naturally depend on both the combinational and sequential path through the circuit; so, by
@@ -313,9 +324,7 @@ generalised representation of RTL at various stages of synthesis, RTLIL is extre
 complex, recurrent, multi-bit circuits with elements like bit-selects, slicing and splicing is very
 challenging. TaMaRa approaches this on a "best effort" basis, but is currently unable to handle all wiring
 types present in Yosys. In essence, the wiring logic is similar to performing "surgery" on the circuit;
-cutting and splicing complicated RTLIL primitives that can be challenging to re-attach correctly. The wiring
-logic remains the single biggest limitation in the TaMaRa algorithm, and is often the sole reason that more
-complex circuits cannot yet be processed.
+cutting and splicing complicated RTLIL primitives that can be challenging to re-attach correctly.
 
 The first step of the wiring process is to insert the majority voter, which was covered separately in the
 prior section @sec:voterinsertion. Specifically, the voter cut point is determined from the earlier backwards
@@ -395,28 +404,28 @@ not produce infinite searching loops.
     caption: [ Demonstration of search continuation for two circuits ]
 ) <fig:searchcontinuation>
 
+#pagebreak()
+
 == Verification <section:verification>
 Due to its potential for use in safety critical sectors like aerospace and defence, comprehensive verification
-and testing of the TaMaRa flow is extremely important in this thesis.
-// We want to verify to a very high level
-// of accuracy that TaMaRa both works by preventing SEUs to an acceptable standard, and also does not change the
-// underlying behaviour of the circuits it processes.
+and testing of the TaMaRa flow is extremely important in this thesis. TaMaRa is a highly complex project that,
+during the course of this one year thesis, developed into a substantial and complicated codebase. Not only is
+the TaMaRa algorithm itself complex, but it is also dependent on top of the very complex Yosys codebase. In
+addition, the very process of EDA synthesis is highly non-trivial; in some ways, akin to writing a compiler.
+This means that an extensive verification methodology is required not just as a once-off, but throughout
+development.
 
-TaMaRa is a highly complex project that, during the course of this one year thesis, developed into a
-substantial and complicated codebase. Not only is the TaMaRa algorithm itself complex, but it is also
-dependent on top of the very complex Yosys codebase. In addition, the very process of EDA synthesis is highly
-non-trivial; in some ways, akin to writing a compiler. This means that an extensive verification methodology
-is required not just as a once-off, but throughout development.
+Verification was performed in four main ways: manual verification using testbenches, formal verification using
+SAT/SMT solvers, RTL fuzzing and a continuous integration (CI) regression suite that is run continuously.
 
-To ensure this verification could be achieved, I implemented a regression test suite, which is common in
-large-scale software projects. The regression test script is written in Python, and reads the list of tests to
-run from a YAML document. This script is capable of running both Yosys script tests as well as formal
-equivalence checking tests using the `eqy` tool. The script also keeps track of prior results and recently
-failed tests, so that regressions can be easily detected. This tool was an essential part of the TaMaRa
-development process, as it allowed major refactors to be performed without the worry of breaking any prior
-tests.
+Regression testing is a common practice in large-scale software projects. TaMaRa includes a regression test
+script written in Python, which reads a list of tests to run from a YAML document. This script is capable of
+running both Yosys script tests as well as formal equivalence checking tests using the `eqy` tool. The script
+also keeps track of prior results and recently failed tests, so that regressions can be easily detected. This
+tool was an essential part of the TaMaRa development process, as it allowed major refactors to be performed
+without the worry of breaking any prior tests.
 
-=== Manual verification
+=== Manual verification <sec:manualverification>
 The design and use of RTL testbenches continues to be important when designing FPGA and ASIC
 projects. Likewise, RTL testbenches are very important when designing EDA tools. Compared to FPGA/ASIC design,
 when working on EDA tools, having a representative sample of a large number of projects is the most important
@@ -465,11 +474,11 @@ voter, then should then have the same behaviour as the _gold_ circuit, and thus 
 below in @fig:verification.
 
 #figure(
-    image("../../diagrams/verification.svg", width: 60%),
+    image("../../diagrams/verification.svg", width: 55%),
     caption: [ Diagram of TaMaRa verification methodology ]
 ) <fig:verification>
 
-=== RTL fuzzing techniques
+=== RTL fuzzing techniques <sec:rtlfuzzingtechniques>
 As mentioned in @section:rtlfuzz, RTL fuzzing is an emerging technique for
 generating large-scale coverage of Verilog design files for EDA tools. Hence, part of the TaMaRa verification
 flow involves using Verismith @Herklotz2020  to generate small random Verilog designs, and running TaMaRa

@@ -1,6 +1,12 @@
 #import "../../util/macros.typ": *
 
 = Conclusion
+In the prior chapters, I described in detail the TaMaRa methodology and results. However, as I hinted earlier,
+there are a number of limitations with the algorithm. In this chapter, I will describe the limitations of
+the current implementation in detail, referring to specific known bugs and their root causes. I will then
+discuss opportunities for future work, including potential further research involving placement-driven TMR
+algorithms. Finally, I will summarise the work as a whole and its contribution.
+
 == Issues with the current implementation <chap:futurework>
 Throughout the duration of this thesis, there have been a number of improvements and areas for future research
 identified.
@@ -163,7 +169,11 @@ might be able to create some sort of PPA-driven TMR approach that helps to lesse
 very long combinational path. Alternatively, it may be possible to pipeline the error signal to a configurable
 degree. On the software side itself, there are numerous cases where lookups in the TaMaRa algorithm have time
 complexity $O(n^2)$ or even $O(n^3)$, which could relatively easily be fixed by restructuring the way the hash
-table is referenced.
+table is referenced. As an essential element of the TMR approach, the voter itself could also be iterated on
+not only to improve its PPA performance, but also its ability to withstand SEUs. In the results section, we
+saw that the voter being struck by an upset and producing an invalid result is a serious issue, and so it
+would be worth researching whether there are more reliable voter designs (particularly for ASIC) that are more
+reliable.
 
 All in all, I think there are a number of interesting avenues to pursue in radiation-hardening research for
 integrated circuits, and I do intend to pursue these through a PhD.
@@ -177,10 +187,8 @@ algorithm in detail, and explained how it uses a backwards-BFS logic-cone based 
 TMR elements without changing circuit behaviour. I also introduced the extensive verification methodology I
 used. In @chap:results, I presented a number of test circuits, as well as comprehensive formally-verified
 fault-injection studies. Finally, in the prior section of this chapter, I presented a detailed analysis of
-future work and improvements for the TaMaRa algorithm. While it may be early days for TaMaRa algorithm, my
+future work and improvements for the TaMaRa algorithm. While it may be early days for the TaMaRa algorithm, my
 hope is that this algorithm and future research that I perform in this space will be beneficial to many.
-
-Thank you for reading.
 
 #align(right)[#sym.qed]
 

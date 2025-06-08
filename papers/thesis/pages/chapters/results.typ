@@ -6,12 +6,20 @@
 // https://github.com/typst/typst/issues/977#issuecomment-2233710428
 #show figure: set block(breakable: true)
 
-= Results and Discussion <chap:results>
+= Results and Analysis <chap:results>
+In this chapter, I describe the tests performed on the TaMaRa algorithm to characterise its fault-protection
+performance. First, I demonstrate a comprehensive test suite of SystemVerilog descriptions of circuits at
+varying levels of complexity. Then, I briefly describe what some of these circuits' schematics look like
+after being processed by the TaMaRa algorithm. Finally, I perform a comprehensive campaign of
+formally-verified fault-injection across a number of these circuits. I compare and contrast _protected_ and
+_unprotected_ voter tests against a baseline, unmitigated control. I also perform multi-TMR experiments and
+verification of the error signal from the voters, and analyse all the results in context.
+
 == Testbench suite <sec:testbenchsuite>
-In order to test the TaMaRa algorithm, a number of SystemVerilog testbenches implementing various different
-types of circuits were designed. This section will detail the testbench suite in full. In each of the
-selections below, the attached table shows the circuit name, the SystemVerilog RTL describing the circuit, and
-its schematic after running a standard Yosys synthesis script.
+To test the TaMaRa algorithm, a number of SystemVerilog testbenches implementing various different types of
+circuits were designed. This section will detail the testbench suite in full. In each of the selections below,
+the attached table shows the circuit name, the SystemVerilog RTL describing the circuit, and its schematic
+after running a standard Yosys synthesis script.
 
 This list approaches circuits in their order of complexity: first starting with simple, single-bit
 combinational circuits, and then progressing up to advanced, multi-bit, multi-cone, recurrent, sequential
@@ -755,7 +763,12 @@ sweep as before, but using unprotected voters, which is shown below in @fig:muxb
     caption: [ Sweep of fault-injection tests on differing-width multiplexers, unprotected voters ]
 ) <fig:muxbitsweepunprot>
 
-// not exactly sure why this occurs? if i knew i'd write about it :/
+This result is very different from the result observed earlier with protected voters (@fig:muxbitsweep).
+Although the 1-bit multiplexer performs slightly worse, all circuits more or less follow the same trend. From
+this analysis, it would appear that in real-world scenarios, with unprotected voters, the bit-count has
+minimal to no impact on the reliability of the voted circuit. In practice, this is likely because the voters
+still take a _significant_ amount of the total area of the circuit when they are not protected from faults, so
+it's still more likely that a fault is injected into the voter.
 
 === Multi-TMR
 As we have seen in the prior sections, a serious issue with TMR setups is that the voters themselves can be
@@ -789,11 +802,11 @@ circuit to a regular TMR circuit.
     caption: [ Multi-TMR vs. regular TMR for mux_1bit, unprotected voter ]
 ) <fig:muxltiunprot>
 
-Whilst there is some notable improvement, it is definitely not significant enough to sacrifice the
+Whilst there is a modest improvement, it is definitely not significant enough to sacrifice the
 considerable increase in area caused by triplicated voters. The exact reason _why_ triplicating the voters
-doesn't improve reliability is probably an artefact of the test situation. As in many other tests, the test
-circuits are too simple (in this case, a single 1-bit multiplexer), and the voter ends up taking significantly
-more area than the circuit itself. This is covered in @sec:analysis.
+doesn't improve reliability is likely due to the fact that there is still a substantial increase in vulnerable
+voter area, compared to area occupied by the triplicated circuit elements. This still means that the voter,
+not the circuit, is more likely to be the target of injected faults.
 
 === Unmitigated circuits
 To compare against a baseline, @fig:allunmitigatedcomb shows the results of fault injection on all
@@ -805,8 +818,8 @@ combinational circuits with no mitigation (i.e. no TMR) whatsoever.
 ) <fig:allunmitigatedcomb>
 
 As expected, these largely result in 0% mitigation rate across the board. However, there's an interesting
-spike up to 10% mitigated for some circuits at exactly two faults. My hypothesis here is that two faults being
-injected into the circuit can, on occasion, cancel each other out.
+spike up to 10% mitigated for some circuits at exactly two faults. My explanation for this is that two faults
+being injected into the circuit can, on occasion, cancel each other out.
 
 === Error signal verification
 As covered in the methodology chapter, TaMaRa adds voters with an "error" signal that is intended to be set
