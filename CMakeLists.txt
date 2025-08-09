@@ -75,7 +75,7 @@ target_include_directories(tamara PRIVATE include lib/yosys)
 # note on diagnostic colour: https://stackoverflow.com/a/73349744/5007892
 target_compile_options(tamara PRIVATE "-Wall" "-Wextra" "-Wno-unused-parameter" "-ggdb"
                                       "-fdiagnostics-color=always")
-if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+if (DEFINED ${CMAKE_BUILD_TYPE} AND ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     message(STATUS "Debug build")
     target_compile_definitions(tamara PRIVATE -DTAMARA_DEBUG)
 endif()
