@@ -1,5 +1,5 @@
 # TaMaRa: An automated Triple Modular Redundancy EDA flow for Yosys
-By Matt Young <m.young2@student.uq.edu.au>
+By Matt Young <matt@mlyoung.cool>
 
 _BCompSc(Hons) thesis, University of Queensland (Australia), 2024-2025_
 
@@ -16,7 +16,6 @@ _BCompSc(Hons) thesis, University of Queensland (Australia), 2024-2025_
 * [Testing and verification](#testing-and-verification)
   * [Formal verification](#formal-verification)
   * [Fault-injection simulation](#fault-injection-simulation)
-  * [Bitstream fault injection using ecp5_shotgun](#bitstream-fault-injection-using-ecp5_shotgun)
   * [Fuzzing and regression pipe](#fuzzing-and-regression-pipe)
   * [Debugging](#debugging)
 * [Compiling papers](#compiling-papers)
@@ -29,10 +28,20 @@ TaMaRa is a plugin for Yosys that automatically adds Triple Modular Redundancy (
 its reliability in space and other harsh environments, particularly for safety critical applications like
 aerospace, medicine and defence.
 
-TODO: thesis abstract here
+> Safety-critical sectors require Application Specific Integrated Circuit (ASIC) designs
+and Field Programmable Gate Array (FPGA) gateware to be fault-tolerant. In particular, high-reliability
+computer systems used in spaceflight computing need to mitigate the effects of Single Event Upsets (SEUs)
+caused by ionising radiation. One common fault- tolerant design technique is Triple Modular Redundancy (TMR),
+which mitigates SEUs by triplicating key parts of the design and using voter circuits. Typically, this is
+manually implemented by designers at the Hardware Description Language (HDL) level, but this is error-prone
+and time-consuming. Leveraging the power and flexibility of the open- source Yosys Electronic Design
+Automation (EDA) tool, in this thesis, I present TaMaRa: a novel fully automated TMR flow, implemented as a
+Yosys plugin. I describe the design and implementation of the TaMaRa tool, and present extensive test results
+using a combination of manual tests, formal verification and RTL fuzzing techniques.
 
 TaMaRa was developed for my Bachelor of Computer Science (Honours) thesis at the University of Queensland,
-Australia, during 2024 and 2025. For more information, please see my thesis submission: TODO
+Australia, during 2024 and 2025. For more information, please see my thesis:
+[./papers/thesis/uqthesis.pdf](./papers/thesis/uqthesis.pdf)
 
 ## Building
 ### Setup
@@ -50,8 +59,6 @@ git clone --recurse-submodules -j8 git@github.com:mattyoung101/tamara.git
 
 TaMaRa is compiled against a specific version of Yosys, which is linked as a Git submodule in the `lib`
 directory. It can only be guaranteed that it will compile against the specific version in the `lib` directory.
-
-TODO: tie it to an upstream Yosys release version, not the lib dir?
 
 When a new version of the Yosys submodule is pushed, use this to update it:
 
@@ -73,7 +80,8 @@ cd build
 ninja
 ```
 
-This will generate the main artefact, `libtamara.so`. You can load this in Yosys as follows:
+This will generate the main artefact, `libtamara.so`. You can load this in Yosys as follows (from the build
+dir):
 
 ```bash
 $ yosys
@@ -88,18 +96,18 @@ For a quick build and run cycle, you can compile and load TaMaRa at the same tim
 ninja && yosys -m libtamara.so
 ```
 
-If you have Yosys installed on your system, you can run `ninja install` to install TaMaRa as a global plugin.
-(TODO this is not yet true)
+<!-- If you have Yosys installed on your system, you can run `ninja install` to install TaMaRa as a global plugin. -->
 
 ## Usage in Yosys
 ### Limitations
-The goal of TaMaRa is to be compatible with roughly the same set of circuits that Yosys can process. That is,
-if Yosys successfully can synthesise a circuit, TaMaRa should be able to add TMR to it. That being said,
-TaMaRa currently has the following limitations:
+> [!CAUTION]
+> **TaMaRa is not suitable for production use, and can only handle a very limited number of simple circuits.**
 
-- Does not triplicate memory cells
-- TaMaRa is a thesis project, and although every effort has been made, correctness cannot be guaranteed. If
-you encounter any bugs, please report them :)
+Unfortunately, the Honours timeframe is very limited, and I more or less ran out of time to complete the
+algorithm.
+
+There are also a number of [bugs](https://github.com/mattyoung101/tamara/issues) in more complex circuits,
+including circuits with multiple logic cones (basically every serious circuit) and circuits that use memories.
 
 ### Circuit preparation
 Designs that are being processed with TaMaRa should declare exactly one 1-bit signal as the voter error sink
@@ -175,15 +183,35 @@ probably Yices.
 Once this is complete, in the `build` directory, use `eqy -f ../tests/formal/equivalence/<test>.eqy` for
 equivalence checking.
 
-TODO: mutation coverage
-
 ### Fault-injection simulation
+Fault-injection tests can be performed using the Python scripts `./tools/fault_injection_sweep.py` and
+`./tools/multi_graph.py`. All these scripts need to be run from the `build` directory.
 
-TODO
+Make sure you have all the dependencies installed listed in `requirements.txt`.
 
-### Bitstream fault injection using ecp5_shotgun
+The `fault_injection_sweep.py` is the main script, and should be pretty self explanatory:
 
-TODO
+```bash
+$ python ./tools/fault_injection_sweep.py --help
+usage: fault_injection_sweep.py [-h] --faults FAULTS --verilog VERILOG --top TOP --samples SAMPLES --type TYPE [--debug] [--nowrite] [--executor EXECUTOR] [--multi]
+
+options:
+  -h, --help           show this help message and exit
+  --faults FAULTS      Inject up to this many faults
+  --verilog VERILOG    Verilog file to test
+  --top TOP            Top file in Verilog
+  --samples SAMPLES    Number of simulations to run
+  --type TYPE          'protected', 'unprotected', 'unmitigated', 'err_protected', or 'err_unprotected'
+  --debug              Prints failure reason in run_eqy
+  --nowrite            Do not write output files
+  --executor EXECUTOR  Use Yosys SAT or eqy? (ys/eqy)
+  --multi              Perform TMR twice?
+```
+
+Example usage:
+```bash
+../tools/fault_injection_sweep.py --faults 10 --verilog ../tests/verilog/crc_min.sv --top crc_const_variant4 --samples 100 --type unprotected
+```
 
 ### Fuzzing and regression pipe
 TaMaRa includes a regression pipeline based on Verilog fuzzing techniques to try and identify crashes and
@@ -238,11 +266,12 @@ This repo also includes various papers including the proposal draft, presentatio
 thesis itself. The papers are all written in [Typst](https://github.com/typst/typst).
 
 To compile the papers, you will need:
-- Typst >= 0.13
+- Typst == 0.13
 - [MermaidJS CLI](https://github.com/mermaid-js/mermaid-cli)
 - [dvisvgm](https://github.com/mgieseki/dvisvgm)
     - mupdf
     - mupdf-tools
+- pdf2svg
 - [Just](https://github.com/casey/just)
 
 Next, in the papers directory, use `typst watch <file>` to edit and live reload. Or `typst compile` to just
